@@ -41,3 +41,49 @@ a:focus {
 a:hover {
     text-decoration: underline;
 }
+
+.game-shell {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+}
+
+.game-canvas-host {
+    width: 100%;
+    min-height: 100vh;
+}
+
+.game-canvas-host canvas {
+    display: block;
+}
+
+.game-loading {
+    margin: 0;
+    padding: 1.5rem;
+}
+
+.game-roll-button {
+    position: fixed;
+    left: 50%;
+    bottom: 2rem;
+    z-index: 10;
+    transform: translateX(-50%);
+    padding: 0.65rem 1.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.5rem;
+    background: rgba(40, 40, 58, 0.92);
+    color: #ffffff;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+.game-roll-button:hover:not(:disabled) {
+    background: rgba(58, 58, 82, 0.95);
+}
+
+.game-roll-button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}

@@ -1,6 +1,11 @@
 import { Sprite, Text, TextStyle, type Container, type Texture } from "pixi.js";
-import { forwardRef, useImperativeHandle, useRef } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from "react";
 
+import {
+  ADJACENT_FACE_LAYOUTS,
+  dieAdjacentTextStyle,
+  pickAdjacentFaceValues,
+} from "@/ui/components/Dice/dieAdjacentFaces";
 import "@/ui/pixi/extend";
 
 export const DEFAULT_DIE_SIZE = 88;
@@ -40,6 +45,21 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
   const rollRef = useRef<Container | null>(null);
   const spriteRef = useRef<Sprite | null>(null);
   const textRef = useRef<Text | null>(null);
+  const adjacentTextRefs = useRef<(Text | null)[]>([]);
+  const initialAdjacent = useMemo(() => pickAdjacentFaceValues(value), [value]);
+
+  const syncAdjacentTexts = (centerValue: number) => {
+    const adjacent = pickAdjacentFaceValues(centerValue);
+    adjacentTextRefs.current.forEach((node, index) => {
+      if (node) {
+        node.text = String(adjacent[index]);
+      }
+    });
+  };
+
+  useEffect(() => {
+    syncAdjacentTexts(value);
+  }, [value]);
 
   useImperativeHandle(
     ref,
@@ -54,6 +74,7 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
         if (text) {
           text.text = String(face);
         }
+        syncAdjacentTexts(face);
       },
       reset() {
         const roll = rollRef.current;
@@ -90,6 +111,28 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
           style={dieTextStyle}
           eventMode="none"
         />
+        {ADJACENT_FACE_LAYOUTS.map((layout, index) => (
+          <pixiContainer
+            key={index}
+            x={layout.x * size}
+            y={layout.y * size}
+            rotation={layout.rotation}
+            scale={{ x: layout.scaleX, y: layout.scaleY }}
+            skew={{ x: layout.skewX, y: 0 }}
+            alpha={layout.alpha}
+            eventMode="none"
+          >
+            <pixiText
+              ref={(node) => {
+                adjacentTextRefs.current[index] = node;
+              }}
+              text={String(initialAdjacent[index])}
+              anchor={0.5}
+              style={dieAdjacentTextStyle}
+              eventMode="none"
+            />
+          </pixiContainer>
+        ))}
       </pixiContainer>
     </pixiContainer>
   );
