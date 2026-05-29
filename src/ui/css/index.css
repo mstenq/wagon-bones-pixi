@@ -87,3 +87,30 @@ a:hover {
     opacity: 0.55;
     cursor: not-allowed;
 }
+
+.game-dice-enhancement-label {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.game-dice-enhancement-select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.5rem;
+    background: rgba(40, 40, 58, 0.92);
+    color: #ffffff;
+    font: inherit;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+.game-dice-enhancement-select:hover {
+    background: rgba(58, 58, 82, 0.95);
+}

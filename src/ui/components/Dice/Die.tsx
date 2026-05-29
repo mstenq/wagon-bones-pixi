@@ -3,7 +3,6 @@ import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from "rea
 
 import {
   ADJACENT_FACE_LAYOUTS,
-  dieAdjacentTextStyle,
   pickAdjacentFaceValues,
 } from "@/ui/components/Dice/dieAdjacentFaces";
 import "@/ui/pixi/extend";
@@ -12,10 +11,10 @@ export const DEFAULT_DIE_SIZE = 88;
 
 export const dieTextStyle = new TextStyle({
   fontFamily: "Inter, system-ui, sans-serif",
-  fontSize: 28,
-  fontWeight: "800",
-  fill: "#ffffff",
-  stroke: { color: "#1a1a2e", width: 4 },
+  fontSize: 24,
+  fontWeight: "500",
+  fill: "#000000",
+  // stroke: { color: "#1a1a2e", width: 2 },
 });
 
 export type DieProps = {
@@ -128,7 +127,7 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
               }}
               text={String(initialAdjacent[index])}
               anchor={0.5}
-              style={dieAdjacentTextStyle}
+              style={dieTextStyle}
               eventMode="none"
             />
           </pixiContainer>

@@ -20,11 +20,11 @@ const FIRST_NEIGHBOR_ANGLE = -Math.PI / 2;
 
 /** Per-face nudges after symmetric layout (index: top → clockwise). */
 const FACE_TUNING = [
-  { radius: 1.06, scale: 1.08, rot: Math.PI, dx: 0, dy: -0.018 },
-  { radius: 1.02, scale: 1.05, rot: 0, dx: 0.01, dy: 0 },
-  { radius: 1.04, scale: 1.06, rot: 0, dx: 0.008, dy: 0.012 },
-  { radius: 1.04, scale: 1.06, rot: 0, dx: -0.008, dy: 0.012 },
-  { radius: 1.02, scale: 1.05, rot: 0, dx: -0.01, dy: 0 },
+  { radius: 1.06, scale: 1.18, rot: Math.PI, dx: 0, dy: -0.018 }, //top
+  { radius: 1.04, scale: 1.18, rot: 0, dx: 0.02, dy: -0.02 }, // top right
+  { radius: 1.04, scale: 1.18, rot: 0, dx: 0.01, dy: 0 }, // bottom right
+  { radius: 1.04, scale: 1.18, rot: 0, dx: -0.02, dy: 0 }, // bottom left
+  { radius: 1.04, scale: 1.18, rot: 0, dx: -0.02, dy: -0.02 }, // top left
 ] as const;
 
 /** Layouts derived from pentagon symmetry; tweak offsets if art changes. */
@@ -51,13 +51,13 @@ export const ADJACENT_FACE_LAYOUTS: AdjacentFaceLayout[] = Array.from(
   },
 );
 
-export const dieAdjacentTextStyle = new TextStyle({
-  fontFamily: "Inter, system-ui, sans-serif",
-  fontSize: 30,
-  fontWeight: "800",
-  fill: "#ffffff",
-  stroke: { color: "#1a1a2e", width: 3 },
-});
+// export const dieAdjacentTextStyle = new TextStyle({
+//   fontFamily: "Inter, system-ui, sans-serif",
+//   fontSize: 28,
+//   fontWeight: "500",
+//   fill: "#ffffff",
+//   // stroke: { color: "#1a1a2e", width: 3 },
+// });
 
 /** Five distinct values from 1–12, never including `centerValue`. */
 export function pickAdjacentFaceValues(centerValue: number): number[] {
