@@ -10,6 +10,8 @@ export type ScoreFlameProps = {
   intensity: number;
 };
 
+const FLAME_SCROLL_SPEED = 8.5;
+
 const VERTEX_SHADER_SOURCE = `
 attribute vec2 aPosition;
 varying vec2 vUv;
@@ -48,7 +50,7 @@ void main() {
     cos(5.3332 * flooredUv.y + uTime * 0.931)
   );
 
-  vec2 flameUpVec = vec2(0.0, uTime * 3.6 + 0.9 * uSeed);
+  vec2 flameUpVec = vec2(0.0, uTime * ${FLAME_SCROLL_SPEED.toFixed(2)} + 0.9 * uSeed);
   float scaleFac = 7.5 + 3.0 / (2.0 + 2.0 * intensity);
   vec2 sv = warpedUv * scaleFac + flameUpVec;
   float speed = mod(20.781 * uSeed, 100.0) + sin(uTime + uSeed) * cos(uTime * 0.151 + uSeed);
