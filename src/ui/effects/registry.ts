@@ -14,6 +14,7 @@ import { negativeEffect } from "@/ui/effects/definitions/negative";
 import { polychromeEffect } from "@/ui/effects/definitions/polychrome";
 import { retroDitherEffect } from "@/ui/effects/definitions/retroDither";
 import { shadowEffect } from "@/ui/effects/definitions/shadow";
+import { squigglePenEffect } from "@/ui/effects/definitions/squigglePen";
 import { stormEffect } from "@/ui/effects/definitions/storm";
 import { voidEffect } from "@/ui/effects/definitions/void";
 import { waterEffect } from "@/ui/effects/definitions/water";
@@ -39,6 +40,7 @@ export const EFFECT_DEFINITIONS: EffectDefinition[] = [
   voidEffect,
   arcaneEffect,
   waterEffect,
+  squigglePenEffect,
 ];
 
 const byId = new Map(EFFECT_DEFINITIONS.map((d) => [d.id, d]));

@@ -21,6 +21,7 @@ export const EFFECT_IDS = [
   "void",
   "arcane",
   "water",
+  "squigglePen",
 ] as const;
 
 export type EffectId = (typeof EFFECT_IDS)[number];
