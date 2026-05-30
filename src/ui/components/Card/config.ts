@@ -1,7 +1,7 @@
 export type CardDisplayMode = "shop" | "pack" | "owned";
 
 export const CARD_LIFT_PX = 28;
-export const CARD_HOVER_SCALE = 1.06;
+export const CARD_HOVER_SCALE = 1.03;
 export const CARD_OWNED_ENLARGED_SCALE = 1.14;
 /** Renders above row siblings when a card is selected (drag uses 1000). */
 export const CARD_SELECTED_Z_INDEX = 500;

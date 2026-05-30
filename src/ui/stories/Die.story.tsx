@@ -2,35 +2,21 @@ import { Application } from "@pixi/react";
 import { use, useState } from "react";
 
 import { effectsTexturesReady } from "@/assets/effects/textures";
-import { getCardTexture, itemTexturesReady } from "@/assets/items/textures";
-import type { CardDisplayMode } from "@/ui/components/Card/config";
-import { Card } from "@/ui/components/Card/Card";
+import { getDiceTexture, texturesReady } from "@/assets/dice/textures";
+import { Die } from "@/ui/components/Dice/Die";
 import { AURA_OPTIONS } from "@/ui/effects/auraOptions";
 import type { AuraId } from "@/ui/effects/types";
 import type { StoryDefinition } from "@/ui/types/storyTypes";
 
-function CardStory() {
-  use(itemTexturesReady);
+function DieStory() {
+  use(texturesReady);
   use(effectsTexturesReady);
 
-  const [displayMode, setDisplayMode] = useState<CardDisplayMode>("shop");
   const [aura, setAura] = useState<AuraId>("none");
 
   return (
     <div className="story-canvas">
       <div className="story-controls">
-        <label className="story-control-label">
-          Display mode
-          <select
-            className="story-control-select"
-            value={displayMode}
-            onChange={(event) => setDisplayMode(event.target.value as CardDisplayMode)}
-          >
-            <option value="shop">shop</option>
-            <option value="pack">pack</option>
-            <option value="owned">owned</option>
-          </select>
-        </label>
         <label className="story-control-label">
           Aura
           <select
@@ -57,25 +43,16 @@ function CardStory() {
         eventFeatures={{ move: true, globalMove: true, click: true }}
       >
         <pixiContainer x={240} y={190} sortableChildren>
-          <Card
-            texture={getCardTexture(1)}
-            displayMode={displayMode}
-            aura={aura}
-            price={5}
-            sellPrice={4}
-            onBuy={() => console.log("BUY")}
-            onSelect={() => console.log("SELECT")}
-            onSell={() => console.log("SELL")}
-          />
+          <Die texture={getDiceTexture("standard")} value={3} aura={aura} />
         </pixiContainer>
       </Application>
     </div>
   );
 }
 
-const cardStory: StoryDefinition = {
-  name: "Card",
-  component: <CardStory />,
+const dieStory: StoryDefinition = {
+  name: "Die",
+  component: <DieStory />,
 };
 
-export default cardStory;
+export default dieStory;

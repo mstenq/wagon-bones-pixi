@@ -7,11 +7,13 @@ import {
   createSquishState,
   isSquishSettled,
   setSquishTarget,
+  snapSquish,
   SQUISH_DRAG,
   SQUISH_GRAB,
   SQUISH_IDLE,
   stepSquish,
   type SquishState,
+  type SquishTargets,
 } from "@/ui/interaction/spring";
 import {
   decaySwing,
@@ -77,6 +79,8 @@ export type UseReorderableRowOptions = {
   dragThreshold?: number;
   /** Fired on pointer up when movement stayed below `dragThreshold`. */
   onItemTap?: (slotIndex: number, itemId: number, event: FederatedPointerEvent) => void;
+  squishGrab?: SquishTargets;
+  squishDrag?: SquishTargets;
 };
 
 export function useReorderableRow({
@@ -89,9 +93,12 @@ export function useReorderableRow({
   dragSnapLerp = 0.38,
   dragThreshold = DEFAULT_DRAG_THRESHOLD,
   onItemTap,
+  squishGrab = SQUISH_GRAB,
+  squishDrag = SQUISH_DRAG,
 }: UseReorderableRowOptions) {
   const { app } = useApplication();
   const [draggingSlot, setDraggingSlot] = useState<number | null>(null);
+  const [pressingItemId, setPressingItemId] = useState<number | null>(null);
   const dragRef = useRef<DragSession | null>(null);
   const coastRef = useRef<Map<number, number>>(new Map());
   const squishRef = useRef<Map<number, SquishState>>(new Map());
@@ -149,6 +156,7 @@ export function useReorderableRow({
 
       flushSync(() => {
         setDraggingSlot(null);
+        setPressingItemId(null);
         if (orderChanged) {
           onOrderChange(newOrder);
         }
@@ -196,9 +204,25 @@ export function useReorderableRow({
       };
 
       dragRef.current = session;
+      setPressingItemId(itemId);
+
+      const squish = createSquishState(squishGrab);
+      snapSquish(squish, squishGrab);
+      squishRef.current.set(itemId, squish);
 
       let lifted = false;
       let liftTimer: number | undefined;
+
+      liftTimer = window.setTimeout(() => {
+        if (dragRef.current !== session) {
+          return;
+        }
+        const state = squishRef.current.get(itemId);
+        if (state) {
+          setSquishTarget(state, squishDrag);
+          lifted = true;
+        }
+      }, 70);
 
       const activateDrag = () => {
         if (session.activated) {
@@ -206,22 +230,15 @@ export function useReorderableRow({
         }
         session.activated = true;
         setDraggingSlot(slotIndex);
-
-        const squish = createSquishState(SQUISH_GRAB);
-        squishRef.current.set(itemId, squish);
-        setSquishTarget(squish, SQUISH_GRAB);
         target.cursor = "grabbing";
 
-        liftTimer = window.setTimeout(() => {
-          if (dragRef.current !== session) {
-            return;
-          }
+        if (!lifted) {
           const state = squishRef.current.get(itemId);
           if (state) {
-            setSquishTarget(state, SQUISH_DRAG);
+            setSquishTarget(state, squishDrag);
             lifted = true;
           }
-        }, 70);
+        }
       };
 
       const onMove = (moveEvent: FederatedPointerEvent) => {
@@ -261,7 +278,7 @@ export function useReorderableRow({
           lifted = true;
           const state = squishRef.current.get(session.itemId);
           if (state) {
-            setSquishTarget(state, SQUISH_DRAG);
+            setSquishTarget(state, squishDrag);
           }
         }
 
@@ -291,8 +308,13 @@ export function useReorderableRow({
         cleanupListeners();
 
         if (!session.activated) {
+          const squish = squishRef.current.get(session.itemId);
+          if (squish) {
+            setSquishTarget(squish, SQUISH_IDLE);
+          }
           onItemTap?.(session.fromSlot, session.itemId, upEvent);
           dragRef.current = null;
+          setPressingItemId(null);
           return;
         }
 
@@ -316,6 +338,8 @@ export function useReorderableRow({
       layout.originX,
       layout.pitch,
       onItemTap,
+      squishDrag,
+      squishGrab,
       swing,
     ],
   );
@@ -343,7 +367,11 @@ export function useReorderableRow({
         let squish = squishRef.current.get(itemId);
         if (squish) {
           stepSquish(squish, dt);
-          if (!session && isSquishSettled(squish)) {
+          const settledToIdle =
+            isSquishSettled(squish) &&
+            squish.targetX === SQUISH_IDLE.scaleX &&
+            squish.targetY === SQUISH_IDLE.scaleY;
+          if (!session && settledToIdle) {
             squishRef.current.delete(itemId);
             squish = undefined;
           }
@@ -419,5 +447,6 @@ export function useReorderableRow({
     tickLayout,
     slotHome: slotHomeForOrder,
     draggingSlot,
+    pressingItemId,
   };
 }

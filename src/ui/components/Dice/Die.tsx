@@ -1,10 +1,15 @@
-import { Sprite, Text, TextStyle, type Container, type Texture } from "pixi.js";
+import { useApplication } from "@pixi/react";
+import { useTick } from "@pixi/react";
+import { Sprite, Text, TextStyle, type Container, type Filter, type Texture } from "pixi.js";
 import { forwardRef, useImperativeHandle, useMemo, useRef } from "react";
 
 import {
   ADJACENT_FACE_LAYOUTS,
   pickAdjacentFaceValues,
 } from "@/ui/components/Dice/dieAdjacentFaces";
+import { AuraMount } from "@/ui/effects/AuraMount";
+import { createDefaultAuraFrame } from "@/ui/effects/context";
+import type { AuraFrameContext, AuraId } from "@/ui/effects/types";
 
 export const DEFAULT_DIE_SIZE = 88;
 
@@ -13,13 +18,14 @@ export const dieTextStyle = new TextStyle({
   fontSize: 24,
   fontWeight: "500",
   fill: "#000000",
-  // stroke: { color: "#1a1a2e", width: 2 },
 });
 
 export type DieProps = {
   texture: Texture | null;
   size?: number;
   value?: number;
+  aura?: AuraId;
+  phase?: number;
 };
 
 export type DieFrame = {
@@ -36,15 +42,31 @@ export type DieHandle = {
 
 /** Visual die only — position via parent `DraggableItem` or any container. */
 export const Die = forwardRef<DieHandle, DieProps>(function Die(
-  { texture, size = DEFAULT_DIE_SIZE, value = 1 },
+  { texture, size = DEFAULT_DIE_SIZE, value = 1, aura = "none", phase = 0 },
   ref,
 ) {
+  const { app } = useApplication();
   const squishRef = useRef<Container | null>(null);
   const rollRef = useRef<Container | null>(null);
   const spriteRef = useRef<Sprite | null>(null);
   const textRef = useRef<Text | null>(null);
   const adjacentTextRefs = useRef<(Text | null)[]>([]);
   const adjacentValues = useMemo(() => pickAdjacentFaceValues(value), [value]);
+  const auraFrameRef = useRef<AuraFrameContext>(
+    createDefaultAuraFrame("die", size, size, phase),
+  );
+  const auraArtRef = useRef<{
+    applyFilters: (filters: Filter[] | null) => void;
+    setJitter: (dx: number, dy: number) => void;
+  }>({
+    applyFilters(filters) {
+      const sprite = spriteRef.current;
+      if (sprite) {
+        sprite.filters = filters;
+      }
+    },
+    setJitter() {},
+  });
 
   const syncAdjacentTexts = (centerValue: number) => {
     const adjacent = pickAdjacentFaceValues(centerValue);
@@ -54,6 +76,16 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
       }
     });
   };
+
+  useTick(() => {
+    const frame = auraFrameRef.current;
+    frame.dt = app.ticker.deltaMS / 1000;
+    frame.time = performance.now() / 1000;
+    frame.width = size;
+    frame.height = size;
+    frame.hostKind = "die";
+    frame.phase = phase;
+  });
 
   useImperativeHandle(
     ref,
@@ -86,48 +118,57 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
 
   return (
     <pixiContainer ref={squishRef} eventMode="none">
-      <pixiContainer ref={rollRef} eventMode="none">
-        {texture ? (
-          <pixiSprite
-            ref={spriteRef}
-            texture={texture}
-            anchor={0.5}
-            width={size}
-            height={size}
-            eventMode="none"
-          />
-        ) : null}
-        <pixiText
-          ref={textRef}
-          text={String(value)}
-          anchor={0.5}
-          y={-4}
-          style={dieTextStyle}
-          eventMode="none"
-        />
-        {ADJACENT_FACE_LAYOUTS.map((layout, index) => (
-          <pixiContainer
-            key={index}
-            x={layout.x * size}
-            y={layout.y * size}
-            rotation={layout.rotation}
-            scale={{ x: layout.scaleX, y: layout.scaleY }}
-            skew={{ x: layout.skewX, y: 0 }}
-            alpha={layout.alpha}
-            eventMode="none"
-          >
-            <pixiText
-              ref={(node) => {
-                adjacentTextRefs.current[index] = node;
-              }}
-              text={String(adjacentValues[index])}
+      <AuraMount
+        aura={aura}
+        hostKind="die"
+        width={size}
+        height={size}
+        frameRef={auraFrameRef}
+        artRef={auraArtRef}
+      >
+        <pixiContainer ref={rollRef} eventMode="none">
+          {texture ? (
+            <pixiSprite
+              ref={spriteRef}
+              texture={texture}
               anchor={0.5}
-              style={dieTextStyle}
+              width={size}
+              height={size}
               eventMode="none"
             />
-          </pixiContainer>
-        ))}
-      </pixiContainer>
+          ) : null}
+          <pixiText
+            ref={textRef}
+            text={String(value)}
+            anchor={0.5}
+            y={-4}
+            style={dieTextStyle}
+            eventMode="none"
+          />
+          {ADJACENT_FACE_LAYOUTS.map((layout, index) => (
+            <pixiContainer
+              key={index}
+              x={layout.x * size}
+              y={layout.y * size}
+              rotation={layout.rotation}
+              scale={{ x: layout.scaleX, y: layout.scaleY }}
+              skew={{ x: layout.skewX, y: 0 }}
+              alpha={layout.alpha}
+              eventMode="none"
+            >
+              <pixiText
+                ref={(node) => {
+                  adjacentTextRefs.current[index] = node;
+                }}
+                text={String(adjacentValues[index])}
+                anchor={0.5}
+                style={dieTextStyle}
+                eventMode="none"
+              />
+            </pixiContainer>
+          ))}
+        </pixiContainer>
+      </AuraMount>
     </pixiContainer>
   );
 });

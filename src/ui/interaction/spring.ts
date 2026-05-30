@@ -50,11 +50,14 @@ export type SquishTargets = {
 
 export const SQUISH_IDLE: SquishTargets = { scaleX: 1, scaleY: 1 };
 /** Quick compress on pointer down. */
-export const SQUISH_GRAB: SquishTargets = { scaleX: 1.06, scaleY: 0.82 };
+export const SQUISH_GRAB: SquishTargets = { scaleX: 1.03, scaleY: 0.91 };
 /** Slightly enlarged while dragging. */
-export const SQUISH_DRAG: SquishTargets = { scaleX: 1.14, scaleY: 1.14 };
+export const SQUISH_DRAG: SquishTargets = { scaleX: 1.07, scaleY: 1.07 };
+/** Softer grab/drag for large card sprites. */
+export const SQUISH_GRAB_CARD: SquishTargets = { scaleX: 1.02, scaleY: 0.95 };
+export const SQUISH_DRAG_CARD: SquishTargets = { scaleX: 1.04, scaleY: 1.04 };
 /** Brief squash when a card lifts on click. */
-export const SQUISH_LIFT: SquishTargets = { scaleX: 1.04, scaleY: 0.92 };
+export const SQUISH_LIFT: SquishTargets = { scaleX: 1.02, scaleY: 0.96 };
 
 export function createSquishState(target: SquishTargets = SQUISH_IDLE): SquishState {
   return {
@@ -70,6 +73,15 @@ export function createSquishState(target: SquishTargets = SQUISH_IDLE): SquishSt
 export function setSquishTarget(state: SquishState, target: SquishTargets): void {
   state.targetX = target.scaleX;
   state.targetY = target.scaleY;
+}
+
+/** Jump scale to target — use for instant grab feedback on pointer down. */
+export function snapSquish(state: SquishState, target: SquishTargets): void {
+  state.scaleX = target.scaleX;
+  state.scaleY = target.scaleY;
+  state.velX = 0;
+  state.velY = 0;
+  setSquishTarget(state, target);
 }
 
 /** Advance 2D scale spring toward target; `dt` in seconds (~1/60 per tick). */

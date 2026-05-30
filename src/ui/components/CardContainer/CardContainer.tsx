@@ -16,6 +16,7 @@ import {
   useReorderableRow,
   type ReorderableRowLayout,
 } from "@/ui/interaction/useReorderableRow";
+import { SQUISH_DRAG_CARD, SQUISH_GRAB_CARD } from "@/ui/interaction/spring";
 
 export type CardContainerProps = {
   layout: ReorderableRowLayout;
@@ -44,6 +45,8 @@ export function CardContainer({ layout }: CardContainerProps) {
     onOrderChange: setCardOrder,
     swing: { factor: 0.07, maxRadians: 0.42, follow: 0.18, velocitySmoothing: 0.28 },
     dragSnapLerp: 0.42,
+    squishGrab: SQUISH_GRAB_CARD,
+    squishDrag: SQUISH_DRAG_CARD,
     onItemTap: (_slotIndex, cardId, event) => {
       const card = cardRefs.current[cardId];
       if (!card) {

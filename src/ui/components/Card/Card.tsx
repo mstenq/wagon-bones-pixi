@@ -4,8 +4,10 @@ import {
   Rectangle,
   type Container,
   type FederatedPointerEvent,
+  type Filter,
   type Graphics,
   type PerspectiveMesh,
+  type Sprite,
   type Text,
   type Texture,
 } from "pixi.js";
@@ -54,6 +56,7 @@ import {
   createSquishState,
   setScalarTarget,
   setSquishTarget,
+  snapSquish,
   SQUISH_IDLE,
   SQUISH_LIFT,
   stepScalarSpring,
@@ -68,6 +71,9 @@ import {
   resetMeshCorners,
   type PerspectiveTiltConfig,
 } from "@/ui/pixi/perspectiveTilt";
+import { AuraMount } from "@/ui/effects/AuraMount";
+import { createDefaultAuraFrame } from "@/ui/effects/context";
+import type { AuraFrameContext, AuraId } from "@/ui/effects/types";
 
 export const DEFAULT_CARD_WIDTH = 150;
 export const DEFAULT_CARD_HEIGHT = 210;
@@ -99,6 +105,7 @@ export type CardProps = {
   selected?: boolean;
   /** Called when shop/pack raised or owned enlarged toggles. */
   onSelectedChange?: (selected: boolean) => void;
+  aura?: AuraId;
 };
 
 export type CardHandle = {
@@ -131,6 +138,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     embedded = false,
     selected,
     onSelectedChange,
+    aura = "none",
   },
   ref,
 ) {
@@ -143,6 +151,23 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   const squishRef = useRef<Container | null>(null);
   const idleRef = useRef<Container | null>(null);
   const meshRef = useRef<PerspectiveMesh | null>(null);
+  const flatSpriteRef = useRef<Sprite | null>(null);
+  const pointerNormRef = useRef({ x: 0.5, y: 0.5 });
+  const auraFrameRef = useRef<AuraFrameContext>(
+    createDefaultAuraFrame("card", width, height, phase),
+  );
+  const auraArtRef = useRef<{
+    applyFilters: (filters: Filter[] | null) => void;
+    setJitter: (dx: number, dy: number) => void;
+  }>({
+    applyFilters(filters) {
+      const target = meshRef.current ?? flatSpriteRef.current;
+      if (target) {
+        target.filters = filters;
+      }
+    },
+    setJitter() {},
+  });
   const actionTabRef = useRef<Container | null>(null);
   const actionTabInnerRef = useRef<Container | null>(null);
   const actionTabShadowRef = useRef<Graphics | null>(null);
@@ -164,6 +189,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   const idleRotationRef = useRef(0);
   const hoveredRef = useRef(hovered);
   const draggingRef = useRef(dragging);
+  const prevDragSquishRef = useRef(false);
   const clickSquishUntilRef = useRef(0);
 
   const squishSpringRef = useRef<SquishState>(createSquishState());
@@ -425,8 +451,12 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
       const { angleX, angleY } = pointerToTiltAngles(local.x, local.y, tiltConfig);
       targetAngleXRef.current = angleX;
       targetAngleYRef.current = angleY;
+      pointerNormRef.current = {
+        x: (local.x + width / 2) / width,
+        y: (local.y + height / 2) / height,
+      };
     },
-    [interactive, tiltConfig],
+    [interactive, tiltConfig, width, height],
   );
 
   const onBuyPointerDown = useCallback(
@@ -473,6 +503,20 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
 
   useTick(() => {
     const dt = app.ticker.deltaMS / 1000;
+    const frame = auraFrameRef.current;
+    frame.dt = dt;
+    frame.time = performance.now() / 1000;
+    frame.width = width;
+    frame.height = height;
+    frame.hostKind = "card";
+    frame.hovered = effectiveHovered;
+    frame.dragging = draggingRef.current;
+    frame.activated = isSelectedRef.current;
+    frame.tiltX = angleXRef.current;
+    frame.tiltY = angleYRef.current;
+    frame.pointerNormX = pointerNormRef.current.x;
+    frame.pointerNormY = pointerNormRef.current.y;
+    frame.phase = phase;
     const mesh = meshRef.current;
     const idle = idleRef.current;
     const lift = liftRef.current;
@@ -535,13 +579,27 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
 
       const squishSpring = squishSpringRef.current;
       const clickSquishActive = performance.now() < clickSquishUntilRef.current;
+      const isDragging = draggingRef.current;
       const keepHoverScale = isSelectedNow || isHovered;
       const hoverTarget = keepHoverScale
         ? { scaleX: CARD_HOVER_SCALE, scaleY: CARD_HOVER_SCALE }
         : SQUISH_IDLE;
+      const externalSquish = embedded ? externalSquishRef.current : { scaleX: 1, scaleY: 1 };
+      const externalSquishActive =
+        embedded &&
+        (Math.abs(externalSquish.scaleX - 1) > 0.008 ||
+          Math.abs(externalSquish.scaleY - 1) > 0.008);
+      const useExternalSquish = embedded && (isDragging || externalSquishActive);
 
-      if (!clickSquishActive) {
+      if (isDragging && !prevDragSquishRef.current) {
+        snapSquish(squishSpring, SQUISH_IDLE);
+      }
+      prevDragSquishRef.current = isDragging;
+
+      if (!clickSquishActive && !useExternalSquish) {
         setSquishTarget(squishSpring, hoverTarget);
+      } else if (useExternalSquish) {
+        setSquishTarget(squishSpring, SQUISH_IDLE);
       }
 
       stepSquish(squishSpring, dt);
@@ -550,9 +608,12 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
       stepScalarSpring(sellTabSpringRef.current, dt);
 
       const ownedScale = displayMode === "owned" ? ownedScaleSpringRef.current.value : 1;
-      const externalSquish = embedded ? externalSquishRef.current : { scaleX: 1, scaleY: 1 };
-      const scaleX = squishSpring.scaleX * ownedScale * externalSquish.scaleX;
-      const scaleY = squishSpring.scaleY * ownedScale * externalSquish.scaleY;
+      const scaleX = useExternalSquish
+        ? externalSquish.scaleX * ownedScale
+        : squishSpring.scaleX * ownedScale;
+      const scaleY = useExternalSquish
+        ? externalSquish.scaleY * ownedScale
+        : squishSpring.scaleY * ownedScale;
 
       if (squishNode) {
         squishNode.scale.set(scaleX, scaleY);
@@ -687,7 +748,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
           {selfInteractive ? (
             <pixiContainer
               ref={cardHitRef}
-              zIndex={2}
+              zIndex={4}
               eventMode="static"
               cursor="pointer"
               hitArea={cardBodyHitArea}
@@ -698,30 +759,40 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
             />
           ) : null}
 
-          <pixiContainer ref={idleRef} zIndex={1} eventMode="none">
-            {texture ? (
-              useFlatArt ? (
-                <pixiSprite
-                  texture={texture}
-                  x={-width / 2}
-                  y={-height / 2}
-                  width={width}
-                  height={height}
-                  eventMode="none"
-                />
-              ) : (
-                <pixiPerspectiveMesh
-                  ref={bindMesh}
-                  texture={texture}
-                  x={-width / 2}
-                  y={-height / 2}
-                  pivot={{ x: 0, y: 0 }}
-                  scale={{ x: artScaleX, y: artScaleY }}
-                  eventMode="none"
-                />
-              )
-            ) : null}
-          </pixiContainer>
+          <AuraMount
+            aura={aura}
+            hostKind="card"
+            width={width}
+            height={height}
+            frameRef={auraFrameRef}
+            artRef={auraArtRef}
+          >
+            <pixiContainer ref={idleRef} eventMode="none">
+              {texture ? (
+                useFlatArt ? (
+                  <pixiSprite
+                    ref={flatSpriteRef}
+                    texture={texture}
+                    x={-width / 2}
+                    y={-height / 2}
+                    width={width}
+                    height={height}
+                    eventMode="none"
+                  />
+                ) : (
+                  <pixiPerspectiveMesh
+                    ref={bindMesh}
+                    texture={texture}
+                    x={-width / 2}
+                    y={-height / 2}
+                    pivot={{ x: 0, y: 0 }}
+                    scale={{ x: artScaleX, y: artScaleY }}
+                    eventMode="none"
+                  />
+                )
+              ) : null}
+            </pixiContainer>
+          </AuraMount>
         </pixiContainer>
       </pixiContainer>
     </pixiContainer>
