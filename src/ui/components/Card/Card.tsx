@@ -171,7 +171,6 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   const pendingSelectedNotifyRef = useRef<boolean | null>(null);
   const onSelectedChangeRef = useRef(onSelectedChange);
   const onSellRef = useRef(onSell);
-  const lastSellAtRef = useRef(0);
   onSelectedChangeRef.current = onSelectedChange;
   onSellRef.current = onSell;
 
@@ -251,20 +250,18 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
       return false;
     }
     const inner = sellTabInnerRef.current;
-    if (!inner || inner.eventMode === "none") {
+    if (!inner) {
+      return false;
+    }
+    if (!embedded && inner.eventMode === "none") {
       return false;
     }
     const local = inner.toLocal({ x: globalX, y: globalY });
     const hit = inner.hitArea;
     return hit instanceof Rectangle && hit.contains(local.x, local.y);
-  }, [displayMode]);
+  }, [displayMode, embedded]);
 
   const triggerSell = useCallback(() => {
-    const now = performance.now();
-    if (now - lastSellAtRef.current < 80) {
-      return;
-    }
-    lastSellAtRef.current = now;
     onSellRef.current?.();
   }, []);
 
@@ -554,10 +551,12 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
         const sellFade = sellVisible ? reveal : 0;
         if (inner) {
           inner.x = sellTabInnerX(reveal);
-          inner.eventMode =
-            enlargedRef.current && displayMode === "owned" && reveal > 0.15
-              ? "static"
-              : "none";
+          if (!embedded) {
+            inner.eventMode =
+              enlargedRef.current && displayMode === "owned" && reveal > 0.15
+                ? "static"
+                : "none";
+          }
         }
         sellTab.alpha = 1;
         const sellShadow = sellTabShadowRef.current;
@@ -633,7 +632,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
               eventMode="none"
               cursor="pointer"
               hitArea={new Rectangle(0, -SELL_TAB_HEIGHT / 2, SELL_TAB_WIDTH, SELL_TAB_HEIGHT)}
-              onPointerTap={onSellPointerTap}
+              onPointerTap={embedded ? undefined : onSellPointerTap}
             >
               <pixiGraphics ref={sellTabShadowRef} draw={drawSellTabShadow} eventMode="none" />
               <pixiGraphics ref={sellTabGfxRef} draw={drawSellTab} eventMode="none" />
