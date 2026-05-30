@@ -5,6 +5,7 @@ export type ScoreBoxVariantTheme = {
   surfaceClass: string;
   borderClass: string;
   surfaceColor: string;
+  surfaceRgb: readonly [number, number, number];
   flameMidColor: string;
   flameFrontColor: string;
 };
@@ -14,6 +15,7 @@ export const scoreBoxVariantTheme: Record<ScoreBoxVariant, ScoreBoxVariantTheme>
     surfaceClass: "bg-blue-400",
     borderClass: "border-blue-800",
     surfaceColor: "var(--color-blue-400)",
+    surfaceRgb: [96, 165, 250],
     flameMidColor: "var(--color-blue-600)",
     flameFrontColor: "var(--color-blue-300)",
   },
@@ -21,6 +23,7 @@ export const scoreBoxVariantTheme: Record<ScoreBoxVariant, ScoreBoxVariantTheme>
     surfaceClass: "bg-red-500",
     borderClass: "border-red-900",
     surfaceColor: "var(--color-red-500)",
+    surfaceRgb: [239, 68, 68],
     flameMidColor: "var(--color-red-700)",
     flameFrontColor: "var(--color-red-300)",
   },
