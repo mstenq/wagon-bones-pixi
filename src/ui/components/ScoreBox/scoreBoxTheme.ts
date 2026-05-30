@@ -1,30 +1,62 @@
 import type { ScoreBoxVariant } from "@/ui/components/ScoreBox/scoreBoxTypes";
 
+type Rgb = readonly [number, number, number];
+
 /** Shared with Tailwind surface classes on ScoreBox (`bg-blue-400`, `bg-red-500`). */
 export type ScoreBoxVariantTheme = {
   surfaceClass: string;
   borderClass: string;
   surfaceColor: string;
-  surfaceRgb: readonly [number, number, number];
+  surfaceRgb: Rgb;
   flameMidColor: string;
   flameFrontColor: string;
 };
 
-export const scoreBoxVariantTheme: Record<ScoreBoxVariant, ScoreBoxVariantTheme> = {
+type VariantColorScale = {
+  surfaceToken: string;
+  borderToken: string;
+  flameMidToken: string;
+  flameFrontToken: string;
+  surfaceRgb: Rgb;
+};
+
+function tokenToClass(prefix: string, token: string): string {
+  return `${prefix}-${token}`;
+}
+
+function tokenToCssVar(token: string): string {
+  return `var(--color-${token})`;
+}
+
+function createTheme(scale: VariantColorScale): ScoreBoxVariantTheme {
+  return {
+    surfaceClass: tokenToClass("bg", scale.surfaceToken),
+    borderClass: tokenToClass("border", scale.borderToken),
+    surfaceColor: tokenToCssVar(scale.surfaceToken),
+    surfaceRgb: scale.surfaceRgb,
+    flameMidColor: tokenToCssVar(scale.flameMidToken),
+    flameFrontColor: tokenToCssVar(scale.flameFrontToken),
+  };
+}
+
+const scoreBoxVariantColors: Record<ScoreBoxVariant, VariantColorScale> = {
   points: {
-    surfaceClass: "bg-blue-400",
-    borderClass: "border-blue-800",
-    surfaceColor: "var(--color-blue-400)",
+    surfaceToken: "blue-400",
+    borderToken: "blue-800",
+    flameMidToken: "blue-600",
+    flameFrontToken: "blue-300",
     surfaceRgb: [96, 165, 250],
-    flameMidColor: "var(--color-blue-600)",
-    flameFrontColor: "var(--color-blue-300)",
   },
   mult: {
-    surfaceClass: "bg-red-500",
-    borderClass: "border-red-900",
-    surfaceColor: "var(--color-red-500)",
+    surfaceToken: "red-500",
+    borderToken: "red-900",
+    flameMidToken: "red-700",
+    flameFrontToken: "red-300",
     surfaceRgb: [239, 68, 68],
-    flameMidColor: "var(--color-red-700)",
-    flameFrontColor: "var(--color-red-300)",
   },
+};
+
+export const scoreBoxVariantTheme: Record<ScoreBoxVariant, ScoreBoxVariantTheme> = {
+  points: createTheme(scoreBoxVariantColors.points),
+  mult: createTheme(scoreBoxVariantColors.mult),
 };
