@@ -1,9 +1,10 @@
 import { Application } from "@pixi/react";
-import { use, useState } from "react";
+import { use } from "react";
 
 import { effectsTexturesReady } from "@/assets/effects/textures";
 import { getCardTexture, itemTexturesReady } from "@/assets/items/textures";
 import type { CardDisplayMode } from "@/ui/components/Card/config";
+import { useQueryParam } from "@/ui/hooks/useQueryParam";
 import { Card } from "@/ui/components/Card/Card";
 import { EFFECT_OPTIONS } from "@/ui/effects/effectOptions";
 import type { EffectId } from "@/ui/effects/types";
@@ -15,8 +16,15 @@ function CardStory() {
   use(itemTexturesReady);
   use(effectsTexturesReady);
 
-  const [displayMode, setDisplayMode] = useState<CardDisplayMode>("shop");
-  const [effect, setEffect] = useState<EffectId>("none");
+  const [displayMode, setDisplayMode] = useQueryParam<CardDisplayMode>("mode", {
+    default: "shop",
+    parse: (raw) => (raw === "shop" || raw === "pack" || raw === "owned" ? raw : undefined),
+  });
+  const [effect, setEffect] = useQueryParam<EffectId>("effect", {
+    default: "none",
+    parse: (raw) =>
+      EFFECT_OPTIONS.some((option) => option.id === raw) ? (raw as EffectId) : undefined,
+  });
 
   return (
     <div className="flex flex-col items-center gap-4">

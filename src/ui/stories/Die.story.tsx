@@ -1,10 +1,11 @@
 import { Application } from "@pixi/react";
-import { use, useState } from "react";
+import { use } from "react";
 
 import { effectsTexturesReady } from "@/assets/effects/textures";
 import { getDiceTexture, texturesReady } from "@/assets/dice/textures";
 import { Die } from "@/ui/components/Dice/Die";
 import { EFFECT_OPTIONS } from "@/ui/effects/effectOptions";
+import { useQueryParam } from "@/ui/hooks/useQueryParam";
 import type { EffectId } from "@/ui/effects/types";
 import { PIXI_RENDERER_PREFERENCE } from "@/ui/pixi/appDefaults";
 import type { StoryDefinition } from "@/ui/types/storyTypes";
@@ -14,7 +15,11 @@ function DieStory() {
   use(texturesReady);
   use(effectsTexturesReady);
 
-  const [effect, setEffect] = useState<EffectId>("none");
+  const [effect, setEffect] = useQueryParam<EffectId>("effect", {
+    default: "none",
+    parse: (raw) =>
+      EFFECT_OPTIONS.some((option) => option.id === raw) ? (raw as EffectId) : undefined,
+  });
 
   return (
     <div className="flex flex-col items-center gap-4">

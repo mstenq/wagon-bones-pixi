@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
+import { useQueryParam } from "@/ui/hooks/useQueryParam";
 import type { StoryDefinition } from "@/ui/types/storyTypes";
 import { panelLabelClass, panelSelectClass } from "@/ui/styles/panelControls";
 
@@ -26,8 +27,13 @@ const loadedStories: LoadedStory[] = Object.entries(storyModules)
   .map(({ id, story }) => ({ ...story, id }))
   .sort((left, right) => left.name.localeCompare(right.name));
 
+const defaultStoryId = loadedStories[0]?.id ?? "";
+
 export function PlaygroundLayout() {
-  const [selectedId, setSelectedId] = useState<string>(loadedStories[0]?.id ?? "");
+  const [selectedId, setSelectedId] = useQueryParam("story", {
+    default: defaultStoryId,
+    parse: (raw) => (loadedStories.some((story) => story.id === raw) ? raw : undefined),
+  });
 
   const selectedStory = useMemo(
     () => loadedStories.find((story) => story.id === selectedId) ?? loadedStories[0] ?? null,
@@ -35,7 +41,7 @@ export function PlaygroundLayout() {
   );
 
   return (
-    <main className="flex min-h-screen flex-col gap-4 p-6">
+    <main className="flex min-h-screen flex-col gap-4 p-6 bg-green-900">
       <header>
         <h1 className="m-0 text-2xl font-bold">Playground</h1>
       </header>

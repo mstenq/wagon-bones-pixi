@@ -1,19 +1,27 @@
 import { useRef, type CSSProperties } from "react";
 
-export type ScoreBoxVariant = "points" | "mult";
+import { ScoreFlame } from "@/ui/components/ScoreBox/ScoreFlame";
+import type { ScoreBoxVariant } from "@/ui/components/ScoreBox/scoreBoxTypes";
+import { scoreBoxVariantTheme } from "@/ui/components/ScoreBox/scoreBoxTheme";
+import { WaveBounceChars } from "@/ui/components/ScoreBox/WaveBounceChars";
+
+export type { ScoreBoxVariant } from "@/ui/components/ScoreBox/scoreBoxTypes";
 
 export type ScoreBoxProps = {
   variant: ScoreBoxVariant;
   value: number;
+  /** 0–1 flame strength from game logic; 0 is off. */
+  flameIntensity?: number;
   className?: string;
 };
 
-const variantRootClass: Record<ScoreBoxVariant, string> = {
-  points:
-    "inline-flex min-h-10 min-w-14 items-center justify-end rounded-lg border-b-4 border-blue-800 bg-blue-400 px-2.5 pt-1.5 pb-2 font-score text-4xl leading-none font-bold text-white tabular-nums select-none",
-  mult:
-    "inline-flex min-h-10 min-w-14 items-center justify-start rounded-lg border-b-4 border-red-900 bg-red-500 px-2.5 pt-1.5 pb-2 font-score text-4xl leading-none font-bold text-white tabular-nums select-none",
-};
+const baseClass = "inline-flex min-h-8 min-w-14 items-center rounded-lg border-b-4  px-2.5 pt-1.5 pb-1 font-score text-5xl leading-none text-white tabular-nums select-none";
+
+function variantFaceClass(variant: ScoreBoxVariant): string {
+  const theme = scoreBoxVariantTheme[variant];
+  const justify = variant === "points" ? "justify-end" : "justify-start";
+  return ["score-box__face", justify, theme.borderClass, theme.surfaceClass].join(" ");
+}
 
 const variantDigitsClass: Record<ScoreBoxVariant, string> = {
   points: "inline-flex items-baseline justify-end gap-[0.04em]",
@@ -46,7 +54,7 @@ function getDigitChangeMask(previous: number, next: number): boolean[] {
   return mask;
 }
 
-export function ScoreBox({ variant, value, className }: ScoreBoxProps) {
+export function ScoreBox({ variant, value, flameIntensity = 0, className }: ScoreBoxProps) {
   const displayValue = formatScoreValue(value);
   const digits = getDigitChars(displayValue);
 
@@ -63,36 +71,38 @@ export function ScoreBox({ variant, value, className }: ScoreBoxProps) {
   const bumpGeneration = bumpGenerationRef.current;
   const changeMask = changeMaskRef.current;
 
-  const rootClassName = [variantRootClass[variant], className].filter(Boolean).join(" ");
+  const faceClassName = [baseClass, variantFaceClass(variant), className].filter(Boolean).join(" ");
 
   return (
-    <div className={rootClassName} aria-label={`${variant} score ${displayValue}`}>
-      <span className={variantDigitsClass[variant]} aria-hidden>
-        {digits.map((digit, index) => {
-          const changed = changeMask[index] ?? true;
-          const digitClassName = [
-            "inline-block origin-bottom will-change-transform",
-            bumpGeneration > 0 ? "animate-score-bump" : "",
-          ]
-            .filter(Boolean)
-            .join(" ");
+    <div className="relative inline-flex" aria-label={`${variant} score ${displayValue}`}>
+      <ScoreFlame variant={variant} intensity={flameIntensity} />
+      <div className={faceClassName}>
+        <WaveBounceChars
+          text={digits.join("")}
+          className={variantDigitsClass[variant]}
+          getCharKey={({ char, index }) => `${index}-${char}-${bumpGeneration}`}
+          renderChar={({ char, index }) => {
+            const changed = changeMask[index] ?? true;
+            const digitClassName = [
+              "inline-block origin-bottom will-change-transform",
+              bumpGeneration > 0 ? "animate-score-bump" : "",
+            ]
+              .filter(Boolean)
+              .join(" ");
 
-          const bumpStyle: CSSProperties | undefined =
-            bumpGeneration > 0
-              ? ({ "--bump-scale": changed ? 1.24 : 1.08 } as CSSProperties)
-              : undefined;
+            const bumpStyle: CSSProperties | undefined =
+              bumpGeneration > 0
+                ? ({ "--bump-scale": changed ? 1.24 : 1.08 } as CSSProperties)
+                : undefined;
 
-          return (
-            <span
-              key={`${index}-${digit}-${bumpGeneration}`}
-              className={digitClassName}
-              style={bumpStyle}
-            >
-              {digit}
-            </span>
-          );
-        })}
-      </span>
+            return (
+              <span className={digitClassName} style={bumpStyle}>
+                {char}
+              </span>
+            );
+          }}
+        />
+      </div>
     </div>
   );
 }
