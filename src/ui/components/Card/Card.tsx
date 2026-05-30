@@ -171,6 +171,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   const pendingSelectedNotifyRef = useRef<boolean | null>(null);
   const onSelectedChangeRef = useRef(onSelectedChange);
   const onSellRef = useRef(onSell);
+  const lastSellAtRef = useRef(0);
   onSelectedChangeRef.current = onSelectedChange;
   onSellRef.current = onSell;
 
@@ -259,6 +260,11 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   }, [displayMode]);
 
   const triggerSell = useCallback(() => {
+    const now = performance.now();
+    if (now - lastSellAtRef.current < 80) {
+      return;
+    }
+    lastSellAtRef.current = now;
     onSellRef.current?.();
   }, []);
 
