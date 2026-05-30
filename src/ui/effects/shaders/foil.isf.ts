@@ -19,13 +19,6 @@ export const FOIL_ISF = String.raw`/*{
             "DEFAULT": [0.5, 0.5]
         },
         {
-            "NAME": "speed",
-            "TYPE": "float",
-            "DEFAULT": 1.0,
-            "MIN": 0.0,
-            "MAX": 1.0
-        },
-        {
             "NAME": "intensity",
             "TYPE": "float",
             "DEFAULT": 0.7,
@@ -54,7 +47,7 @@ void main() {
     float high = max(texel.r, max(texel.g, texel.b));
     float delta = min(high, max(0.5, 1.0 - low));
 
-    vec2 foil = vec2(TIME / max(speed, 0.05) + offset.x, offset.y);
+    vec2 foil = vec2(offset.x * 14.0, offset.y * 14.0);
 
     float fac = max(
         min(

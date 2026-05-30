@@ -9,19 +9,22 @@ export const foilEffect: EffectDefinition = {
   create(_layers, _mount, art) {
     const foil = createPixiFilterFromIsf(FOIL_ISF, 2);
     applyArtFilters(art, [foil.filter]);
-    const seed = Math.random();
-    const timeOffset = seed * 41.7;
 
     const step = (frame: EffectFrameContext) => {
-      const localTime = (frame.time + frame.phase * 0.11 + timeOffset) % 120;
-      const ox = (frame.pointerNormX - 0.5) * 0.35 + frame.tiltX * 0.12;
-      const oy = (frame.pointerNormY - 0.5) * 0.35 + frame.tiltY * 0.12;
+      const hovered = frame.hovered && !frame.dragging;
+      const phaseScale = 0.14;
+      const ox =
+        frame.tiltX * phaseScale +
+        (hovered ? (frame.pointerNormX - 0.5) * 0.45 : 0);
+      const oy =
+        frame.tiltY * phaseScale +
+        (hovered ? (frame.pointerNormY - 0.5) * 0.45 : 0);
+
       foil.setValue("offset", [ox, oy]); // default [0, 0]
       foil.setValue("center", [0.3, 0.4]); // default [0.5, 0.5]
-      foil.setValue("speed", 1.0); // default 1.0
       foil.setValue("intensity", 0.2); // default 0.7
       foil.tick({
-        time: localTime,
+        time: frame.time,
         dt: frame.dt,
         width: frame.width,
         height: frame.height,
