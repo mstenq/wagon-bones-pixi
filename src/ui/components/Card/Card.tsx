@@ -80,6 +80,10 @@ export const DEFAULT_CARD_HEIGHT = 210;
 
 const IDLE_DEGREES = 1.5;
 const IDLE_SPEED = 1.05;
+/** Subtle perspective-mesh sway when not hovered (degrees, same space as pointer tilt). */
+const IDLE_MESH_TILT_DEGREES = 0.5;
+const IDLE_MESH_TILT_SPEED = 0.52;
+const IDLE_MESH_TILT_LERP = 0.1;
 const TILT_LERP = 0.18;
 const IDLE_RETURN_LERP = 0.12;
 const CLICK_SQUISH_MS = 140;
@@ -544,7 +548,20 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     const isHovered = hoveredRef.current && !isDragging;
     const isSelectedNow = isSelectedRef.current;
 
-    if (isSelectedNow || !isHovered || !tiltEnabled) {
+    if (isSelectedNow || !tiltEnabled) {
+      targetAngleXRef.current += (0 - targetAngleXRef.current) * IDLE_RETURN_LERP;
+      targetAngleYRef.current += (0 - targetAngleYRef.current) * IDLE_RETURN_LERP;
+    } else if (!isHovered && idleEnabled) {
+      const idleT = performance.now() / 1000;
+      const idleTargetX =
+        Math.sin(idleT * IDLE_MESH_TILT_SPEED + phase) * IDLE_MESH_TILT_DEGREES;
+      const idleTargetY =
+        Math.cos(idleT * IDLE_MESH_TILT_SPEED * 0.86 + phase * 1.21) * IDLE_MESH_TILT_DEGREES;
+      targetAngleXRef.current +=
+        (idleTargetX - targetAngleXRef.current) * IDLE_MESH_TILT_LERP;
+      targetAngleYRef.current +=
+        (idleTargetY - targetAngleYRef.current) * IDLE_MESH_TILT_LERP;
+    } else if (!isHovered) {
       targetAngleXRef.current += (0 - targetAngleXRef.current) * IDLE_RETURN_LERP;
       targetAngleYRef.current += (0 - targetAngleYRef.current) * IDLE_RETURN_LERP;
     }
@@ -557,6 +574,14 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     } else {
       angleXRef.current += (targetAngleXRef.current - angleXRef.current) * TILT_LERP;
       angleYRef.current += (targetAngleYRef.current - angleYRef.current) * TILT_LERP;
+    }
+
+    if (idleEnabled && !isHovered && !isSelectedNow && tiltEnabled) {
+      const sensitivity = tiltConfig?.sensitivity ?? 35;
+      pointerNormRef.current = {
+        x: Math.max(0.22, Math.min(0.78, 0.5 - angleYRef.current / sensitivity)),
+        y: Math.max(0.22, Math.min(0.78, 0.5 - angleXRef.current / sensitivity)),
+      };
     }
 
     if (idleEnabled && !isHovered) {
