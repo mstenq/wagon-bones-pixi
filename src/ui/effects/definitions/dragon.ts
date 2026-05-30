@@ -1,13 +1,13 @@
 import { BlurFilter, Graphics } from "pixi.js";
 
-import { addGlowLayer, makeRuntime, noopDestroy } from "@/ui/effects/auraHelpers";
+import { addGlowLayer, makeRuntime, noopDestroy } from "@/ui/effects/effectHelpers";
 import { borderBoundsFromSize } from "@/ui/effects/shared/borderFrame";
 import { createParticlePool, drawParticles, spawnParticle, stepParticles } from "@/ui/effects/shared/particles";
 import { orbitPosition } from "@/ui/effects/shared/orbit";
 import { burstTimer } from "@/ui/effects/shared/pseudoRandom";
-import type { AuraDefinition, AuraFrameContext } from "@/ui/effects/types";
+import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
 
-export const dragonAura: AuraDefinition = {
+export const dragonEffect: EffectDefinition = {
   id: "dragon",
   label: "Dragon",
   create(layers, mount) {
@@ -18,7 +18,7 @@ export const dragonAura: AuraDefinition = {
     const trail = addGlowLayer(layers.front, 2);
     const particles = createParticlePool(16);
 
-    const step = (frame: AuraFrameContext) => {
+    const step = (frame: EffectFrameContext) => {
       const t = frame.time;
       const orbit = orbitPosition(t * 0.4, bounds.halfW * 1.1, bounds.halfH * 0.9, 0.35, 0);
 

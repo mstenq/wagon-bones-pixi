@@ -1,12 +1,12 @@
 import { BlurFilter, ColorMatrixFilter, Graphics, Sprite } from "pixi.js";
 
 import { getEffectTexture } from "@/assets/effects/textures";
-import { addGlowLayer, addSpriteLayer, applyArtFilters, makeRuntime, noopDestroy } from "@/ui/effects/auraHelpers";
+import { addGlowLayer, addSpriteLayer, applyArtFilters, makeRuntime, noopDestroy } from "@/ui/effects/effectHelpers";
 import { borderBoundsFromSize, drawRoundedRectFrame } from "@/ui/effects/shared/borderFrame";
 import { burstTimer } from "@/ui/effects/shared/pseudoRandom";
-import type { AuraDefinition, AuraFrameContext } from "@/ui/effects/types";
+import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
 
-export const stormAura: AuraDefinition = {
+export const stormEffect: EffectDefinition = {
   id: "storm",
   label: "Storm",
   create(layers, mount, art) {
@@ -27,7 +27,7 @@ export const stormAura: AuraDefinition = {
     const flashGfx = addGlowLayer(layers.front, 0);
     const bright = new ColorMatrixFilter();
 
-    const step = (frame: AuraFrameContext) => {
+    const step = (frame: EffectFrameContext) => {
       const t = frame.time;
       clouds.forEach((c, i) => {
         const corner = corners[i] ?? [-1, -1];

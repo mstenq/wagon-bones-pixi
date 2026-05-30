@@ -5,24 +5,26 @@ import { effectsTexturesReady } from "@/assets/effects/textures";
 import { getCardTexture, itemTexturesReady } from "@/assets/items/textures";
 import type { CardDisplayMode } from "@/ui/components/Card/config";
 import { Card } from "@/ui/components/Card/Card";
-import { AURA_OPTIONS } from "@/ui/effects/auraOptions";
-import type { AuraId } from "@/ui/effects/types";
+import { EFFECT_OPTIONS } from "@/ui/effects/effectOptions";
+import type { EffectId } from "@/ui/effects/types";
+import { PIXI_RENDERER_PREFERENCE } from "@/ui/pixi/appDefaults";
 import type { StoryDefinition } from "@/ui/types/storyTypes";
+import { panelLabelClass, panelSelectClass } from "@/ui/styles/panelControls";
 
 function CardStory() {
   use(itemTexturesReady);
   use(effectsTexturesReady);
 
   const [displayMode, setDisplayMode] = useState<CardDisplayMode>("shop");
-  const [aura, setAura] = useState<AuraId>("none");
+  const [effect, setEffect] = useState<EffectId>("none");
 
   return (
-    <div className="story-canvas">
-      <div className="story-controls">
-        <label className="story-control-label">
+    <div className="flex flex-col items-center gap-4">
+      <div className="flex flex-wrap justify-center gap-4">
+        <label className={panelLabelClass}>
           Display mode
           <select
-            className="story-control-select"
+            className={panelSelectClass}
             value={displayMode}
             onChange={(event) => setDisplayMode(event.target.value as CardDisplayMode)}
           >
@@ -31,14 +33,14 @@ function CardStory() {
             <option value="owned">owned</option>
           </select>
         </label>
-        <label className="story-control-label">
-          Aura
+        <label className={panelLabelClass}>
+          Effect
           <select
-            className="story-control-select"
-            value={aura}
-            onChange={(event) => setAura(event.target.value as AuraId)}
+            className={panelSelectClass}
+            value={effect}
+            onChange={(event) => setEffect(event.target.value as EffectId)}
           >
-            {AURA_OPTIONS.map((option) => (
+            {EFFECT_OPTIONS.map((option) => (
               <option key={option.id} value={option.id}>
                 {option.label}
               </option>
@@ -53,6 +55,7 @@ function CardStory() {
         background="#171824"
         antialias
         autoDensity
+        preference={PIXI_RENDERER_PREFERENCE}
         eventMode="static"
         eventFeatures={{ move: true, globalMove: true, click: true }}
       >
@@ -60,7 +63,7 @@ function CardStory() {
           <Card
             texture={getCardTexture(1)}
             displayMode={displayMode}
-            aura={aura}
+            effect={effect}
             price={5}
             sellPrice={4}
             onBuy={() => console.log("BUY")}

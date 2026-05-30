@@ -2,13 +2,13 @@ import type { Graphics } from "pixi.js";
 
 import type { BorderBounds } from "@/ui/effects/shared/borderFrame";
 import { hostIsDie } from "@/ui/effects/shared/borderFrame";
-import type { AuraHostKind } from "@/ui/effects/types";
+import type { EffectHostKind } from "@/ui/effects/types";
 
 /** Soft filled backdrop hugging card/die shape — no stroke outlines. */
-export function drawAuraBackdrop(
+export function drawEffectBackdrop(
   g: Graphics,
   bounds: BorderBounds,
-  hostKind: AuraHostKind,
+  hostKind: EffectHostKind,
   color: number,
   alpha: number,
   inset = 6,

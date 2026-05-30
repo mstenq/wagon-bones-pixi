@@ -1,10 +1,10 @@
 import { ColorMatrixFilter, Graphics } from "pixi.js";
 
-import { addGlowLayer, applyArtFilters, makeRuntime, noopDestroy } from "@/ui/effects/auraHelpers";
+import { addGlowLayer, applyArtFilters, makeRuntime, noopDestroy } from "@/ui/effects/effectHelpers";
 import { borderBoundsFromSize } from "@/ui/effects/shared/borderFrame";
-import type { AuraDefinition, AuraFrameContext } from "@/ui/effects/types";
+import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
 
-export const foilAura: AuraDefinition = {
+export const foilEffect: EffectDefinition = {
   id: "foil",
   label: "Foil",
   create(layers, mount, art) {
@@ -15,7 +15,7 @@ export const foilAura: AuraDefinition = {
     contrast.contrast(0.15, true);
     applyArtFilters(art, [contrast]);
 
-    const step = (frame: AuraFrameContext) => {
+    const step = (frame: EffectFrameContext) => {
       const t = frame.time;
       const px = frame.pointerNormX;
       const py = frame.pointerNormY;

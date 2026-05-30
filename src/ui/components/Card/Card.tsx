@@ -71,9 +71,9 @@ import {
   resetMeshCorners,
   type PerspectiveTiltConfig,
 } from "@/ui/pixi/perspectiveTilt";
-import { AuraMount } from "@/ui/effects/AuraMount";
-import { createDefaultAuraFrame } from "@/ui/effects/context";
-import type { AuraFrameContext, AuraId } from "@/ui/effects/types";
+import { EffectMount } from "@/ui/effects/EffectMount";
+import { createDefaultEffectFrame } from "@/ui/effects/context";
+import type { EffectFrameContext, EffectId } from "@/ui/effects/types";
 
 export const DEFAULT_CARD_WIDTH = 150;
 export const DEFAULT_CARD_HEIGHT = 210;
@@ -105,7 +105,7 @@ export type CardProps = {
   selected?: boolean;
   /** Called when shop/pack raised or owned enlarged toggles. */
   onSelectedChange?: (selected: boolean) => void;
-  aura?: AuraId;
+  effect?: EffectId;
 };
 
 export type CardHandle = {
@@ -138,7 +138,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     embedded = false,
     selected,
     onSelectedChange,
-    aura = "none",
+    effect = "none",
   },
   ref,
 ) {
@@ -152,22 +152,35 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   const idleRef = useRef<Container | null>(null);
   const meshRef = useRef<PerspectiveMesh | null>(null);
   const flatSpriteRef = useRef<Sprite | null>(null);
+  const pendingArtFiltersRef = useRef<Filter[] | null>(null);
   const pointerNormRef = useRef({ x: 0.5, y: 0.5 });
-  const auraFrameRef = useRef<AuraFrameContext>(
-    createDefaultAuraFrame("card", width, height, phase),
+  const effectFrameRef = useRef<EffectFrameContext>(
+    createDefaultEffectFrame("card", width, height, phase),
   );
-  const auraArtRef = useRef<{
+
+  const applyArtFilters = useCallback((filters: Filter[] | null) => {
+    pendingArtFiltersRef.current = filters;
+    const target = flatSpriteRef.current ?? meshRef.current;
+    if (target) {
+      target.filters = filters;
+    }
+  }, []);
+
+  const bindFlatSprite = useCallback((node: Sprite | null) => {
+    flatSpriteRef.current = node;
+    if (node && pendingArtFiltersRef.current) {
+      node.filters = pendingArtFiltersRef.current;
+    }
+  }, []);
+
+  const effectArtRef = useRef<{
     applyFilters: (filters: Filter[] | null) => void;
     setJitter: (dx: number, dy: number) => void;
   }>({
-    applyFilters(filters) {
-      const target = meshRef.current ?? flatSpriteRef.current;
-      if (target) {
-        target.filters = filters;
-      }
-    },
+    applyFilters: () => {},
     setJitter() {},
   });
+  effectArtRef.current.applyFilters = applyArtFilters;
   const actionTabRef = useRef<Container | null>(null);
   const actionTabInnerRef = useRef<Container | null>(null);
   const actionTabShadowRef = useRef<Graphics | null>(null);
@@ -385,6 +398,9 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
       if (node && texture) {
         resetMeshCorners(node, corners, texture.width, texture.height);
       }
+      if (node && pendingArtFiltersRef.current) {
+        node.filters = pendingArtFiltersRef.current;
+      }
     },
     [corners, texture],
   );
@@ -503,7 +519,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
 
   useTick(() => {
     const dt = app.ticker.deltaMS / 1000;
-    const frame = auraFrameRef.current;
+    const frame = effectFrameRef.current;
     frame.dt = dt;
     frame.time = performance.now() / 1000;
     frame.width = width;
@@ -759,19 +775,19 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
             />
           ) : null}
 
-          <AuraMount
-            aura={aura}
+          <EffectMount
+            effect={effect}
             hostKind="card"
             width={width}
             height={height}
-            frameRef={auraFrameRef}
-            artRef={auraArtRef}
+            frameRef={effectFrameRef}
+            artRef={effectArtRef}
           >
             <pixiContainer ref={idleRef} eventMode="none">
               {texture ? (
                 useFlatArt ? (
                   <pixiSprite
-                    ref={flatSpriteRef}
+                    ref={bindFlatSprite}
                     texture={texture}
                     x={-width / 2}
                     y={-height / 2}
@@ -792,7 +808,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
                 )
               ) : null}
             </pixiContainer>
-          </AuraMount>
+          </EffectMount>
         </pixiContainer>
       </pixiContainer>
     </pixiContainer>

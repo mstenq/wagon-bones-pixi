@@ -1,13 +1,13 @@
 import { BlurFilter, Graphics } from "pixi.js";
 
-import { addGlowLayer, makeRuntime, noopDestroy, pulse01 } from "@/ui/effects/auraHelpers";
+import { addGlowLayer, makeRuntime, noopDestroy, pulse01 } from "@/ui/effects/effectHelpers";
 import { borderBoundsFromSize } from "@/ui/effects/shared/borderFrame";
 import { orbitPosition } from "@/ui/effects/shared/orbit";
-import type { AuraDefinition, AuraFrameContext } from "@/ui/effects/types";
+import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
 
 const RUNE_CHARS = ["ᚠ", "ᚢ", "ᚦ", "ᚨ", "ᚱ", "ᚲ", "ᚷ", "ᚹ"];
 
-export const arcaneAura: AuraDefinition = {
+export const arcaneEffect: EffectDefinition = {
   id: "arcane",
   label: "Arcane",
   create(layers, mount) {
@@ -17,7 +17,7 @@ export const arcaneAura: AuraDefinition = {
     const energy = addGlowLayer(layers.front, 1);
     const runeOrbs = Array.from({ length: RUNE_CHARS.length }, () => addGlowLayer(layers.front, 0));
 
-    const step = (frame: AuraFrameContext) => {
+    const step = (frame: EffectFrameContext) => {
       const t = frame.time;
       const pulse = frame.activated ? pulse01(t, 0.6) : pulse01(t, 2.5) * 0.5;
 

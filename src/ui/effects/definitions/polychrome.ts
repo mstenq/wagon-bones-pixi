@@ -1,14 +1,14 @@
 import { Graphics } from "pixi.js";
 
-import { addGlowLayer, applyArtFilters, makeRuntime, noopDestroy } from "@/ui/effects/auraHelpers";
+import { addGlowLayer, applyArtFilters, makeRuntime, noopDestroy } from "@/ui/effects/effectHelpers";
 import { borderBoundsFromSize, drawRoundedRectFrame, perimeterPoint } from "@/ui/effects/shared/borderFrame";
 import { createParticlePool, drawParticles, spawnParticle, stepParticles } from "@/ui/effects/shared/particles";
 import { getHueCycleFilter, setHueCycleUniforms } from "@/ui/effects/filters/hueCycleFilter";
-import type { AuraDefinition, AuraFrameContext } from "@/ui/effects/types";
+import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
 
 const RAINBOW = [0xff0000, 0xff8800, 0xffff00, 0x00ff00, 0x0088ff, 0x8800ff];
 
-export const polychromeAura: AuraDefinition = {
+export const polychromeEffect: EffectDefinition = {
   id: "polychrome",
   label: "Polychrome",
   create(layers, mount, art) {
@@ -19,7 +19,7 @@ export const polychromeAura: AuraDefinition = {
     const hue = getHueCycleFilter();
     applyArtFilters(art, [hue]);
 
-    const step = (frame: AuraFrameContext) => {
+    const step = (frame: EffectFrameContext) => {
       const t = frame.time;
       setHueCycleUniforms(hue, t * 1.2, 0.55);
       const sweep = ((t * 0.3) % 1);

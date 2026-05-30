@@ -1,6 +1,6 @@
 import type { Filter } from "pixi.js";
 
-export const AURA_IDS = [
+export const EFFECT_IDS = [
   "none",
   "holy",
   "fire",
@@ -15,21 +15,24 @@ export const AURA_IDS = [
   "shadow",
   "cosmic",
   "glitch",
+  "circuit",
+  "retroDither",
   "dragon",
   "void",
   "arcane",
+  "water",
 ] as const;
 
-export type AuraId = (typeof AURA_IDS)[number];
+export type EffectId = (typeof EFFECT_IDS)[number];
 
-export type AuraHostKind = "card" | "die";
+export type EffectHostKind = "card" | "die";
 
-export type AuraFrameContext = {
+export type EffectFrameContext = {
   dt: number;
   time: number;
   width: number;
   height: number;
-  hostKind: AuraHostKind;
+  hostKind: EffectHostKind;
   hovered: boolean;
   dragging: boolean;
   activated: boolean;
@@ -40,31 +43,31 @@ export type AuraFrameContext = {
   phase: number;
 };
 
-export type AuraMountContext = {
-  hostKind: AuraHostKind;
+export type EffectMountContext = {
+  hostKind: EffectHostKind;
   width: number;
   height: number;
   padding: number;
 };
 
-export type AuraLayers = {
+export type EffectLayers = {
   back: import("pixi.js").Container;
   front: import("pixi.js").Container;
 };
 
-export type AuraArtTarget = {
+export type EffectArtTarget = {
   applyFilters: (filters: Filter[] | null) => void;
   setJitter: (dx: number, dy: number) => void;
 };
 
-export type AuraRuntime = {
-  id: AuraId;
-  step: (frame: AuraFrameContext) => void;
+export type EffectRuntime = {
+  id: EffectId;
+  step: (frame: EffectFrameContext) => void;
   destroy: () => void;
 };
 
-export type AuraDefinition = {
-  id: Exclude<AuraId, "none">;
+export type EffectDefinition = {
+  id: Exclude<EffectId, "none">;
   label: string;
-  create: (layers: AuraLayers, ctx: AuraMountContext, art: AuraArtTarget) => AuraRuntime;
+  create: (layers: EffectLayers, ctx: EffectMountContext, art: EffectArtTarget) => EffectRuntime;
 };

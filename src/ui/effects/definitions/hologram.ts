@@ -1,7 +1,7 @@
 import { Graphics } from "pixi.js";
 
-import { applyArtFilters, makeRuntime, noopDestroy } from "@/ui/effects/auraHelpers";
-import { addGlowLayer } from "@/ui/effects/auraHelpers";
+import { applyArtFilters, makeRuntime, noopDestroy } from "@/ui/effects/effectHelpers";
+import { addGlowLayer } from "@/ui/effects/effectHelpers";
 import { borderBoundsFromSize, drawRoundedRectFrame } from "@/ui/effects/shared/borderFrame";
 import { drawScanlines, drawScanSweep } from "@/ui/effects/shared/scanlines";
 import {
@@ -10,9 +10,9 @@ import {
 } from "@/ui/effects/filters/chromaticAberrationFilter";
 import { getHueCycleFilter, setHueCycleUniforms } from "@/ui/effects/filters/hueCycleFilter";
 import { burstTimer } from "@/ui/effects/shared/pseudoRandom";
-import type { AuraDefinition, AuraFrameContext } from "@/ui/effects/types";
+import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
 
-export const hologramAura: AuraDefinition = {
+export const hologramEffect: EffectDefinition = {
   id: "hologram",
   label: "Hologram",
   create(layers, mount, art) {
@@ -24,7 +24,7 @@ export const hologramAura: AuraDefinition = {
     const hue = getHueCycleFilter();
     applyArtFilters(art, [chroma, hue]);
 
-    const step = (frame: AuraFrameContext) => {
+    const step = (frame: EffectFrameContext) => {
       const t = frame.time;
       const hueVal = t * 0.8;
       setHueCycleUniforms(hue, hueVal, 0.4);

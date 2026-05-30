@@ -1,11 +1,11 @@
 import { BlurFilter, Graphics } from "pixi.js";
 
-import { addGlowLayer, makeRuntime, noopDestroy } from "@/ui/effects/auraHelpers";
+import { addGlowLayer, makeRuntime, noopDestroy } from "@/ui/effects/effectHelpers";
 import { borderBoundsFromSize } from "@/ui/effects/shared/borderFrame";
 import { createParticlePool, drawParticles, spawnParticle, stepParticles } from "@/ui/effects/shared/particles";
-import type { AuraDefinition, AuraFrameContext } from "@/ui/effects/types";
+import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
 
-export const voidAura: AuraDefinition = {
+export const voidEffect: EffectDefinition = {
   id: "void",
   label: "Void",
   create(layers, mount) {
@@ -15,7 +15,7 @@ export const voidAura: AuraDefinition = {
     const ring = addGlowLayer(layers.back, 1);
     const particles = createParticlePool(30);
 
-    const step = (frame: AuraFrameContext) => {
+    const step = (frame: EffectFrameContext) => {
       const t = frame.time;
 
       core.clear();

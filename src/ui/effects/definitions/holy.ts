@@ -6,30 +6,30 @@ import {
   addSpriteLayer,
   applyArtFilters,
   artBoundsFromMount,
-  auraEffectRadius,
+  effectRadius,
   backdropBounds,
   boundsFromCtx,
   makeRuntime,
   noopDestroy,
   pulse01,
   randomInteriorPoint,
-} from "@/ui/effects/auraHelpers";
+} from "@/ui/effects/effectHelpers";
 import { hostParticleScale, isDieMount, tightDieBounds } from "@/ui/effects/dieTuning";
 import {
   createHolyArtMatrix,
   stepHolyArtMatrix,
 } from "@/ui/effects/shared/artColor";
-import { drawAuraBackdrop } from "@/ui/effects/shared/cardAura";
+import { drawEffectBackdrop } from "@/ui/effects/shared/cardEffect";
 import { perimeterPointEllipse } from "@/ui/effects/shared/borderFrame";
 import { createParticlePool, spawnParticle, stepParticles } from "@/ui/effects/shared/particles";
 import { burstTimer } from "@/ui/effects/shared/pseudoRandom";
 import { applyBlurredGlowForMount } from "@/ui/effects/shared/glow";
-import type { AuraDefinition, AuraFrameContext } from "@/ui/effects/types";
+import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
 
 const GOLD = 0xffe9b0;
 const GOLD_BRIGHT = 0xfff8e8;
 
-export const holyAura: AuraDefinition = {
+export const holyEffect: EffectDefinition = {
   id: "holy",
   label: "Holy",
   create(layers, mount, art) {
@@ -38,7 +38,7 @@ export const holyAura: AuraDefinition = {
     const backBounds = backdropBounds(mount);
     const hostKind = mount.hostKind;
     const isDie = isDieMount(mount);
-    const radius = auraEffectRadius(mount, bounds);
+    const radius = effectRadius(mount, bounds);
     const pScale = hostParticleScale(mount);
     const tight = tightDieBounds(mount);
 
@@ -64,12 +64,12 @@ export const holyAura: AuraDefinition = {
     const artMatrix = createHolyArtMatrix();
     applyArtFilters(art, [artMatrix]);
 
-    const step = (frame: AuraFrameContext) => {
+    const step = (frame: EffectFrameContext) => {
       const t = frame.time;
       const pulse = pulse01(t, 2);
       stepHolyArtMatrix(artMatrix, pulse);
 
-      drawAuraBackdrop(
+      drawEffectBackdrop(
         backdrop,
         backBounds,
         hostKind,
@@ -77,7 +77,7 @@ export const holyAura: AuraDefinition = {
         isDie ? 0.1 + pulse * 0.06 : 0.11 + pulse * 0.06,
         isDie ? 6 : 12,
       );
-      drawAuraBackdrop(
+      drawEffectBackdrop(
         sheen,
         backBounds,
         hostKind,

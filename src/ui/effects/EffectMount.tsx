@@ -7,27 +7,27 @@ import {
   type ReactNode,
 } from "react";
 
-import { CARD_AURA_PADDING, DIE_AURA_PADDING } from "@/ui/effects/dieTuning";
+import { CARD_EFFECT_PADDING, DIE_EFFECT_PADDING } from "@/ui/effects/dieTuning";
 import {
-  createAuraRuntime,
-  destroyAura,
-  stepAura,
+  createEffectRuntime,
+  destroyEffect,
+  stepEffect,
 } from "@/ui/effects/runtime";
 import type {
-  AuraArtTarget,
-  AuraFrameContext,
-  AuraHostKind,
-  AuraId,
-  AuraRuntime,
+  EffectArtTarget,
+  EffectFrameContext,
+  EffectHostKind,
+  EffectId,
+  EffectRuntime,
 } from "@/ui/effects/types";
 
-export type AuraMountProps = {
-  aura: AuraId;
-  hostKind: AuraHostKind;
+export type EffectMountProps = {
+  effect: EffectId;
+  hostKind: EffectHostKind;
   width: number;
   height: number;
   padding?: number;
-  frameRef: MutableRefObject<AuraFrameContext>;
+  frameRef: MutableRefObject<EffectFrameContext>;
   artRef: MutableRefObject<{
     applyFilters: (filters: Filter[] | null) => void;
     setJitter: (dx: number, dy: number) => void;
@@ -35,8 +35,8 @@ export type AuraMountProps = {
   children: ReactNode;
 };
 
-export function AuraMount({
-  aura,
+export function EffectMount({
+  effect,
   hostKind,
   width,
   height,
@@ -44,14 +44,14 @@ export function AuraMount({
   frameRef,
   artRef,
   children,
-}: AuraMountProps) {
-  const resolvedPadding = padding ?? (hostKind === "die" ? DIE_AURA_PADDING : CARD_AURA_PADDING);
+}: EffectMountProps) {
+  const resolvedPadding = padding ?? (hostKind === "die" ? DIE_EFFECT_PADDING : CARD_EFFECT_PADDING);
   const { app } = useApplication();
   const backRef = useRef<Container | null>(null);
   const frontRef = useRef<Container | null>(null);
   const artJitterRef = useRef<Container | null>(null);
-  const runtimeRef = useRef<AuraRuntime | null>(null);
-  const prevAuraRef = useRef<AuraId>("none");
+  const runtimeRef = useRef<EffectRuntime | null>(null);
+  const prevEffectRef = useRef<EffectId>("none");
 
   const bindArtJitter = useCallback((node: Container | null) => {
     artJitterRef.current = node;
@@ -63,23 +63,23 @@ export function AuraMount({
     if (!back || !front) {
       return;
     }
-    if (aura === "none") {
+    if (effect === "none") {
       if (runtimeRef.current) {
-        destroyAura(runtimeRef.current);
+        destroyEffect(runtimeRef.current);
         runtimeRef.current = null;
       }
       artRef.current?.applyFilters(null);
       artRef.current?.setJitter(0, 0);
       return;
     }
-    if (runtimeRef.current?.id === aura) {
+    if (runtimeRef.current?.id === effect) {
       return;
     }
     if (runtimeRef.current) {
-      destroyAura(runtimeRef.current);
+      destroyEffect(runtimeRef.current);
       runtimeRef.current = null;
     }
-    const art: AuraArtTarget = {
+    const art: EffectArtTarget = {
       applyFilters: (filters) => artRef.current?.applyFilters(filters ?? null),
       setJitter: (dx, dy) => {
         if (artJitterRef.current) {
@@ -87,13 +87,13 @@ export function AuraMount({
         }
       },
     };
-    runtimeRef.current = createAuraRuntime(
-      aura,
+    runtimeRef.current = createEffectRuntime(
+      effect,
       { back, front },
       { hostKind, width, height, padding: resolvedPadding },
       art,
     );
-  }, [artRef, aura, frontRef, height, hostKind, resolvedPadding, width]);
+  }, [artRef, effect, frontRef, height, hostKind, resolvedPadding, width]);
 
   const bindBack = useCallback(
     (node: Container | null) => {
@@ -111,13 +111,13 @@ export function AuraMount({
     [tryAttachRuntime],
   );
 
-  if (aura !== prevAuraRef.current) {
-    prevAuraRef.current = aura;
+  if (effect !== prevEffectRef.current) {
+    prevEffectRef.current = effect;
     if (runtimeRef.current) {
-      destroyAura(runtimeRef.current);
+      destroyEffect(runtimeRef.current);
       runtimeRef.current = null;
     }
-    if (aura === "none") {
+    if (effect === "none") {
       artRef.current?.applyFilters(null);
       artRef.current?.setJitter(0, 0);
     } else {
@@ -136,7 +136,7 @@ export function AuraMount({
     frame.width = width;
     frame.height = height;
     frame.hostKind = hostKind;
-    stepAura(runtime, frame);
+    stepEffect(runtime, frame);
   });
 
   return (

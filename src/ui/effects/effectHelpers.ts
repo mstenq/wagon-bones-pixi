@@ -1,29 +1,29 @@
 import { Graphics, Sprite, type Container, type Filter, type Texture } from "pixi.js";
 
 import type {
-  AuraArtTarget,
-  AuraDefinition,
-  AuraFrameContext,
-  AuraLayers,
-  AuraMountContext,
-  AuraRuntime,
+  EffectArtTarget,
+  EffectDefinition,
+  EffectFrameContext,
+  EffectLayers,
+  EffectMountContext,
+  EffectRuntime,
 } from "@/ui/effects/types";
-import { auraEffectRadius, isDieMount } from "@/ui/effects/dieTuning";
-import { auraVisualBounds, borderBoundsFromSize, type BorderBounds } from "@/ui/effects/shared/borderFrame";
+import { effectRadius, isDieMount } from "@/ui/effects/dieTuning";
+import { effectVisualBounds, borderBoundsFromSize, type BorderBounds } from "@/ui/effects/shared/borderFrame";
 
-export { auraEffectRadius };
+export { effectRadius };
 
-export function boundsFromCtx(ctx: AuraMountContext) {
-  return auraVisualBounds(ctx);
+export function boundsFromCtx(ctx: EffectMountContext) {
+  return effectVisualBounds(ctx);
 }
 
 /** Card art size only — backdrops must not extend past the card face. */
-export function artBoundsFromMount(mount: AuraMountContext): BorderBounds {
+export function artBoundsFromMount(mount: EffectMountContext): BorderBounds {
   return borderBoundsFromSize(mount.width, mount.height);
 }
 
-export function backdropBounds(mount: AuraMountContext): BorderBounds {
-  return isDieMount(mount) ? auraVisualBounds(mount) : artBoundsFromMount(mount);
+export function backdropBounds(mount: EffectMountContext): BorderBounds {
+  return isDieMount(mount) ? effectVisualBounds(mount) : artBoundsFromMount(mount);
 }
 
 /** Random point over the card face (not on the perimeter). */
@@ -37,10 +37,10 @@ export function randomInteriorPoint(bounds: BorderBounds, margin = 0.12): { x: n
 }
 
 export function makeRuntime(
-  id: AuraDefinition["id"],
-  step: (frame: AuraFrameContext) => void,
+  id: EffectDefinition["id"],
+  step: (frame: EffectFrameContext) => void,
   destroy: () => void,
-): AuraRuntime {
+): EffectRuntime {
   return { id, step, destroy };
 }
 
@@ -73,7 +73,7 @@ export function pulse01(time: number, period: number, phase = 0): number {
   return (Math.sin((time / period) * Math.PI * 2 + phase) + 1) * 0.5;
 }
 
-export function applyArtFilters(art: AuraArtTarget, filters: Filter[] | null): void {
+export function applyArtFilters(art: EffectArtTarget, filters: Filter[] | null): void {
   art.applyFilters(filters);
 }
 
@@ -85,20 +85,20 @@ export function noopDestroy(...disposers: (() => void)[]): () => void {
   };
 }
 
-export type AuraBuildContext = {
-  layers: AuraLayers;
-  mount: AuraMountContext;
-  art: AuraArtTarget;
+export type EffectBuildContext = {
+  layers: EffectLayers;
+  mount: EffectMountContext;
+  art: EffectArtTarget;
   bounds: BorderBounds;
   backGfx: Graphics[];
   frontGfx: Graphics[];
 };
 
-export function createAuraBuildContext(
-  layers: AuraLayers,
-  mount: AuraMountContext,
-  art: AuraArtTarget,
-): AuraBuildContext {
+export function createEffectBuildContext(
+  layers: EffectLayers,
+  mount: EffectMountContext,
+  art: EffectArtTarget,
+): EffectBuildContext {
   return {
     layers,
     mount,

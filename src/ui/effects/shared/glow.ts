@@ -1,7 +1,7 @@
 import { BlurFilter, Graphics, Rectangle } from "pixi.js";
 
 import { dieBlurPadding, dieBlurStrength } from "@/ui/effects/dieTuning";
-import type { AuraHostKind, AuraMountContext } from "@/ui/effects/types";
+import type { EffectHostKind, EffectMountContext } from "@/ui/effects/types";
 
 export function createGlowGraphics(): Graphics {
   return new Graphics();
@@ -14,7 +14,7 @@ export function drawSoftGlow(
   color: number,
   alpha: number,
   inset = 8,
-  hostKind: AuraHostKind = "card",
+  hostKind: EffectHostKind = "card",
 ): void {
   g.clear();
   if (hostKind === "die") {
@@ -70,7 +70,7 @@ export function applyBlurredGlow(
 
 export function applyBlurredGlowForMount(
   g: Graphics,
-  mount: AuraMountContext,
+  mount: EffectMountContext,
   strength: number,
 ): BlurFilter {
   const pad = dieBlurPadding(mount);

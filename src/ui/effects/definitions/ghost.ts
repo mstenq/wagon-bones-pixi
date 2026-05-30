@@ -7,16 +7,16 @@ import {
   applyArtFilters,
   makeRuntime,
   noopDestroy,
-} from "@/ui/effects/auraHelpers";
+} from "@/ui/effects/effectHelpers";
 import { drawCardFrameStroke } from "@/ui/effects/shared/borderFrame";
 import { applyBlurredGlow } from "@/ui/effects/shared/glow";
-import { boundsFromCtx } from "@/ui/effects/auraHelpers";
+import { boundsFromCtx } from "@/ui/effects/effectHelpers";
 import { orbitPosition } from "@/ui/effects/shared/orbit";
 import { burstTimer } from "@/ui/effects/shared/pseudoRandom";
 import { drawSoftGlow } from "@/ui/effects/shared/glow";
-import type { AuraDefinition, AuraFrameContext } from "@/ui/effects/types";
+import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
 
-export const ghostAura: AuraDefinition = {
+export const ghostEffect: EffectDefinition = {
   id: "ghost",
   label: "Ghost",
   create(layers, mount, art) {
@@ -38,7 +38,7 @@ export const ghostAura: AuraDefinition = {
 
     let artAlpha = 1;
 
-    const step = (frame: AuraFrameContext) => {
+    const step = (frame: EffectFrameContext) => {
       const t = frame.time;
       const phase = (Math.sin(t * 1.5) + 1) * 0.5;
       artAlpha = 0.88 + phase * 0.12;

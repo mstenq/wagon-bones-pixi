@@ -6,19 +6,19 @@ import {
   addSpriteLayer,
   applyArtFilters,
   artBoundsFromMount,
-  auraEffectRadius,
+  effectRadius,
   backdropBounds,
   boundsFromCtx,
   makeRuntime,
   noopDestroy,
   randomInteriorPoint,
-} from "@/ui/effects/auraHelpers";
+} from "@/ui/effects/effectHelpers";
 import { hostParticleScale, isDieMount, tightDieBounds } from "@/ui/effects/dieTuning";
 import {
   createFireArtMatrix,
   stepFireArtMatrix,
 } from "@/ui/effects/shared/artColor";
-import { drawAuraBackdrop } from "@/ui/effects/shared/cardAura";
+import { drawEffectBackdrop } from "@/ui/effects/shared/cardEffect";
 import {
   perimeterPoint,
   perimeterPointEllipse,
@@ -26,9 +26,9 @@ import {
 import { applyBlurredGlowForMount } from "@/ui/effects/shared/glow";
 import { createParticlePool, spawnParticle, stepParticles } from "@/ui/effects/shared/particles";
 import { burstTimer } from "@/ui/effects/shared/pseudoRandom";
-import type { AuraDefinition, AuraFrameContext } from "@/ui/effects/types";
+import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
 
-export const fireAura: AuraDefinition = {
+export const fireEffect: EffectDefinition = {
   id: "fire",
   label: "Fire",
   create(layers, mount, art) {
@@ -38,7 +38,7 @@ export const fireAura: AuraDefinition = {
     const isDie = isDieMount(mount);
     const hostKind = mount.hostKind;
     const edgeBounds = isDie ? tightDieBounds(mount) : artBounds;
-    const radius = auraEffectRadius(mount, bounds);
+    const radius = effectRadius(mount, bounds);
     const pScale = hostParticleScale(mount);
 
     const backdrop = addGlowLayer(layers.back, 0);
@@ -72,12 +72,12 @@ export const fireAura: AuraDefinition = {
       applyArtFilters(art, [artMatrix]);
     }
 
-    const step = (frame: AuraFrameContext) => {
+    const step = (frame: EffectFrameContext) => {
       const t = frame.time;
       const burst = burstTimer(t, 1, 0.85, 0.14);
       stepFireArtMatrix(artMatrix, burst);
 
-      drawAuraBackdrop(
+      drawEffectBackdrop(
         backdrop,
         backBounds,
         hostKind,

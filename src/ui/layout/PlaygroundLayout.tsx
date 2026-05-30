@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 
 import type { StoryDefinition } from "@/ui/types/storyTypes";
+import { panelLabelClass, panelSelectClass } from "@/ui/styles/panelControls";
 
 type LoadedStory = StoryDefinition & { id: string };
 
@@ -34,17 +35,17 @@ export function PlaygroundLayout() {
   );
 
   return (
-    <main className="playground-page">
-      <header className="playground-header">
-        <h1 className="playground-title">Playground</h1>
+    <main className="flex min-h-screen flex-col gap-4 p-6">
+      <header>
+        <h1 className="m-0 text-2xl font-bold">Playground</h1>
       </header>
 
       {loadedStories.length ? (
         <>
-          <label className="playground-select-label">
+          <label className={panelLabelClass}>
             Story
             <select
-              className="playground-select"
+              className={panelSelectClass}
               value={selectedStory?.id ?? ""}
               onChange={(event) => setSelectedId(event.target.value)}
             >
@@ -56,12 +57,15 @@ export function PlaygroundLayout() {
             </select>
           </label>
 
-          <section className="playground-stage" key={selectedStory?.id}>
+          <section
+            className="flex h-full w-full flex-1 items-center justify-center"
+            key={selectedStory?.id}
+          >
             {selectedStory?.component}
           </section>
         </>
       ) : (
-        <p className="playground-help">
+        <p className="m-0 text-sm text-zinc-300">
           No stories found in <code>src/stories</code>. Add a <code>.tsx</code> file with a
           default export:
           <br />

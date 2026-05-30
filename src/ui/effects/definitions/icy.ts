@@ -6,29 +6,29 @@ import {
   addSpriteLayer,
   applyArtFilters,
   artBoundsFromMount,
-  auraEffectRadius,
+  effectRadius,
   backdropBounds,
   boundsFromCtx,
   makeRuntime,
   noopDestroy,
   pulse01,
-} from "@/ui/effects/auraHelpers";
+} from "@/ui/effects/effectHelpers";
 import { hostParticleScale, isDieMount, tightDieBounds } from "@/ui/effects/dieTuning";
 import {
   createIcyArtMatrix,
   stepIcyArtMatrix,
 } from "@/ui/effects/shared/artColor";
-import { drawAuraBackdrop } from "@/ui/effects/shared/cardAura";
+import { drawEffectBackdrop } from "@/ui/effects/shared/cardEffect";
 import { perimeterPointEllipse } from "@/ui/effects/shared/borderFrame";
 import { applyBlurredGlowForMount } from "@/ui/effects/shared/glow";
 import { createParticlePool, spawnParticle, stepParticles } from "@/ui/effects/shared/particles";
 import { burstTimer } from "@/ui/effects/shared/pseudoRandom";
-import type { AuraDefinition, AuraFrameContext } from "@/ui/effects/types";
+import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
 
 const ICE = 0xb8e8ff;
 const ICE_BRIGHT = 0xe8f8ff;
 
-export const icyAura: AuraDefinition = {
+export const icyEffect: EffectDefinition = {
   id: "icy",
   label: "Icy",
   create(layers, mount, art) {
@@ -37,7 +37,7 @@ export const icyAura: AuraDefinition = {
     const backBounds = backdropBounds(mount);
     const hostKind = mount.hostKind;
     const isDie = isDieMount(mount);
-    const radius = auraEffectRadius(mount, bounds);
+    const radius = effectRadius(mount, bounds);
     const pScale = hostParticleScale(mount);
     const edgeBounds = isDie ? tightDieBounds(mount) : artBounds;
 
@@ -61,13 +61,13 @@ export const icyAura: AuraDefinition = {
     const artMatrix = createIcyArtMatrix();
     applyArtFilters(art, [artMatrix]);
 
-    const step = (frame: AuraFrameContext) => {
+    const step = (frame: EffectFrameContext) => {
       const t = frame.time;
       const pulse = pulse01(t, 2.4);
       const crawl = (t * 0.05) % 1;
       stepIcyArtMatrix(artMatrix, pulse);
 
-      drawAuraBackdrop(
+      drawEffectBackdrop(
         backdrop,
         backBounds,
         hostKind,

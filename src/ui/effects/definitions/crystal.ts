@@ -1,12 +1,12 @@
 import { BlurFilter, ColorMatrixFilter, Graphics } from "pixi.js";
 
 import { getEffectTexture } from "@/assets/effects/textures";
-import { addGlowLayer, addSpriteLayer, applyArtFilters, makeRuntime, noopDestroy } from "@/ui/effects/auraHelpers";
+import { addGlowLayer, addSpriteLayer, applyArtFilters, makeRuntime, noopDestroy } from "@/ui/effects/effectHelpers";
 import { borderBoundsFromSize } from "@/ui/effects/shared/borderFrame";
 import { orbitPosition } from "@/ui/effects/shared/orbit";
-import type { AuraDefinition, AuraFrameContext } from "@/ui/effects/types";
+import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
 
-export const crystalAura: AuraDefinition = {
+export const crystalEffect: EffectDefinition = {
   id: "crystal",
   label: "Crystal",
   create(layers, mount, art) {
@@ -25,7 +25,7 @@ export const crystalAura: AuraDefinition = {
     const contrast = new ColorMatrixFilter();
     applyArtFilters(art, [contrast]);
 
-    const step = (frame: AuraFrameContext) => {
+    const step = (frame: EffectFrameContext) => {
       const t = frame.time;
       const pulse = (Math.sin(t * 2) + 1) * 0.5;
       contrast.contrast(0.1 + pulse * 0.08, false);

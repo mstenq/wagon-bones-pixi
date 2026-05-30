@@ -7,9 +7,9 @@ import {
   ADJACENT_FACE_LAYOUTS,
   pickAdjacentFaceValues,
 } from "@/ui/components/Dice/dieAdjacentFaces";
-import { AuraMount } from "@/ui/effects/AuraMount";
-import { createDefaultAuraFrame } from "@/ui/effects/context";
-import type { AuraFrameContext, AuraId } from "@/ui/effects/types";
+import { EffectMount } from "@/ui/effects/EffectMount";
+import { createDefaultEffectFrame } from "@/ui/effects/context";
+import type { EffectFrameContext, EffectId } from "@/ui/effects/types";
 
 export const DEFAULT_DIE_SIZE = 88;
 
@@ -24,7 +24,7 @@ export type DieProps = {
   texture: Texture | null;
   size?: number;
   value?: number;
-  aura?: AuraId;
+  effect?: EffectId;
   phase?: number;
 };
 
@@ -42,7 +42,7 @@ export type DieHandle = {
 
 /** Visual die only — position via parent `DraggableItem` or any container. */
 export const Die = forwardRef<DieHandle, DieProps>(function Die(
-  { texture, size = DEFAULT_DIE_SIZE, value = 1, aura = "none", phase = 0 },
+  { texture, size = DEFAULT_DIE_SIZE, value = 1, effect = "none", phase = 0 },
   ref,
 ) {
   const { app } = useApplication();
@@ -52,10 +52,10 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
   const textRef = useRef<Text | null>(null);
   const adjacentTextRefs = useRef<(Text | null)[]>([]);
   const adjacentValues = useMemo(() => pickAdjacentFaceValues(value), [value]);
-  const auraFrameRef = useRef<AuraFrameContext>(
-    createDefaultAuraFrame("die", size, size, phase),
+  const effectFrameRef = useRef<EffectFrameContext>(
+    createDefaultEffectFrame("die", size, size, phase),
   );
-  const auraArtRef = useRef<{
+  const effectArtRef = useRef<{
     applyFilters: (filters: Filter[] | null) => void;
     setJitter: (dx: number, dy: number) => void;
   }>({
@@ -78,7 +78,7 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
   };
 
   useTick(() => {
-    const frame = auraFrameRef.current;
+    const frame = effectFrameRef.current;
     frame.dt = app.ticker.deltaMS / 1000;
     frame.time = performance.now() / 1000;
     frame.width = size;
@@ -118,13 +118,13 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
 
   return (
     <pixiContainer ref={squishRef} eventMode="none">
-      <AuraMount
-        aura={aura}
+      <EffectMount
+        effect={effect}
         hostKind="die"
         width={size}
         height={size}
-        frameRef={auraFrameRef}
-        artRef={auraArtRef}
+        frameRef={effectFrameRef}
+        artRef={effectArtRef}
       >
         <pixiContainer ref={rollRef} eventMode="none">
           {texture ? (
@@ -168,7 +168,7 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
             </pixiContainer>
           ))}
         </pixiContainer>
-      </AuraMount>
+      </EffectMount>
     </pixiContainer>
   );
 });

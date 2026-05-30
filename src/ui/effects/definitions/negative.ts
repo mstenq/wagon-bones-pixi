@@ -1,12 +1,12 @@
 import { ColorMatrixFilter, Graphics, NoiseFilter } from "pixi.js";
 
-import { addGlowLayer, applyArtFilters, makeRuntime, noopDestroy } from "@/ui/effects/auraHelpers";
+import { addGlowLayer, applyArtFilters, makeRuntime, noopDestroy } from "@/ui/effects/effectHelpers";
 import { borderBoundsFromSize, drawRoundedRectFrame } from "@/ui/effects/shared/borderFrame";
 import { createParticlePool, drawParticles, spawnParticle, stepParticles } from "@/ui/effects/shared/particles";
 import { burstTimer } from "@/ui/effects/shared/pseudoRandom";
-import type { AuraDefinition, AuraFrameContext } from "@/ui/effects/types";
+import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
 
-export const negativeAura: AuraDefinition = {
+export const negativeEffect: EffectDefinition = {
   id: "negative",
   label: "Negative",
   create(layers, mount, art) {
@@ -19,7 +19,7 @@ export const negativeAura: AuraDefinition = {
     const noise = new NoiseFilter({ noise: 0.15, seed: 42 });
     applyArtFilters(art, [negative, noise]);
 
-    const step = (frame: AuraFrameContext) => {
+    const step = (frame: EffectFrameContext) => {
       const t = frame.time;
       const flicker = burstTimer(t, 0, 0.35, 0.08);
       negative.alpha = 0.85 + flicker * 0.15;

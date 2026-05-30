@@ -1,16 +1,16 @@
-import type { AuraFrameContext, AuraHostKind } from "@/ui/effects/types";
+import type { EffectFrameContext, EffectHostKind } from "@/ui/effects/types";
 
-export const DEFAULT_AURA_PADDING = 18;
+export const DEFAULT_EFFECT_PADDING = 18;
 
 /** Re-export — see dieTuning.ts */
-export { CARD_AURA_PADDING, DIE_AURA_PADDING } from "@/ui/effects/dieTuning";
+export { CARD_EFFECT_PADDING, DIE_EFFECT_PADDING } from "@/ui/effects/dieTuning";
 
-export function createDefaultAuraFrame(
-  hostKind: AuraHostKind,
+export function createDefaultEffectFrame(
+  hostKind: EffectHostKind,
   width: number,
   height: number,
   phase = 0,
-): AuraFrameContext {
+): EffectFrameContext {
   return {
     dt: 0,
     time: 0,

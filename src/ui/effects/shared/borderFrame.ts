@@ -1,6 +1,6 @@
 import type { Graphics } from "pixi.js";
 
-import type { AuraHostKind, AuraMountContext } from "@/ui/effects/types";
+import type { EffectHostKind, EffectMountContext } from "@/ui/effects/types";
 
 export type BorderBounds = {
   halfW: number;
@@ -16,16 +16,16 @@ export function borderBoundsFromSize(width: number, height: number): BorderBound
 }
 
 /** Padded bounds so glow/blur is not clipped to the host art rectangle. */
-export function auraVisualBounds(mount: AuraMountContext): BorderBounds {
+export function effectVisualBounds(mount: EffectMountContext): BorderBounds {
   const pad = mount.padding;
   return borderBoundsFromSize(mount.width + pad * 2, mount.height + pad * 2);
 }
 
-export function hostUsesRectFrame(hostKind: AuraHostKind): boolean {
+export function hostUsesRectFrame(hostKind: EffectHostKind): boolean {
   return hostKind === "card";
 }
 
-export function hostIsDie(hostKind: AuraHostKind): boolean {
+export function hostIsDie(hostKind: EffectHostKind): boolean {
   return hostKind === "die";
 }
 
@@ -45,7 +45,7 @@ export function drawRoundedRectFrame(
 export function drawCardFrameStroke(
   g: Graphics,
   bounds: BorderBounds,
-  hostKind: AuraHostKind,
+  hostKind: EffectHostKind,
   strokeWidth: number,
   color: number,
   alpha = 1,
@@ -96,7 +96,7 @@ export function perimeterPointEllipse(
 
 export function spawnPointForHost(
   bounds: BorderBounds,
-  hostKind: AuraHostKind,
+  hostKind: EffectHostKind,
   t: number,
 ): { x: number; y: number } {
   return hostIsDie(hostKind)

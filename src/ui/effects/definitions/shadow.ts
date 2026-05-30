@@ -1,10 +1,10 @@
 import { BlurFilter, ColorMatrixFilter, Graphics } from "pixi.js";
 
-import { addGlowLayer, applyArtFilters, makeRuntime, noopDestroy } from "@/ui/effects/auraHelpers";
+import { addGlowLayer, applyArtFilters, makeRuntime, noopDestroy } from "@/ui/effects/effectHelpers";
 import { borderBoundsFromSize } from "@/ui/effects/shared/borderFrame";
-import type { AuraDefinition, AuraFrameContext } from "@/ui/effects/types";
+import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
 
-export const shadowAura: AuraDefinition = {
+export const shadowEffect: EffectDefinition = {
   id: "shadow",
   label: "Shadow",
   create(layers, mount, art) {
@@ -15,7 +15,7 @@ export const shadowAura: AuraDefinition = {
     dark.brightness(0.75, false);
     applyArtFilters(art, [dark]);
 
-    const step = (frame: AuraFrameContext) => {
+    const step = (frame: EffectFrameContext) => {
       const t = frame.time;
       tendrils.clear();
       const count = 8;
