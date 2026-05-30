@@ -2,7 +2,6 @@ import { Rectangle, type Container } from "pixi.js";
 import type { FederatedPointerEvent } from "pixi.js";
 import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, type ReactNode } from "react";
 
-import "@/ui/pixi/extend";
 
 export type DraggableItemHandle = {
   setTransform: (x: number, y: number, rotation: number, zIndex?: number) => void;

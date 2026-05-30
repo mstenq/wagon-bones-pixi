@@ -7,14 +7,13 @@ import {
 } from "@/ui/components/DraggableItem/DraggableItem";
 import { Die, DEFAULT_DIE_SIZE, type DieHandle } from "@/ui/components/Dice/Die";
 import { getDiceTexture, texturesReady } from "@/assets/dice/textures";
-import { DICE_COUNT, rollD12, rollMany } from "@/ui/components/Dice/config";
-import { useDice } from "@/ui/store/DiceContext";
+import { DICE_COUNT } from "@/data/dice";
+import { gameFacade } from "@/game/facade";
+import { rollSpinFrame, useRunStore } from "@/game/store/runStore";
 import {
   useReorderableRow,
   type ReorderableRowLayout,
 } from "@/ui/interaction/useReorderableRow";
-
-import "@/ui/pixi/extend";
 
 const ROLL_MS = 1400;
 
@@ -30,45 +29,45 @@ type ActiveRoll = {
 export function DiceRow({ layout }: DiceRowProps) {
   use(texturesReady);
 
-  const { diceType, results, order, setOrder, isRolling, startRollRef, finishRoll } =
-    useDice();
+  const diceType = useRunStore((state) => state.diceType);
+  const dieValues = useRunStore((state) => state.dieValues);
+  const order = useRunStore((state) => state.diceOrder);
+  const isRolling = useRunStore((state) => state.isRolling);
+  const rollTargets = useRunStore((state) => state.rollTargets);
+  const setDiceOrder = useRunStore((state) => state.setDiceOrder);
+
   const texture = getDiceTexture(diceType);
 
   const dragRefs = useRef<(DraggableItemHandle | null)[]>([]);
   const dieRefs = useRef<(DieHandle | null)[]>([]);
-  const rollingRef = useRef(false);
   const rollRef = useRef<ActiveRoll | null>(null);
-  const finishRollRef = useRef(finishRoll);
-
-  finishRollRef.current = finishRoll;
 
   const { onPointerDown, tickLayout, slotHome } = useReorderableRow({
     layout,
     order,
-    onOrderChange: setOrder,
+    onOrderChange: setDiceOrder,
     disabled: isRolling,
     swing: { factor: 0.1, maxRadians: 0.95, follow: 0.32, velocitySmoothing: 0.5 },
     dragSnapLerp: 0.42,
   });
 
-  startRollRef.current = () => {
-    rollRef.current = { targets: rollMany(DICE_COUNT), startedAt: performance.now() };
-    rollingRef.current = true;
-  };
-
   const onTick = useCallback(() => {
-    tickLayout((slotIndex, dieId, visual) => {
-      dragRefs.current[dieId]?.setTransform(
+    tickLayout((slotIndex, itemId, visual) => {
+      dragRefs.current[itemId]?.setTransform(
         visual.x,
         visual.y,
         visual.rotation,
         visual.zIndex,
       );
-      dieRefs.current[dieId]?.setSquishScale(visual.scaleX, visual.scaleY);
+      dieRefs.current[itemId]?.setSquishScale(visual.scaleX, visual.scaleY);
     });
 
+    if (isRolling && rollTargets && !rollRef.current) {
+      rollRef.current = { targets: rollTargets, startedAt: performance.now() };
+    }
+
     const active = rollRef.current;
-    if (!rollingRef.current || !active) {
+    if (!active) {
       return;
     }
 
@@ -77,11 +76,11 @@ export function DiceRow({ layout }: DiceRowProps) {
     const spinning = progress < 1;
     const bounce = 1 + Math.sin(progress * Math.PI * 6) * 0.1 * (1 - progress);
 
-    for (let dieId = 0; dieId < DICE_COUNT; dieId++) {
-      dieRefs.current[dieId]?.setFrame({
+    for (let itemId = 0; itemId < DICE_COUNT; itemId++) {
+      dieRefs.current[itemId]?.setFrame({
         rotation: easeOut * Math.PI * 10,
         scale: bounce,
-        value: spinning ? rollD12() : active.targets[dieId]!,
+        value: spinning ? rollSpinFrame() : active.targets[itemId]!,
       });
     }
 
@@ -89,26 +88,25 @@ export function DiceRow({ layout }: DiceRowProps) {
       return;
     }
 
-    for (let dieId = 0; dieId < DICE_COUNT; dieId++) {
-      dieRefs.current[dieId]?.reset();
+    for (let itemId = 0; itemId < DICE_COUNT; itemId++) {
+      dieRefs.current[itemId]?.reset();
     }
 
-    rollingRef.current = false;
     rollRef.current = null;
-    finishRollRef.current(active.targets);
-  }, [tickLayout]);
+    gameFacade.dice.completeRoll(active.targets);
+  }, [isRolling, rollTargets, tickLayout]);
 
   useTick(onTick);
 
   return (
     <pixiContainer sortableChildren eventMode="passive">
-      {order.map((dieId, slotIndex) => {
+      {order.map((itemId, slotIndex) => {
         const home = slotHome(slotIndex);
         return (
           <DraggableItem
-            key={dieId}
+            key={itemId}
             ref={(node) => {
-              dragRefs.current[dieId] = node;
+              dragRefs.current[itemId] = node;
             }}
             x={home.x}
             y={home.y}
@@ -118,10 +116,10 @@ export function DiceRow({ layout }: DiceRowProps) {
           >
             <Die
               ref={(node) => {
-                dieRefs.current[dieId] = node;
+                dieRefs.current[itemId] = node;
               }}
               texture={texture}
-              value={results[dieId]}
+              value={dieValues[itemId] ?? 1}
             />
           </DraggableItem>
         );

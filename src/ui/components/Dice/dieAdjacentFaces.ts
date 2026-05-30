@@ -1,5 +1,3 @@
-import { TextStyle } from "pixi.js";
-
 /** One of the five pentagonal faces visible around the front face (flat-top d12). */
 export type AdjacentFaceLayout = {
   /** Offset from die center, as a fraction of `size`. */

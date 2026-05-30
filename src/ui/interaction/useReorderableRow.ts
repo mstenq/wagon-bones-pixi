@@ -43,7 +43,7 @@ export type ItemVisual = {
 
 type DragSession = {
   pointerId: number;
-  dieId: number;
+  itemId: number;
   fromSlot: number;
   target: Container;
   parent: Container;
@@ -123,12 +123,12 @@ export function useReorderableRow({
   // During the short post-drop settling window we lerp from the last dragged
   // position to avoid "instant teleport" feel.
 
-  const getPosition = useCallback((dieId: number, home: { x: number; y: number }) => {
-    const cached = positionsRef.current.get(dieId);
+  const getPosition = useCallback((itemId: number, home: { x: number; y: number }) => {
+    const cached = positionsRef.current.get(itemId);
     if (cached) {
       return cached;
     }
-    positionsRef.current.set(dieId, home);
+    positionsRef.current.set(itemId, home);
     return home;
   }, []);
 
@@ -140,8 +140,8 @@ export function useReorderableRow({
       orderRef.current = newOrder;
       dropSettlingUntilRef.current = performance.now() + 180;
 
-      coastRef.current.set(session.dieId, session.swing);
-      const squish = squishRef.current.get(session.dieId);
+      coastRef.current.set(session.itemId, session.swing);
+      const squish = squishRef.current.get(session.itemId);
       if (squish) {
         setSquishTarget(squish, SQUISH_IDLE);
       }
@@ -171,12 +171,12 @@ export function useReorderableRow({
         return;
       }
 
-      const dieId = orderRef.current[slotIndex]!;
+      const itemId = orderRef.current[slotIndex]!;
       const local = parent.toLocal(event.global);
 
       const session: DragSession = {
         pointerId: event.pointerId,
-        dieId,
+        itemId,
         fromSlot: slotIndex,
         target,
         parent,
@@ -188,10 +188,10 @@ export function useReorderableRow({
         lastGlobalX: event.globalX,
         smoothVx: 0,
         targetSwing: 0,
-        swing: coastRef.current.get(dieId) ?? 0,
+        swing: coastRef.current.get(itemId) ?? 0,
         x: target.x,
         y: target.y,
-        rotation: coastRef.current.get(dieId) ?? 0,
+        rotation: coastRef.current.get(itemId) ?? 0,
         previewSlot: slotIndex,
       };
 
@@ -208,7 +208,7 @@ export function useReorderableRow({
         setDraggingSlot(slotIndex);
 
         const squish = createSquishState(SQUISH_GRAB);
-        squishRef.current.set(dieId, squish);
+        squishRef.current.set(itemId, squish);
         setSquishTarget(squish, SQUISH_GRAB);
         target.cursor = "grabbing";
 
@@ -216,7 +216,7 @@ export function useReorderableRow({
           if (dragRef.current !== session) {
             return;
           }
-          const state = squishRef.current.get(dieId);
+          const state = squishRef.current.get(itemId);
           if (state) {
             setSquishTarget(state, SQUISH_DRAG);
             lifted = true;
@@ -259,13 +259,13 @@ export function useReorderableRow({
 
         if (!lifted) {
           lifted = true;
-          const state = squishRef.current.get(session.dieId);
+          const state = squishRef.current.get(session.itemId);
           if (state) {
             setSquishTarget(state, SQUISH_DRAG);
           }
         }
 
-        positionsRef.current.set(session.dieId, { x: session.x, y: session.y });
+        positionsRef.current.set(session.itemId, { x: session.x, y: session.y });
       };
 
       const cleanupListeners = () => {
@@ -291,7 +291,7 @@ export function useReorderableRow({
         cleanupListeners();
 
         if (!session.activated) {
-          onItemTap?.(session.fromSlot, session.dieId, upEvent);
+          onItemTap?.(session.fromSlot, session.itemId, upEvent);
           dragRef.current = null;
           return;
         }
@@ -321,7 +321,7 @@ export function useReorderableRow({
   );
 
   const tickLayout = useCallback(
-    (apply: (slotIndex: number, dieId: number, visual: ItemVisual) => void) => {
+    (apply: (slotIndex: number, itemId: number, visual: ItemVisual) => void) => {
       const session = dragRef.current?.activated ? dragRef.current : null;
       const activeOrder = session
         ? getPreviewOrder(session.fromSlot, session.previewSlot)
@@ -337,14 +337,14 @@ export function useReorderableRow({
       }
 
       for (let slotIndex = 0; slotIndex < layout.count; slotIndex++) {
-        const dieId = activeOrder[slotIndex]!;
+        const itemId = activeOrder[slotIndex]!;
         const home = slotHome(slotIndex);
 
-        let squish = squishRef.current.get(dieId);
+        let squish = squishRef.current.get(itemId);
         if (squish) {
           stepSquish(squish, dt);
           if (!session && isSquishSettled(squish)) {
-            squishRef.current.delete(dieId);
+            squishRef.current.delete(itemId);
             squish = undefined;
           }
         }
@@ -352,8 +352,8 @@ export function useReorderableRow({
         const scaleX = squish?.scaleX ?? 1;
         const scaleY = squish?.scaleY ?? 1;
 
-        if (session?.dieId === dieId) {
-          apply(slotIndex, dieId, {
+        if (session?.itemId === itemId) {
+          apply(slotIndex, itemId, {
             x: session.x,
             y: session.y,
             rotation: session.rotation,
@@ -364,14 +364,14 @@ export function useReorderableRow({
           continue;
         }
 
-        const current = getPosition(dieId, home);
-        let rotation = coastRef.current.get(dieId) ?? 0;
+        const current = getPosition(itemId, home);
+        let rotation = coastRef.current.get(itemId) ?? 0;
 
         if (Math.abs(rotation) > 0.002) {
           rotation = decaySwing(rotation, swing);
-          coastRef.current.set(dieId, rotation);
+          coastRef.current.set(itemId, rotation);
         } else {
-          coastRef.current.delete(dieId);
+          coastRef.current.delete(itemId);
           rotation = 0;
         }
 
@@ -382,13 +382,13 @@ export function useReorderableRow({
           ? home.y
           : current.y + (home.y - current.y) * lerp;
 
-        positionsRef.current.set(dieId, { x, y });
+        positionsRef.current.set(itemId, { x, y });
 
         if (!isSettled && Math.abs(home.x - x) < 0.4 && Math.abs(home.y - y) < 0.4) {
-          positionsRef.current.set(dieId, home);
+          positionsRef.current.set(itemId, home);
         }
 
-        apply(slotIndex, dieId, {
+        apply(slotIndex, itemId, {
           x,
           y,
           rotation,

@@ -1,47 +1,5 @@
-import { Rectangle } from "pixi.js";
-
-import aceInTheHoleImg from "@/assets/items/ace_in_the_hole.png";
-import antiqueRevolverImg from "@/assets/items/antique_revolver.png";
-import bankNoteImg from "@/assets/items/bank_note.png";
-import bargainBinImg from "@/assets/items/bargain_bin.png";
-import blessedHerdImg from "@/assets/items/blessed_herd.png";
-
-/** Max cards shown in the hand row (demo default). */
-export const CARD_COUNT = 5;
-
-export const ITEM_TYPES = [
-  "ace_in_the_hole",
-  "antique_revolver",
-  "bank_note",
-  "bargain_bin",
-  "blessed_herd",
-] as const;
-
-export type ItemType = (typeof ITEM_TYPES)[number];
-
-export const ITEM_LABELS: Record<ItemType, string> = {
-  ace_in_the_hole: "Ace in the Hole",
-  antique_revolver: "Antique Revolver",
-  bank_note: "Bank Note",
-  bargain_bin: "Bargain Bin",
-  blessed_herd: "Blessed Herd",
-};
-
-export const ITEM_IMAGES: Record<ItemType, string> = {
-  ace_in_the_hole: aceInTheHoleImg,
-  antique_revolver: antiqueRevolverImg,
-  bank_note: bankNoteImg,
-  bargain_bin: bargainBinImg,
-  blessed_herd: blessedHerdImg,
-};
-
-export function itemTypeForCard(cardId: number): ItemType {
-  return ITEM_TYPES[cardId % ITEM_TYPES.length]!;
-}
-
 export type CardDisplayMode = "shop" | "pack" | "owned";
 
-export const CARD_CORNER_RADIUS = 12;
 export const CARD_LIFT_PX = 28;
 export const CARD_HOVER_SCALE = 1.06;
 export const CARD_OWNED_ENLARGED_SCALE = 1.14;
@@ -70,13 +28,4 @@ export const ACTION_TAB_HEIGHT = ACTION_TAB_VISIBLE_HEIGHT + ACTION_TAB_TOP_PADD
 export const SELL_TAB_HEIGHT = TAB_HEIGHT + 4;
 export const PRICE_TAB_HEIGHT = 24;
 
-/**
- * Hand-row hit box: card body, plus sell tab overhang on the right only (not into the left neighbor).
- */
-export function cardHandHitArea(cardWidth: number, cardHeight: number): Rectangle {
-  const scale = CARD_OWNED_ENLARGED_SCALE;
-  const halfW = (cardWidth / 2) * scale;
-  const halfH = (cardHeight / 2) * scale;
-  const rightExtent = halfW - SELL_TAB_ATTACH_OVERLAP + SELL_TAB_WIDTH;
-  return new Rectangle(-halfW, -halfH, halfW + rightExtent, 2 * halfH);
-}
+export { CARD_COUNT } from "@/data/items";

@@ -6,8 +6,6 @@ import type { CardDisplayMode } from "@/ui/components/Card/config";
 import { Card } from "@/ui/components/Card/Card";
 import type { StoryDefinition } from "@/ui/types/storyTypes";
 
-import "@/ui/pixi/extend";
-
 function CardStory() {
   use(itemTexturesReady);
 

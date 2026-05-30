@@ -1,6 +1,7 @@
 import { Assets, Texture } from "pixi.js";
 
-import { ITEM_IMAGES, ITEM_TYPES, itemTypeForCard, type ItemType } from "@/ui/components/Card/config";
+import { ITEM_TYPES, itemTypeForCard, type ItemType } from "@/data/items";
+import { ITEM_IMAGES } from "@/assets/items/images";
 
 const itemAlias = (type: ItemType) => `item-${type}`;
 
@@ -36,3 +37,5 @@ export function getItemTexture(type: ItemType): Texture {
 export function getCardTexture(cardId: number): Texture {
   return getItemTexture(itemTypeForCard(cardId));
 }
+
+export type { ItemType };

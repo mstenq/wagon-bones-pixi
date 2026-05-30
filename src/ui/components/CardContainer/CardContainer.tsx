@@ -8,42 +8,40 @@ import {
 } from "@/ui/components/DraggableItem/DraggableItem";
 import { Card, DEFAULT_CARD_HEIGHT, DEFAULT_CARD_WIDTH, type CardHandle } from "@/ui/components/Card/Card";
 import { getCardTexture, itemTexturesReady } from "@/assets/items/textures";
-import {
-  CARD_COUNT,
-  CARD_SELECTED_Z_INDEX,
-  cardHandHitArea,
-} from "@/ui/components/Card/config";
+import { CARD_SELECTED_Z_INDEX } from "@/ui/components/Card/config";
+import { cardContainerHitArea } from "@/ui/components/Card/containerHitArea";
+import { gameFacade } from "@/game/facade";
+import { useRunStore } from "@/game/store/runStore";
 import {
   useReorderableRow,
   type ReorderableRowLayout,
 } from "@/ui/interaction/useReorderableRow";
 
-import "@/ui/pixi/extend";
-
-const initialOrder = () => Array.from({ length: CARD_COUNT }, (_, cardId) => cardId);
-
-export type CardsHandProps = {
+export type CardContainerProps = {
   layout: ReorderableRowLayout;
 };
 
-export function CardsHand({ layout }: CardsHandProps) {
+export function CardContainer({ layout }: CardContainerProps) {
   use(itemTexturesReady);
 
-  const handHitArea = useMemo(
-    () => cardHandHitArea(DEFAULT_CARD_WIDTH, DEFAULT_CARD_HEIGHT),
+  const order = useRunStore((state) => state.cardOrder);
+  const selectedCardId = useRunStore((state) => state.selectedCardId);
+  const setCardOrder = useRunStore((state) => state.setCardOrder);
+  const selectCard = useRunStore((state) => state.selectCard);
+
+  const containerHitArea = useMemo(
+    () => cardContainerHitArea(DEFAULT_CARD_WIDTH, DEFAULT_CARD_HEIGHT),
     [],
   );
 
-  const [order, setOrder] = useState(initialOrder);
   const [hoveredCardId, setHoveredCardId] = useState<number | null>(null);
-  const [selectedCardIds, setSelectedCardIds] = useState<Set<number>>(() => new Set());
   const dragRefs = useRef<(DraggableItemHandle | null)[]>([]);
   const cardRefs = useRef<(CardHandle | null)[]>([]);
 
   const { onPointerDown, tickLayout, slotHome, draggingSlot } = useReorderableRow({
     layout,
     order,
-    onOrderChange: setOrder,
+    onOrderChange: setCardOrder,
     swing: { factor: 0.07, maxRadians: 0.42, follow: 0.18, velocitySmoothing: 0.28 },
     dragSnapLerp: 0.42,
     onItemTap: (_slotIndex, cardId, event) => {
@@ -52,7 +50,7 @@ export function CardsHand({ layout }: CardsHandProps) {
         return;
       }
       if (card.hitsSellTabAtGlobal(event.global.x, event.global.y)) {
-        card.triggerSell();
+        gameFacade.cards.sellCard(cardId);
         return;
       }
       card.toggleOwned();
@@ -83,7 +81,7 @@ export function CardsHand({ layout }: CardsHandProps) {
 
   const onTick = useCallback(() => {
     tickLayout((slotIndex, cardId, visual) => {
-      const zIndex = selectedCardIds.has(cardId) ? CARD_SELECTED_Z_INDEX : visual.zIndex;
+      const zIndex = selectedCardId === cardId ? CARD_SELECTED_Z_INDEX : visual.zIndex;
       dragRefs.current[cardId]?.setTransform(
         visual.x,
         visual.y,
@@ -92,19 +90,21 @@ export function CardsHand({ layout }: CardsHandProps) {
       );
       cardRefs.current[cardId]?.setSquishScale(visual.scaleX, visual.scaleY);
     });
-  }, [selectedCardIds, tickLayout]);
+  }, [selectedCardId, tickLayout]);
 
   const onCardSelectedChange = useCallback((cardId: number, selected: boolean) => {
-    setSelectedCardIds((current) => {
-      const next = new Set(current);
-      if (selected) {
-        next.add(cardId);
-      } else {
-        next.delete(cardId);
+    if (selected) {
+      const previous = gameFacade.cards.getSelectedId();
+      if (previous !== null && previous !== cardId) {
+        cardRefs.current[previous]?.deselect(true);
       }
-      return next;
-    });
-  }, []);
+      selectCard(cardId);
+      return;
+    }
+    if (gameFacade.cards.getSelectedId() === cardId) {
+      selectCard(null);
+    }
+  }, [selectCard]);
 
   useTick(onTick);
 
@@ -120,7 +120,7 @@ export function CardsHand({ layout }: CardsHandProps) {
             }}
             x={home.x}
             y={home.y}
-            hitArea={handHitArea}
+            hitArea={containerHitArea}
             interactiveChildren
             onPointerDown={(event) => onPointerDown(slotIndex, event)}
             onPointerMove={(event) => onCardPointerMove(cardId, event)}
@@ -137,7 +137,7 @@ export function CardsHand({ layout }: CardsHandProps) {
               dragging={draggingCardId === cardId}
               displayMode="owned"
               embedded
-              onSell={()=>console.log("sell")}
+              selected={selectedCardId === cardId}
               onSelectedChange={(selected) => onCardSelectedChange(cardId, selected)}
             />
           </DraggableItem>

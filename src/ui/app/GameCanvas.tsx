@@ -3,8 +3,6 @@ import { memo, Suspense } from "react";
 
 import { GameScene } from "@/ui/scenes/GameScene";
 
-import "@/ui/pixi/extend";
-
 export const GameCanvas = memo(function GameCanvas() {
   return (
     <div className="game-canvas-host">

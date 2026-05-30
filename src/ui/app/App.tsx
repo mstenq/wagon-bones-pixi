@@ -1,7 +1,7 @@
 import { GameCanvas } from "@/ui/app/GameCanvas";
 import { RollDiceButton } from "@/ui/components/Dice/RollDiceButton";
 import { DICE_LABELS, type DiceType } from "@/ui/components/Dice/config";
-import { DiceProvider, useDice } from "@/ui/store/DiceContext";
+import { useRunStore } from "@/game/store/runStore";
 
 const DICE_ENHANCEMENT_OPTIONS: DiceType[] = [
   "bone",
@@ -16,7 +16,8 @@ const DICE_ENHANCEMENT_OPTIONS: DiceType[] = [
 ];
 
 function DiceEnhancementSelect() {
-  const { diceType, setDiceType } = useDice();
+  const diceType = useRunStore((state) => state.diceType);
+  const setDiceType = useRunStore((state) => state.setDiceType);
 
   return (
     <label className="game-dice-enhancement-label">
@@ -38,13 +39,11 @@ function DiceEnhancementSelect() {
 
 export function App() {
   return (
-    <DiceProvider>
-      <div className="game-shell">
-        <GameCanvas />
-        <DiceEnhancementSelect />
-        <RollDiceButton />
-      </div>
-    </DiceProvider>
+    <div className="game-shell">
+      <GameCanvas />
+      <DiceEnhancementSelect />
+      <RollDiceButton />
+    </div>
   );
 }
 

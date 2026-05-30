@@ -1,13 +1,9 @@
 import { useApplication, useTick } from "@pixi/react";
 import { useCallback, useMemo, useState } from "react";
 
-import { CardsHand } from "@/ui/components/CardBar/CardBar";
-import { DiceRow } from "@/ui/components/DiceRow.tsx/DiceRow";
+import { CardContainer } from "@/ui/components/CardContainer/CardContainer";
+import { DiceRow } from "@/ui/components/DiceRow/DiceRow";
 import { computeGameLayout } from "@/ui/layout/gameLayout";
-
-import "@/ui/pixi/extend";
-
-
 
 export function GameScene() {
   const { app } = useApplication();
@@ -31,7 +27,7 @@ export function GameScene() {
 
   return (
     <pixiContainer sortableChildren eventMode="passive">
-      <CardsHand layout={layout.cards} />
+      <CardContainer layout={layout.cards} />
       <DiceRow layout={layout.dice} />
     </pixiContainer>
   );

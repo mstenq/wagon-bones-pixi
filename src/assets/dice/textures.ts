@@ -1,6 +1,7 @@
 import { Assets, Texture } from "pixi.js";
 
-import { DICE_IMAGES, DICE_TYPES, type DiceType } from "@/ui/components/Dice/config";
+import { DICE_TYPES, type DiceType } from "@/data/dice";
+import { DICE_IMAGES } from "@/assets/dice/images";
 
 const diceAlias = (type: DiceType) => `dice-${type}`;
 
@@ -32,3 +33,5 @@ export function getDiceTexture(type: DiceType): Texture {
     return Texture.from(DICE_IMAGES[type]);
   }
 }
+
+export type { DiceType };

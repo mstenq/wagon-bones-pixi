@@ -69,8 +69,6 @@ import {
   type PerspectiveTiltConfig,
 } from "@/ui/pixi/perspectiveTilt";
 
-import "@/ui/pixi/extend";
-
 export const DEFAULT_CARD_WIDTH = 150;
 export const DEFAULT_CARD_HEIGHT = 210;
 
@@ -97,6 +95,8 @@ export type CardProps = {
   onSell?: () => void;
   /** Parent handles pointer events (e.g. inside `DraggableItem`). */
   embedded?: boolean;
+  /** When embedded, parent can drive owned selection (e.g. from game store). */
+  selected?: boolean;
   /** Called when shop/pack raised or owned enlarged toggles. */
   onSelectedChange?: (selected: boolean) => void;
 };
@@ -105,7 +105,9 @@ export type CardHandle = {
   setSquishScale: (scaleX: number, scaleY: number) => void;
   setPointerLocal: (x: number, y: number) => void;
   toggleOwned: () => void;
-  /** For embedded hand: tap on sell tab while drag wrapper owns the pointer. */
+  /** Collapse raised/enlarged selection; skip callback when parent already updated selection. */
+  deselect: (silent?: boolean) => void;
+  /** For embedded container: tap on sell tab while drag wrapper owns the pointer. */
   hitsSellTabAtGlobal: (globalX: number, globalY: number) => boolean;
   triggerSell: () => void;
 };
@@ -127,6 +129,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     onSelect,
     onSell,
     embedded = false,
+    selected,
     onSelectedChange,
   },
   ref,
@@ -168,16 +171,14 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   const liftSpringRef = useRef<ScalarSpringState>(createScalarSpring(0, 0));
   const ownedScaleSpringRef = useRef<ScalarSpringState>(createScalarSpring(1, 1));
   const sellTabSpringRef = useRef<ScalarSpringState>(createScalarSpring(0, 0));
-  const pendingSelectedNotifyRef = useRef<boolean | null>(null);
-  const onSelectedChangeRef = useRef(onSelectedChange);
   const onSellRef = useRef(onSell);
-  onSelectedChangeRef.current = onSelectedChange;
   onSellRef.current = onSell;
 
   const [raised, setRaised] = useState(false);
   const [enlarged, setEnlarged] = useState(false);
   const [hoveredInternal, setHoveredInternal] = useState(false);
   const [prevDisplayMode, setPrevDisplayMode] = useState(displayMode);
+  const [prevSelectedProp, setPrevSelectedProp] = useState(selected);
 
   if (displayMode !== prevDisplayMode) {
     setPrevDisplayMode(displayMode);
@@ -189,7 +190,18 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
       setScalarTarget(ownedScaleSpringRef.current, 1);
       setScalarTarget(sellTabSpringRef.current, 0);
       setSquishTarget(squishSpringRef.current, SQUISH_IDLE);
-      pendingSelectedNotifyRef.current = false;
+    }
+  }
+
+  if (embedded && selected !== undefined && selected !== prevSelectedProp) {
+    setPrevSelectedProp(selected);
+    if (displayMode === "owned") {
+      setEnlarged(selected);
+      setScalarTarget(
+        ownedScaleSpringRef.current,
+        selected ? CARD_OWNED_ENLARGED_SCALE : 1,
+      );
+      setScalarTarget(sellTabSpringRef.current, selected ? 1 : 0);
     }
   }
 
@@ -265,6 +277,36 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     onSellRef.current?.();
   }, []);
 
+  const deselect = useCallback(
+    (silent = false) => {
+      if (!interactive) {
+        return;
+      }
+      if (displayMode === "owned") {
+        if (!enlargedRef.current) {
+          return;
+        }
+        setEnlarged(false);
+        applyOwnedEnlargedTargets(false);
+        if (!silent) {
+          notifySelectedChange(false);
+        }
+        return;
+      }
+      if (displayMode === "shop" || displayMode === "pack") {
+        if (!raisedRef.current) {
+          return;
+        }
+        setRaised(false);
+        setScalarTarget(liftSpringRef.current, 0);
+        if (!silent) {
+          notifySelectedChange(false);
+        }
+      }
+    },
+    [applyOwnedEnlargedTargets, displayMode, interactive, notifySelectedChange],
+  );
+
   useImperativeHandle(
     ref,
     () => ({
@@ -293,11 +335,13 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
         notifySelectedChange(next);
         triggerClickSquish();
       },
+      deselect,
       hitsSellTabAtGlobal,
       triggerSell,
     }),
     [
       applyOwnedEnlargedTargets,
+      deselect,
       displayMode,
       embedded,
       hitsSellTabAtGlobal,
@@ -424,19 +468,10 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
 
   const showActionTab =
     interactive && raised && (displayMode === "shop" || displayMode === "pack");
-  const showSellTab = interactive && displayMode === "owned" && enlarged;
   const actionTabLabel = displayMode === "shop" ? "BUY" : "SELECT";
   const actionTabHandler = displayMode === "shop" ? onBuyPointerDown : onSelectPointerDown;
 
   useTick(() => {
-    if (pendingSelectedNotifyRef.current !== null) {
-      const selected = pendingSelectedNotifyRef.current;
-      pendingSelectedNotifyRef.current = null;
-      if (displayMode !== undefined) {
-        onSelectedChangeRef.current?.(selected);
-      }
-    }
-
     const dt = app.ticker.deltaMS / 1000;
     const mesh = meshRef.current;
     const idle = idleRef.current;

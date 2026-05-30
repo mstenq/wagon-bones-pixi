@@ -1,11 +1,10 @@
 import { Sprite, Text, TextStyle, type Container, type Texture } from "pixi.js";
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from "react";
+import { forwardRef, useImperativeHandle, useMemo, useRef } from "react";
 
 import {
   ADJACENT_FACE_LAYOUTS,
   pickAdjacentFaceValues,
 } from "@/ui/components/Dice/dieAdjacentFaces";
-import "@/ui/pixi/extend";
 
 export const DEFAULT_DIE_SIZE = 88;
 
@@ -45,7 +44,7 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
   const spriteRef = useRef<Sprite | null>(null);
   const textRef = useRef<Text | null>(null);
   const adjacentTextRefs = useRef<(Text | null)[]>([]);
-  const initialAdjacent = useMemo(() => pickAdjacentFaceValues(value), [value]);
+  const adjacentValues = useMemo(() => pickAdjacentFaceValues(value), [value]);
 
   const syncAdjacentTexts = (centerValue: number) => {
     const adjacent = pickAdjacentFaceValues(centerValue);
@@ -55,10 +54,6 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
       }
     });
   };
-
-  useEffect(() => {
-    syncAdjacentTexts(value);
-  }, [value]);
 
   useImperativeHandle(
     ref,
@@ -125,7 +120,7 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
               ref={(node) => {
                 adjacentTextRefs.current[index] = node;
               }}
-              text={String(initialAdjacent[index])}
+              text={String(adjacentValues[index])}
               anchor={0.5}
               style={dieTextStyle}
               eventMode="none"
