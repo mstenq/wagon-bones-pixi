@@ -6,6 +6,7 @@ import {
   type FederatedPointerEvent,
   type Graphics,
   type PerspectiveMesh,
+  type Text,
   type Texture,
 } from "pixi.js";
 import { useTick } from "@pixi/react";
@@ -149,6 +150,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   const sellTabInnerRef = useRef<Container | null>(null);
   const sellTabShadowRef = useRef<Graphics | null>(null);
   const sellTabGfxRef = useRef<Graphics | null>(null);
+  const sellTabTextRef = useRef<Text | null>(null);
   const cardHitRef = useRef<Container | null>(null);
 
   const cornersRef = useRef(createUnitCorners());
@@ -396,14 +398,6 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     [onSelect],
   );
 
-  const onSellPointerDown = useCallback(
-    (event: FederatedPointerEvent) => {
-      event.stopPropagation();
-      triggerSell();
-    },
-    [triggerSell],
-  );
-
   const onSellPointerTap = useCallback(
     (event: FederatedPointerEvent) => {
       event.stopPropagation();
@@ -562,11 +556,15 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
         sellTab.alpha = 1;
         const sellShadow = sellTabShadowRef.current;
         const sellGfx = sellTabGfxRef.current;
+        const sellText = sellTabTextRef.current;
         if (sellShadow) {
           sellShadow.alpha = sellFade;
         }
         if (sellGfx) {
           sellGfx.alpha = sellFade;
+        }
+        if (sellText) {
+          sellText.alpha = sellFade;
         }
       }
     }
@@ -622,19 +620,19 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
         ) : null}
 
         {displayMode === "owned" ? (
-          <pixiContainer ref={sellTabRef} zIndex={3} eventMode="passive">
+          <pixiContainer ref={sellTabRef} zIndex={0} eventMode="passive">
             <pixiContainer
               ref={sellTabInnerRef}
               x={-SELL_TAB_WIDTH}
               eventMode="none"
               cursor="pointer"
               hitArea={new Rectangle(0, -SELL_TAB_HEIGHT / 2, SELL_TAB_WIDTH, SELL_TAB_HEIGHT)}
-              onPointerDown={onSellPointerDown}
               onPointerTap={onSellPointerTap}
             >
               <pixiGraphics ref={sellTabShadowRef} draw={drawSellTabShadow} eventMode="none" />
               <pixiGraphics ref={sellTabGfxRef} draw={drawSellTab} eventMode="none" />
               <pixiText
+                ref={sellTabTextRef}
                 text={formatSellLabel(sellPrice)}
                 x={SELL_TAB_TEXT_X}
                 anchor={0.5}
@@ -645,7 +643,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
           </pixiContainer>
         ) : null}
 
-        <pixiContainer ref={squishRef} zIndex={1} sortableChildren eventMode="passive">
+        <pixiContainer ref={squishRef} zIndex={2} sortableChildren eventMode="passive">
           {selfInteractive ? (
             <pixiContainer
               ref={cardHitRef}

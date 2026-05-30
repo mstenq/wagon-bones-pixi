@@ -1,6 +1,6 @@
 import { useTick } from "@pixi/react";
 import type { Container, FederatedPointerEvent } from "pixi.js";
-import { use, useCallback, useRef, useState } from "react";
+import { use, useCallback, useMemo, useRef, useState } from "react";
 
 import {
   DraggableItem,
@@ -11,7 +11,7 @@ import { getCardTexture, itemTexturesReady } from "@/assets/items/textures";
 import {
   CARD_COUNT,
   CARD_SELECTED_Z_INDEX,
-  cardHandHitHalf,
+  cardHandHitArea,
 } from "@/ui/components/Card/config";
 import {
   useReorderableRow,
@@ -19,9 +19,6 @@ import {
 } from "@/ui/interaction/useReorderableRow";
 
 import "@/ui/pixi/extend";
-
-/** Must cover enlarged card art and the sell tab (extends past default card bounds). */
-const HIT_SIZE = cardHandHitHalf(DEFAULT_CARD_WIDTH, DEFAULT_CARD_HEIGHT) * 2;
 
 const initialOrder = () => Array.from({ length: CARD_COUNT }, (_, cardId) => cardId);
 
@@ -31,6 +28,11 @@ export type CardsHandProps = {
 
 export function CardsHand({ layout }: CardsHandProps) {
   use(itemTexturesReady);
+
+  const handHitArea = useMemo(
+    () => cardHandHitArea(DEFAULT_CARD_WIDTH, DEFAULT_CARD_HEIGHT),
+    [],
+  );
 
   const [order, setOrder] = useState(initialOrder);
   const [hoveredCardId, setHoveredCardId] = useState<number | null>(null);
@@ -118,7 +120,7 @@ export function CardsHand({ layout }: CardsHandProps) {
             }}
             x={home.x}
             y={home.y}
-            hitSize={HIT_SIZE}
+            hitArea={handHitArea}
             interactiveChildren
             onPointerDown={(event) => onPointerDown(slotIndex, event)}
             onPointerMove={(event) => onCardPointerMove(cardId, event)}

@@ -13,12 +13,12 @@ export type DraggableItemProps = {
   y: number;
   rotation?: number;
   zIndex?: number;
-  hitSize: number;
+  /** Square hit box; ignored when `hitArea` is set. */
+  hitSize?: number;
+  /** Custom hit shape (e.g. card body rect — protruding children use their own targets). */
+  hitArea?: Rectangle;
   disabled?: boolean;
-  /**
-   * When true, interactive children (e.g. card sell tab) are hit-tested before this
-   * wrapper. `hitSize` must still cover the full card including protruding children.
-   */
+  /** When true, interactive children (e.g. card sell tab) are hit-tested before this wrapper. */
   interactiveChildren?: boolean;
   onPointerDown?: (event: FederatedPointerEvent) => void;
   onPointerMove?: (event: FederatedPointerEvent) => void;
@@ -39,6 +39,7 @@ export const DraggableItem = forwardRef<DraggableItemHandle, DraggableItemProps>
       rotation = 0,
       zIndex = 0,
       hitSize,
+      hitArea: hitAreaProp,
       disabled = false,
       interactiveChildren = false,
       onPointerDown,
@@ -51,9 +52,13 @@ export const DraggableItem = forwardRef<DraggableItemHandle, DraggableItemProps>
   ) {
     const containerRef = useRef<Container | null>(null);
     const hitArea = useMemo(() => {
-      const half = hitSize / 2;
-      return new Rectangle(-half, -half, hitSize, hitSize);
-    }, [hitSize]);
+      if (hitAreaProp) {
+        return hitAreaProp;
+      }
+      const size = hitSize ?? 0;
+      const half = size / 2;
+      return new Rectangle(-half, -half, size, size);
+    }, [hitAreaProp, hitSize]);
 
     useImperativeHandle(
       ref,

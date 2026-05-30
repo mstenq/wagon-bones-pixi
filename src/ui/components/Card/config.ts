@@ -1,3 +1,5 @@
+import { Rectangle } from "pixi.js";
+
 import aceInTheHoleImg from "@/assets/items/ace_in_the_hole.png";
 import antiqueRevolverImg from "@/assets/items/antique_revolver.png";
 import bankNoteImg from "@/assets/items/bank_note.png";
@@ -68,12 +70,13 @@ export const ACTION_TAB_HEIGHT = ACTION_TAB_VISIBLE_HEIGHT + ACTION_TAB_TOP_PADD
 export const SELL_TAB_HEIGHT = TAB_HEIGHT + 4;
 export const PRICE_TAB_HEIGHT = 24;
 
-/** Half-size of the square drag/hit box for an embedded owned card (body + sell tab). */
-export function cardHandHitHalf(cardWidth: number, cardHeight: number): number {
+/**
+ * Hand-row hit box: card body, plus sell tab overhang on the right only (not into the left neighbor).
+ */
+export function cardHandHitArea(cardWidth: number, cardHeight: number): Rectangle {
   const scale = CARD_OWNED_ENLARGED_SCALE;
   const halfW = (cardWidth / 2) * scale;
   const halfH = (cardHeight / 2) * scale;
-  const sellRight =
-    (cardWidth / 2) * scale - SELL_TAB_ATTACH_OVERLAP + SELL_TAB_WIDTH;
-  return Math.max(halfW, halfH, sellRight);
+  const rightExtent = halfW - SELL_TAB_ATTACH_OVERLAP + SELL_TAB_WIDTH;
+  return new Rectangle(-halfW, -halfH, halfW + rightExtent, 2 * halfH);
 }
