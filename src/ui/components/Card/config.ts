@@ -67,3 +67,13 @@ export const ACTION_TAB_TOP_PADDING = 28;
 export const ACTION_TAB_HEIGHT = ACTION_TAB_VISIBLE_HEIGHT + ACTION_TAB_TOP_PADDING;
 export const SELL_TAB_HEIGHT = TAB_HEIGHT + 4;
 export const PRICE_TAB_HEIGHT = 24;
+
+/** Half-size of the square drag/hit box for an embedded owned card (body + sell tab). */
+export function cardHandHitHalf(cardWidth: number, cardHeight: number): number {
+  const scale = CARD_OWNED_ENLARGED_SCALE;
+  const halfW = (cardWidth / 2) * scale;
+  const halfH = (cardHeight / 2) * scale;
+  const sellRight =
+    (cardWidth / 2) * scale - SELL_TAB_ATTACH_OVERLAP + SELL_TAB_WIDTH;
+  return Math.max(halfW, halfH, sellRight);
+}

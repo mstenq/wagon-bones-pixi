@@ -15,7 +15,10 @@ export type DraggableItemProps = {
   zIndex?: number;
   hitSize: number;
   disabled?: boolean;
-  /** Allow child display objects (e.g. card sell tab) to receive pointer events. */
+  /**
+   * When true, interactive children (e.g. card sell tab) are hit-tested before this
+   * wrapper. `hitSize` must still cover the full card including protruding children.
+   */
   interactiveChildren?: boolean;
   onPointerDown?: (event: FederatedPointerEvent) => void;
   onPointerMove?: (event: FederatedPointerEvent) => void;

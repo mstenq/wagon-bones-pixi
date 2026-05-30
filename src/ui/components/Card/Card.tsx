@@ -12,7 +12,6 @@ import { useTick } from "@pixi/react";
 import {
   forwardRef,
   useCallback,
-  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -105,6 +104,9 @@ export type CardHandle = {
   setSquishScale: (scaleX: number, scaleY: number) => void;
   setPointerLocal: (x: number, y: number) => void;
   toggleOwned: () => void;
+  /** For embedded hand: tap on sell tab while drag wrapper owns the pointer. */
+  hitsSellTabAtGlobal: (globalX: number, globalY: number) => boolean;
+  triggerSell: () => void;
 };
 
 /** Visual card — position via parent `DraggableItem`, or self-interactive when `displayMode` is set. */
@@ -164,10 +166,30 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   const liftSpringRef = useRef<ScalarSpringState>(createScalarSpring(0, 0));
   const ownedScaleSpringRef = useRef<ScalarSpringState>(createScalarSpring(1, 1));
   const sellTabSpringRef = useRef<ScalarSpringState>(createScalarSpring(0, 0));
+  const pendingSelectedNotifyRef = useRef<boolean | null>(null);
+  const onSelectedChangeRef = useRef(onSelectedChange);
+  const onSellRef = useRef(onSell);
+  onSelectedChangeRef.current = onSelectedChange;
+  onSellRef.current = onSell;
 
   const [raised, setRaised] = useState(false);
   const [enlarged, setEnlarged] = useState(false);
   const [hoveredInternal, setHoveredInternal] = useState(false);
+  const [prevDisplayMode, setPrevDisplayMode] = useState(displayMode);
+
+  if (displayMode !== prevDisplayMode) {
+    setPrevDisplayMode(displayMode);
+    if (displayMode !== undefined) {
+      setRaised(false);
+      setEnlarged(false);
+      setHoveredInternal(false);
+      setScalarTarget(liftSpringRef.current, 0);
+      setScalarTarget(ownedScaleSpringRef.current, 1);
+      setScalarTarget(sellTabSpringRef.current, 0);
+      setSquishTarget(squishSpringRef.current, SQUISH_IDLE);
+      pendingSelectedNotifyRef.current = false;
+    }
+  }
 
   const raisedRef = useRef(raised);
   const enlargedRef = useRef(enlarged);
@@ -190,43 +212,22 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     [height, width],
   );
 
-  useEffect(() => {
-    if (!interactive) {
-      return;
-    }
-    onSelectedChange?.(isSelected);
-  }, [interactive, isSelected, onSelectedChange]);
+  const notifySelectedChange = useCallback(
+    (selected: boolean) => {
+      if (displayMode !== undefined) {
+        onSelectedChange?.(selected);
+      }
+    },
+    [displayMode, onSelectedChange],
+  );
 
-  useEffect(() => {
-    if (!effectiveHovered || dragging || isSelected || displayMode === "shop") {
-      targetAngleXRef.current = 0;
-      targetAngleYRef.current = 0;
-    }
-  }, [displayMode, dragging, effectiveHovered, isSelected]);
-
-  useEffect(() => {
-    if (displayMode !== "owned") {
-      return;
-    }
+  const applyOwnedEnlargedTargets = useCallback((nextEnlarged: boolean) => {
     setScalarTarget(
       ownedScaleSpringRef.current,
-      enlarged ? CARD_OWNED_ENLARGED_SCALE : 1,
+      nextEnlarged ? CARD_OWNED_ENLARGED_SCALE : 1,
     );
-    setScalarTarget(sellTabSpringRef.current, enlarged ? 1 : 0);
-  }, [displayMode, enlarged]);
-
-  useEffect(() => {
-    if (!displayMode) {
-      return;
-    }
-    setRaised(false);
-    setEnlarged(false);
-    setHoveredInternal(false);
-    setScalarTarget(liftSpringRef.current, 0);
-    setScalarTarget(ownedScaleSpringRef.current, 1);
-    setScalarTarget(sellTabSpringRef.current, 0);
-    setSquishTarget(squishSpringRef.current, SQUISH_IDLE);
-  }, [displayMode]);
+    setScalarTarget(sellTabSpringRef.current, nextEnlarged ? 1 : 0);
+  }, []);
 
   const corners = useMemo(() => {
     const next = createUnitCorners();
@@ -237,6 +238,26 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   const triggerClickSquish = useCallback(() => {
     setSquishTarget(squishSpringRef.current, SQUISH_LIFT);
     clickSquishUntilRef.current = performance.now() + CLICK_SQUISH_MS;
+  }, []);
+
+  const hitsSellTabAtGlobal = useCallback((globalX: number, globalY: number) => {
+    if (displayMode !== "owned" || !enlargedRef.current) {
+      return false;
+    }
+    if (sellTabSpringRef.current.value < 0.15) {
+      return false;
+    }
+    const inner = sellTabInnerRef.current;
+    if (!inner || inner.eventMode === "none") {
+      return false;
+    }
+    const local = inner.toLocal({ x: globalX, y: globalY });
+    const hit = inner.hitArea;
+    return hit instanceof Rectangle && hit.contains(local.x, local.y);
+  }, [displayMode]);
+
+  const triggerSell = useCallback(() => {
+    onSellRef.current?.();
   }, []);
 
   useImperativeHandle(
@@ -261,11 +282,26 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
         if (!interactive || displayMode !== "owned" || draggingRef.current) {
           return;
         }
-        setEnlarged((current) => !current);
+        const next = !enlargedRef.current;
+        setEnlarged(next);
+        applyOwnedEnlargedTargets(next);
+        notifySelectedChange(next);
         triggerClickSquish();
       },
+      hitsSellTabAtGlobal,
+      triggerSell,
     }),
-    [displayMode, embedded, interactive, tiltConfig, triggerClickSquish],
+    [
+      applyOwnedEnlargedTargets,
+      displayMode,
+      embedded,
+      hitsSellTabAtGlobal,
+      interactive,
+      notifySelectedChange,
+      tiltConfig,
+      triggerClickSquish,
+      triggerSell,
+    ],
   );
 
   const bindMesh = useCallback(
@@ -296,16 +332,26 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
         const nextRaised = !raisedRef.current;
         setRaised(nextRaised);
         setScalarTarget(liftSpringRef.current, nextRaised ? CARD_LIFT_PX : 0);
+        notifySelectedChange(nextRaised);
         triggerClickSquish();
         return;
       }
 
       if (displayMode === "owned") {
-        setEnlarged((current) => !current);
+        const next = !enlargedRef.current;
+        setEnlarged(next);
+        applyOwnedEnlargedTargets(next);
+        notifySelectedChange(next);
         triggerClickSquish();
       }
     },
-    [displayMode, interactive, triggerClickSquish],
+    [
+      applyOwnedEnlargedTargets,
+      displayMode,
+      interactive,
+      notifySelectedChange,
+      triggerClickSquish,
+    ],
   );
 
   const onCardPointerOver = useCallback(() => {
@@ -353,9 +399,17 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   const onSellPointerDown = useCallback(
     (event: FederatedPointerEvent) => {
       event.stopPropagation();
-      onSell?.();
+      triggerSell();
     },
-    [onSell],
+    [triggerSell],
+  );
+
+  const onSellPointerTap = useCallback(
+    (event: FederatedPointerEvent) => {
+      event.stopPropagation();
+      triggerSell();
+    },
+    [triggerSell],
   );
 
   const texWidth = texture?.width ?? width;
@@ -378,6 +432,14 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   const actionTabHandler = displayMode === "shop" ? onBuyPointerDown : onSelectPointerDown;
 
   useTick(() => {
+    if (pendingSelectedNotifyRef.current !== null) {
+      const selected = pendingSelectedNotifyRef.current;
+      pendingSelectedNotifyRef.current = null;
+      if (displayMode !== undefined) {
+        onSelectedChangeRef.current?.(selected);
+      }
+    }
+
     const dt = app.ticker.deltaMS / 1000;
     const mesh = meshRef.current;
     const idle = idleRef.current;
@@ -488,10 +550,24 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
         const reveal = sellTabSpringRef.current.value;
         sellTab.x = sellTabAnchorX(width, ownedScale);
         const inner = sellTabInnerRef.current;
+        const sellVisible = displayMode === "owned" && reveal > 0;
+        const sellFade = sellVisible ? reveal : 0;
         if (inner) {
           inner.x = sellTabInnerX(reveal);
+          inner.eventMode =
+            enlargedRef.current && displayMode === "owned" && reveal > 0.15
+              ? "static"
+              : "none";
         }
-        sellTab.alpha = displayMode === "owned" && reveal > 0 ? reveal : 0;
+        sellTab.alpha = 1;
+        const sellShadow = sellTabShadowRef.current;
+        const sellGfx = sellTabGfxRef.current;
+        if (sellShadow) {
+          sellShadow.alpha = sellFade;
+        }
+        if (sellGfx) {
+          sellGfx.alpha = sellFade;
+        }
       }
     }
   });
@@ -500,7 +576,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     <pixiContainer
       ref={bindRoot}
       sortableChildren
-      eventMode={selfInteractive ? "passive" : "none"}
+      eventMode={interactive ? "passive" : "none"}
     >
       <pixiContainer ref={liftRef} sortableChildren eventMode="passive">
         {interactive && (displayMode === "shop" || displayMode === "pack") ? (
@@ -546,14 +622,15 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
         ) : null}
 
         {displayMode === "owned" ? (
-          <pixiContainer ref={sellTabRef} zIndex={0} eventMode="passive">
+          <pixiContainer ref={sellTabRef} zIndex={3} eventMode="passive">
             <pixiContainer
               ref={sellTabInnerRef}
               x={-SELL_TAB_WIDTH}
-              eventMode={showSellTab ? "static" : "none"}
+              eventMode="none"
               cursor="pointer"
               hitArea={new Rectangle(0, -SELL_TAB_HEIGHT / 2, SELL_TAB_WIDTH, SELL_TAB_HEIGHT)}
               onPointerDown={onSellPointerDown}
+              onPointerTap={onSellPointerTap}
             >
               <pixiGraphics ref={sellTabShadowRef} draw={drawSellTabShadow} eventMode="none" />
               <pixiGraphics ref={sellTabGfxRef} draw={drawSellTab} eventMode="none" />

@@ -1,0 +1,15 @@
+---
+description: Prefer handlers, use(), and render-time resets over useEffect
+alwaysApply: true
+---
+
+# Avoid `useEffect`
+
+Default to **not** using `useEffect`. Use instead:
+
+- Event handlers and callbacks for user-driven updates
+- Render-time state adjustment when props change (store previous prop, reset when it differs)
+- `use()` for promises, context, and suspendable data
+- `useTick` / refs for Pixi and other per-frame visual state
+
+When `useEffect` is truly required, leave a short comment **above** the effect stating why handlers, `use()`, render-time reset, or tick logic cannot cover the case.

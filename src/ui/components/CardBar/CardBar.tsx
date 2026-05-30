@@ -8,7 +8,11 @@ import {
 } from "@/ui/components/DraggableItem/DraggableItem";
 import { Card, DEFAULT_CARD_HEIGHT, DEFAULT_CARD_WIDTH, type CardHandle } from "@/ui/components/Card/Card";
 import { getCardTexture, itemTexturesReady } from "@/assets/items/textures";
-import { CARD_COUNT, CARD_SELECTED_Z_INDEX } from "@/ui/components/Card/config";
+import {
+  CARD_COUNT,
+  CARD_SELECTED_Z_INDEX,
+  cardHandHitHalf,
+} from "@/ui/components/Card/config";
 import {
   useReorderableRow,
   type ReorderableRowLayout,
@@ -16,7 +20,8 @@ import {
 
 import "@/ui/pixi/extend";
 
-const HIT_SIZE = Math.max(DEFAULT_CARD_WIDTH, DEFAULT_CARD_HEIGHT);
+/** Must cover enlarged card art and the sell tab (extends past default card bounds). */
+const HIT_SIZE = cardHandHitHalf(DEFAULT_CARD_WIDTH, DEFAULT_CARD_HEIGHT) * 2;
 
 const initialOrder = () => Array.from({ length: CARD_COUNT }, (_, cardId) => cardId);
 
@@ -39,8 +44,16 @@ export function CardsHand({ layout }: CardsHandProps) {
     onOrderChange: setOrder,
     swing: { factor: 0.07, maxRadians: 0.42, follow: 0.18, velocitySmoothing: 0.28 },
     dragSnapLerp: 0.42,
-    onItemTap: (_slotIndex, cardId) => {
-      cardRefs.current[cardId]?.toggleOwned();
+    onItemTap: (_slotIndex, cardId, event) => {
+      const card = cardRefs.current[cardId];
+      if (!card) {
+        return;
+      }
+      if (card.hitsSellTabAtGlobal(event.global.x, event.global.y)) {
+        card.triggerSell();
+        return;
+      }
+      card.toggleOwned();
     },
   });
 
@@ -122,6 +135,7 @@ export function CardsHand({ layout }: CardsHandProps) {
               dragging={draggingCardId === cardId}
               displayMode="owned"
               embedded
+              onSell={()=>console.log("sell")}
               onSelectedChange={(selected) => onCardSelectedChange(cardId, selected)}
             />
           </DraggableItem>
