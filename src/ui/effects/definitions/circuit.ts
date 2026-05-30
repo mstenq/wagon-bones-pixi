@@ -9,31 +9,24 @@ export const circuitEffect: EffectDefinition = {
   create(_layers, _mount, art) {
     const circuit = createPixiFilterFromIsf(CIRCUIT_ISF, 2);
     applyArtFilters(art, [circuit.filter]);
-    const seed = Math.random();
-    const timeOffset = seed * 71.9;
-    const breathSpeed = 0.35 + seed * 0.28;
-    const pulseSpeed = 0.02 + seed * 0.08;
-    const pulseIntensity = 0.06 + seed * 0.18;
-    const ledHue = 0.48 + seed * 0.18;
-    const glowAmount = 0.34 + seed * 0.32;
+    const instanceSeed = Math.random() * 10000;
+    const timeOffset = Math.random() * 120;
 
     const step = (frame: EffectFrameContext) => {
-      const localTime = (frame.time + frame.phase * 0.13 + timeOffset) % 120;
-      circuit.setValue("breathSpeed", breathSpeed); // default 0.25
-      circuit.setValue("breathDepth", 0.35); // default 0.35
-      circuit.setValue("ledDensity", 0.6); // default 0.6
-      circuit.setValue("ledFlickerSpeed", 1.5); // default 1.5
-      circuit.setValue("ledBrightness", 1.6); // default 1.6
-      circuit.setValue("ledSize", 0.0035); // default 0.0035
-      circuit.setValue("pulseSpeed", pulseSpeed); // default 0.4
-      circuit.setValue("pulseIntensity", pulseIntensity); // default 0.45
-      circuit.setValue("scanlineAmount", 0.08); // default 0.08
-      circuit.setValue("glowAmount", glowAmount); // default 0.55
-      circuit.setValue("colorTintR", 0.65); // default 0.65
-      circuit.setValue("colorTintG", 0.95); // default 0.95
-      circuit.setValue("colorTintB", 1.1); // default 1.1
-      circuit.setValue("ledHue", ledHue); // default 0.55
-      circuit.setValue("vignette", 0.25); // default 0.25
+      const localTime = (frame.time + frame.phase * 0.13 + timeOffset) % 240;
+      circuit.setValue("line_width", 0.008); // default 0.01
+      circuit.setValue("segment_count", 8); // default 8
+      circuit.setValue("segment_length", 0.07); // default 0.06
+      circuit.setValue("tail_lag", 0.35); // default 0.4
+      circuit.setValue("line_colour", [0.15, 0.95, 0.35, 1.0]); // default [0.15, 0.95, 0.35, 1]
+      circuit.setValue("head_size_multiplier", 3.0); // default 5.0
+      circuit.setValue("head_colour", [0.6, 1.0, 0.7, 1.0]); // default [0.6, 1, 0.7, 1]
+      circuit.setValue("line_count", 12); // default 10
+      circuit.setValue("line_lifetime", 8.0); // default 5.0
+      circuit.setValue("animation_speed", 0.5); // default 0.5
+      circuit.setValue("start_direction_degrees", 0.0); // default 0.0
+      circuit.setValue("random_start_direction", true); // default true
+      circuit.setValue("instance_seed", instanceSeed); // default 0.0
       circuit.tick({
         time: localTime,
         dt: frame.dt,
