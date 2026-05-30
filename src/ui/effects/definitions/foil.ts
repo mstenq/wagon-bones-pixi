@@ -1,49 +1,33 @@
-import { ColorMatrixFilter, Graphics } from "pixi.js";
-
-import { addGlowLayer, applyArtFilters, makeRuntime, noopDestroy } from "@/ui/effects/effectHelpers";
-import { borderBoundsFromSize } from "@/ui/effects/shared/borderFrame";
+import { createPixiFilterFromIsf } from "@/ui/effects/isf";
+import { applyArtFilters, makeRuntime, noopDestroy } from "@/ui/effects/effectHelpers";
+import { FOIL_ISF } from "@/ui/effects/shaders/foil.isf";
 import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
 
 export const foilEffect: EffectDefinition = {
   id: "foil",
   label: "Foil",
-  create(layers, mount, art) {
-    const bounds = borderBoundsFromSize(mount.width, mount.height);
-    const shine = addGlowLayer(layers.front, 0);
-    const streak = addGlowLayer(layers.front, 1);
-    const contrast = new ColorMatrixFilter();
-    contrast.contrast(0.15, true);
-    applyArtFilters(art, [contrast]);
+  create(_layers, _mount, art) {
+    const foil = createPixiFilterFromIsf(FOIL_ISF, 2);
+    applyArtFilters(art, [foil.filter]);
+    const seed = Math.random();
+    const timeOffset = seed * 41.7;
 
     const step = (frame: EffectFrameContext) => {
-      const t = frame.time;
-      const px = frame.pointerNormX;
-      const py = frame.pointerNormY;
-      const sweep = (t * 0.15 + px * 0.3) % 1;
-      const angle = Math.atan2(py - 0.5, px - 0.5) + t * 0.2;
-
-      shine.clear();
-      const w = bounds.halfW * 2;
-      const h = bounds.halfH * 2;
-      const cx = -bounds.halfW + sweep * w * 1.5 - w * 0.25;
-      shine.poly([
-        cx, -bounds.halfH,
-        cx + 40, -bounds.halfH,
-        cx + 80, bounds.halfH,
-        cx + 20, bounds.halfH,
-      ]);
-      shine.fill({ color: 0xffffff, alpha: frame.hovered ? 0.22 : 0.12 });
-
-      streak.clear();
-      const len = Math.max(bounds.halfW, bounds.halfH) * 2;
-      streak.moveTo(Math.cos(angle) * -len, Math.sin(angle) * -len);
-      streak.lineTo(Math.cos(angle) * len, Math.sin(angle) * len);
-      streak.stroke({ width: 18, color: 0xe8e8f0, alpha: 0.08 + (frame.hovered ? 0.1 : 0) });
+      const localTime = (frame.time + frame.phase * 0.11 + timeOffset) % 120;
+      const ox = (frame.pointerNormX - 0.5) * 0.35 + frame.tiltX * 0.12;
+      const oy = (frame.pointerNormY - 0.5) * 0.35 + frame.tiltY * 0.12;
+      foil.setValue("offset", [ox, oy]); // default [0, 0]
+      foil.setValue("center", [0.3, 0.4]); // default [0.5, 0.5]
+      foil.setValue("speed", 1.0); // default 1.0
+      foil.setValue("intensity", 0.2); // default 0.7
+      foil.tick({
+        time: localTime,
+        dt: frame.dt,
+        width: frame.width,
+        height: frame.height,
+      });
     };
 
-    return makeRuntime("foil", step, noopDestroy(() => applyArtFilters(art, null), () => {
-      shine.destroy();
-      streak.destroy();
-    }));
+    return makeRuntime("foil", step, noopDestroy(() => applyArtFilters(art, null)));
   },
 };
