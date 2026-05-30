@@ -36,14 +36,16 @@
     animation: none;
   }
 
-  .score-flame__canvas { filter: none; }
+  .score-flame__canvas {
+    filter: none;
+  }
 }
 
 .score-flame {
   /* Match ScoreBox rounded-lg (0.5rem) so flames clear the corner arcs. */
-  --flame-inset-x: 0.5rem;
-  --flame-overlap-y: 10px;
-  --flame-height: calc(4px + var(--flame-i, 0) * 68px);
+  --flame-inset-x: 0rem;
+  --flame-overlap-y: 31px;
+  --flame-height: calc(4px + var(--flame-i, 0) * 80px);
   z-index: 0;
   top: 0;
   right: var(--flame-inset-x);
