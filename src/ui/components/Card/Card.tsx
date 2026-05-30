@@ -26,8 +26,8 @@ import {
   CARD_LIFT_PX,
   CARD_OWNED_ENLARGED_SCALE,
   CARD_SELECTED_Z_INDEX,
-  SELL_TAB_ATTACH_OVERLAP,
   SELL_TAB_HEIGHT,
+  SELL_TAB_WIDTH,
   TAB_WIDTH,
   type CardDisplayMode,
 } from "@/ui/components/Card/config";
@@ -43,6 +43,9 @@ import {
   formatSellLabel,
   priceTabAnchorY,
   priceTabTextStyle,
+  sellTabAnchorX,
+  sellTabInnerX,
+  SELL_TAB_TEXT_X,
   sellTabTextStyle,
   tabTextStyle,
 } from "@/ui/components/Card/cardTab";
@@ -144,6 +147,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   const sellTabInnerRef = useRef<Container | null>(null);
   const sellTabShadowRef = useRef<Graphics | null>(null);
   const sellTabGfxRef = useRef<Graphics | null>(null);
+  const cardHitRef = useRef<Container | null>(null);
 
   const cornersRef = useRef(createUnitCorners());
   const angleXRef = useRef(0);
@@ -181,24 +185,10 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   hoveredRef.current = effectiveHovered;
   draggingRef.current = dragging;
 
-  const hitArea = useMemo(() => {
-    const extraW =
-      displayMode === "owned" ? TAB_WIDTH - SELL_TAB_ATTACH_OVERLAP + 8 : displayMode === "shop" ? 8 : 0;
-    const extraH =
-      displayMode === "shop"
-        ? CARD_LIFT_PX + 56
-        : displayMode === "pack"
-          ? CARD_LIFT_PX + 40
-          : displayMode === "owned"
-            ? 24
-            : 0;
-    return new Rectangle(
-      -(width + extraW) / 2,
-      -(height + extraH) / 2 - (displayMode === "shop" ? 16 : 0),
-      width + extraW,
-      height + extraH + (displayMode === "shop" ? 16 : 0),
-    );
-  }, [displayMode, height, width]);
+  const cardBodyHitArea = useMemo(
+    () => new Rectangle(-width / 2, -height / 2, width, height),
+    [height, width],
+  );
 
   useEffect(() => {
     if (!interactive) {
@@ -291,18 +281,8 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   const bindRoot = useCallback(
     (node: Container | null) => {
       rootRef.current = node;
-      if (!node) {
-        return;
-      }
-      if (selfInteractive) {
-        node.hitArea = hitArea;
-        node.eventMode = "static";
-        node.cursor = "pointer";
-      } else {
-        node.eventMode = "none";
-      }
     },
-    [hitArea, selfInteractive],
+    [],
   );
 
   const onCardPointerDown = useCallback(
@@ -393,6 +373,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
 
   const showActionTab =
     interactive && raised && (displayMode === "shop" || displayMode === "pack");
+  const showSellTab = interactive && displayMode === "owned" && enlarged;
   const actionTabLabel = displayMode === "shop" ? "BUY" : "SELECT";
   const actionTabHandler = displayMode === "shop" ? onBuyPointerDown : onSelectPointerDown;
 
@@ -499,23 +480,18 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
         const inner = actionTabInnerRef.current;
         if (inner) {
           inner.y = -ACTION_TAB_HEIGHT + liftProgress * ACTION_TAB_HEIGHT;
-          inner.eventMode =
-            showActionTab && liftProgress > 0.45 ? "static" : "none";
         }
-        actionTab.alpha = liftProgress > 0 ? 1 : 0;
+        actionTab.alpha = showActionTab && liftProgress > 0 ? 1 : 0;
       }
 
       if (sellTab) {
         const reveal = sellTabSpringRef.current.value;
+        sellTab.x = sellTabAnchorX(width, ownedScale);
         const inner = sellTabInnerRef.current;
         if (inner) {
-          inner.x = -TAB_WIDTH + reveal * TAB_WIDTH;
-          inner.eventMode =
-            displayMode === "owned" && enlargedRef.current && reveal > 0.45
-              ? "static"
-              : "none";
+          inner.x = sellTabInnerX(reveal);
         }
-        sellTab.alpha = displayMode === "owned" ? reveal : 0;
+        sellTab.alpha = displayMode === "owned" && reveal > 0 ? reveal : 0;
       }
     }
   });
@@ -523,19 +499,16 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   return (
     <pixiContainer
       ref={bindRoot}
-      eventMode={selfInteractive ? "static" : "none"}
-      onPointerDown={selfInteractive ? onCardPointerDown : undefined}
-      onPointerOver={selfInteractive ? onCardPointerOver : undefined}
-      onPointerOut={selfInteractive ? onCardPointerOut : undefined}
-      onPointerMove={selfInteractive ? onCardPointerMove : undefined}
+      sortableChildren
+      eventMode={selfInteractive ? "passive" : "none"}
     >
-      <pixiContainer ref={liftRef} sortableChildren eventMode="none">
+      <pixiContainer ref={liftRef} sortableChildren eventMode="passive">
         {interactive && (displayMode === "shop" || displayMode === "pack") ? (
-          <pixiContainer ref={actionTabRef} zIndex={0} eventMode="none" alpha={0}>
+          <pixiContainer ref={actionTabRef} zIndex={0} eventMode="passive">
             <pixiContainer
               ref={actionTabInnerRef}
               y={-ACTION_TAB_HEIGHT}
-              eventMode="none"
+              eventMode={showActionTab ? "static" : "none"}
               cursor="pointer"
               hitArea={new Rectangle(
                 -TAB_WIDTH / 2,
@@ -560,7 +533,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
         ) : null}
 
         {displayMode === "shop" ? (
-          <pixiContainer ref={priceTabRef} eventMode="none">
+          <pixiContainer ref={priceTabRef} eventMode="passive">
             <pixiGraphics ref={priceTabGfxRef} draw={drawPriceTab} eventMode="none" />
             <pixiText
               text={formatPrice(price)}
@@ -572,35 +545,42 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
           </pixiContainer>
         ) : null}
 
-        <pixiContainer ref={squishRef} zIndex={1} sortableChildren eventMode="none">
-          {displayMode === "owned" ? (
+        {displayMode === "owned" ? (
+          <pixiContainer ref={sellTabRef} zIndex={0} eventMode="passive">
             <pixiContainer
-              ref={sellTabRef}
-              x={width / 2 - SELL_TAB_ATTACH_OVERLAP}
-              y={0}
-              zIndex={0}
-              alpha={0}
-              eventMode="none"
+              ref={sellTabInnerRef}
+              x={-SELL_TAB_WIDTH}
+              eventMode={showSellTab ? "static" : "none"}
+              cursor="pointer"
+              hitArea={new Rectangle(0, -SELL_TAB_HEIGHT / 2, SELL_TAB_WIDTH, SELL_TAB_HEIGHT)}
+              onPointerDown={onSellPointerDown}
             >
-              <pixiContainer
-                ref={sellTabInnerRef}
-                x={-TAB_WIDTH}
-                eventMode={embedded ? "static" : "none"}
-                cursor="pointer"
-                hitArea={new Rectangle(0, -SELL_TAB_HEIGHT / 2, TAB_WIDTH, SELL_TAB_HEIGHT)}
-                onPointerDown={onSellPointerDown}
-              >
-                <pixiGraphics ref={sellTabShadowRef} draw={drawSellTabShadow} eventMode="none" />
-                <pixiGraphics ref={sellTabGfxRef} draw={drawSellTab} eventMode="none" />
-                <pixiText
-                  text={formatSellLabel(sellPrice)}
-                  x={TAB_WIDTH / 2}
-                  anchor={0.5}
-                  style={sellTabTextStyle}
-                  eventMode="none"
-                />
-              </pixiContainer>
+              <pixiGraphics ref={sellTabShadowRef} draw={drawSellTabShadow} eventMode="none" />
+              <pixiGraphics ref={sellTabGfxRef} draw={drawSellTab} eventMode="none" />
+              <pixiText
+                text={formatSellLabel(sellPrice)}
+                x={SELL_TAB_TEXT_X}
+                anchor={0.5}
+                style={sellTabTextStyle}
+                eventMode="none"
+              />
             </pixiContainer>
+          </pixiContainer>
+        ) : null}
+
+        <pixiContainer ref={squishRef} zIndex={1} sortableChildren eventMode="passive">
+          {selfInteractive ? (
+            <pixiContainer
+              ref={cardHitRef}
+              zIndex={2}
+              eventMode="static"
+              cursor="pointer"
+              hitArea={cardBodyHitArea}
+              onPointerDown={onCardPointerDown}
+              onPointerOver={onCardPointerOver}
+              onPointerOut={onCardPointerOut}
+              onPointerMove={onCardPointerMove}
+            />
           ) : null}
 
           <pixiContainer ref={idleRef} zIndex={1} eventMode="none">

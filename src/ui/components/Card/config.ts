@@ -45,7 +45,10 @@ export const CARD_HOVER_SCALE = 1.06;
 export const CARD_OWNED_ENLARGED_SCALE = 1.14;
 /** Renders above row siblings when a card is selected (drag uses 1000). */
 export const CARD_SELECTED_Z_INDEX = 500;
-export const SELL_TAB_ATTACH_OVERLAP = 10;
+export const SELL_TAB_ATTACH_OVERLAP = 8;
+export const SELL_TAB_WIDTH = 92;
+/** Keeps label off the flat edge that tucks under the card. */
+export const SELL_TAB_LEFT_PADDING = 16;
 export const ACTION_TAB_ATTACH_OVERLAP = 55;
 export const TAB_SHADOW_OFFSET_X = 2;
 export const TAB_SHADOW_OFFSET_Y = 3;

@@ -8,7 +8,10 @@ import {
   PRICE_TAB_HEIGHT,
   PRICE_TAB_STROKE,
   PRICE_TAB_TEXT_COLOR,
+  SELL_TAB_ATTACH_OVERLAP,
   SELL_TAB_HEIGHT,
+  SELL_TAB_LEFT_PADDING,
+  SELL_TAB_WIDTH,
   TAB_GREEN,
   TAB_HEIGHT,
   TAB_SHADOW_ALPHA,
@@ -85,7 +88,7 @@ function drawSellTabShape(
   offsetY: number,
   style: TabDrawStyle = {},
 ): void {
-  const width = TAB_WIDTH;
+  const width = SELL_TAB_WIDTH;
   const height = SELL_TAB_HEIGHT;
   const halfH = height / 2;
   const radius = 6;
@@ -187,11 +190,27 @@ export function priceTabAnchorY(cardHeight: number, squishScaleY = 1): number {
   return -(cardHeight / 2) * squishScaleY + PRICE_TAB_Y_OFFSET;
 }
 
+/** Tab container x; tracks owned-mode card scale on the right edge. */
+export function sellTabAnchorX(cardWidth: number, ownedScale = 1): number {
+  return (cardWidth / 2) * ownedScale - SELL_TAB_ATTACH_OVERLAP;
+}
+
+/** Inner slide from hidden to fully revealed (flush with card edge). */
+export function sellTabInnerX(reveal: number): number {
+  return -SELL_TAB_WIDTH + reveal * SELL_TAB_WIDTH;
+}
+
+export const SELL_TAB_TEXT_X =
+  SELL_TAB_LEFT_PADDING + (SELL_TAB_WIDTH - SELL_TAB_LEFT_PADDING) / 2;
+
 /** Re-export for hit-area / layout math in Card. */
 export {
   ACTION_TAB_ATTACH_OVERLAP,
   ACTION_TAB_HEIGHT,
-  ACTION_TAB_VISIBLE_HEIGHT, SELL_TAB_HEIGHT, TAB_HEIGHT,
-  TAB_WIDTH
+  ACTION_TAB_VISIBLE_HEIGHT,
+  SELL_TAB_HEIGHT,
+  SELL_TAB_WIDTH,
+  TAB_HEIGHT,
+  TAB_WIDTH,
 };
 
