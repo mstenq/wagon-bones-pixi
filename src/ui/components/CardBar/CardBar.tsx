@@ -8,7 +8,7 @@ import {
 } from "@/ui/components/DraggableItem/DraggableItem";
 import { Card, DEFAULT_CARD_HEIGHT, DEFAULT_CARD_WIDTH, type CardHandle } from "@/ui/components/Card/Card";
 import { getCardTexture, itemTexturesReady } from "@/assets/items/textures";
-import { CARD_COUNT } from "@/ui/components/Card/config";
+import { CARD_COUNT, CARD_SELECTED_Z_INDEX } from "@/ui/components/Card/config";
 import {
   useReorderableRow,
   type ReorderableRowLayout,
@@ -29,6 +29,7 @@ export function CardsHand({ layout }: CardsHandProps) {
 
   const [order, setOrder] = useState(initialOrder);
   const [hoveredCardId, setHoveredCardId] = useState<number | null>(null);
+  const [selectedCardIds, setSelectedCardIds] = useState<Set<number>>(() => new Set());
   const dragRefs = useRef<(DraggableItemHandle | null)[]>([]);
   const cardRefs = useRef<(CardHandle | null)[]>([]);
 
@@ -38,6 +39,9 @@ export function CardsHand({ layout }: CardsHandProps) {
     onOrderChange: setOrder,
     swing: { factor: 0.07, maxRadians: 0.42, follow: 0.18, velocitySmoothing: 0.28 },
     dragSnapLerp: 0.42,
+    onItemTap: (_slotIndex, cardId) => {
+      cardRefs.current[cardId]?.toggleOwned();
+    },
   });
 
   const draggingCardId = draggingSlot !== null ? order[draggingSlot] : null;
@@ -64,15 +68,28 @@ export function CardsHand({ layout }: CardsHandProps) {
 
   const onTick = useCallback(() => {
     tickLayout((slotIndex, cardId, visual) => {
+      const zIndex = selectedCardIds.has(cardId) ? CARD_SELECTED_Z_INDEX : visual.zIndex;
       dragRefs.current[cardId]?.setTransform(
         visual.x,
         visual.y,
         visual.rotation,
-        visual.zIndex,
+        zIndex,
       );
       cardRefs.current[cardId]?.setSquishScale(visual.scaleX, visual.scaleY);
     });
-  }, [tickLayout]);
+  }, [selectedCardIds, tickLayout]);
+
+  const onCardSelectedChange = useCallback((cardId: number, selected: boolean) => {
+    setSelectedCardIds((current) => {
+      const next = new Set(current);
+      if (selected) {
+        next.add(cardId);
+      } else {
+        next.delete(cardId);
+      }
+      return next;
+    });
+  }, []);
 
   useTick(onTick);
 
@@ -89,6 +106,7 @@ export function CardsHand({ layout }: CardsHandProps) {
             x={home.x}
             y={home.y}
             hitSize={HIT_SIZE}
+            interactiveChildren
             onPointerDown={(event) => onPointerDown(slotIndex, event)}
             onPointerMove={(event) => onCardPointerMove(cardId, event)}
             onPointerOver={() => onCardPointerOver(cardId)}
@@ -102,6 +120,9 @@ export function CardsHand({ layout }: CardsHandProps) {
               phase={cardId * 1.35}
               hovered={hoveredCardId === cardId}
               dragging={draggingCardId === cardId}
+              displayMode="owned"
+              embedded
+              onSelectedChange={(selected) => onCardSelectedChange(cardId, selected)}
             />
           </DraggableItem>
         );

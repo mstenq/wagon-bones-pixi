@@ -114,3 +114,48 @@ a:hover {
 .game-dice-enhancement-select:hover {
     background: rgba(58, 58, 82, 0.95);
 }
+
+.playground-stage {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.story-canvas {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.story-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.story-control-label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.story-control-select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.5rem;
+    background: rgba(40, 40, 58, 0.92);
+    color: #ffffff;
+    font: inherit;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+.story-control-select:hover {
+    background: rgba(58, 58, 82, 0.95);
+}

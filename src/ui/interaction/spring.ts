@@ -1,4 +1,39 @@
-/** Spring-driven grab scale (rubber-band feel). */
+/** Spring-driven motion for UI (scale squish, lift, slide, etc.). */
+
+export const STIFFNESS = 220;
+export const DAMPING = 16;
+
+export type ScalarSpringState = {
+  value: number;
+  velocity: number;
+  target: number;
+};
+
+export function createScalarSpring(initial = 0, target = initial): ScalarSpringState {
+  return { value: initial, velocity: 0, target };
+}
+
+export function setScalarTarget(state: ScalarSpringState, target: number): void {
+  state.target = target;
+}
+
+/** Advance scalar spring toward target; `dt` in seconds (~1/60 per tick). */
+export function stepScalarSpring(state: ScalarSpringState, dt: number): void {
+  const acceleration = (state.target - state.value) * STIFFNESS;
+  const damp = Math.exp(-DAMPING * dt);
+
+  state.velocity = (state.velocity + acceleration * dt) * damp;
+  state.value += state.velocity * dt;
+}
+
+export function isScalarSettled(state: ScalarSpringState, epsilon = 0.004): boolean {
+  return (
+    Math.abs(state.target - state.value) < epsilon &&
+    Math.abs(state.velocity) < epsilon
+  );
+}
+
+/** 2D scale spring (asymmetric rubber-band squash). */
 export type SquishState = {
   scaleX: number;
   scaleY: number;
@@ -18,9 +53,8 @@ export const SQUISH_IDLE: SquishTargets = { scaleX: 1, scaleY: 1 };
 export const SQUISH_GRAB: SquishTargets = { scaleX: 1.06, scaleY: 0.82 };
 /** Slightly enlarged while dragging. */
 export const SQUISH_DRAG: SquishTargets = { scaleX: 1.14, scaleY: 1.14 };
-
-const STIFFNESS = 220;
-const DAMPING = 16;
+/** Brief squash when a card lifts on click. */
+export const SQUISH_LIFT: SquishTargets = { scaleX: 1.04, scaleY: 0.92 };
 
 export function createSquishState(target: SquishTargets = SQUISH_IDLE): SquishState {
   return {
@@ -38,7 +72,7 @@ export function setSquishTarget(state: SquishState, target: SquishTargets): void
   state.targetY = target.scaleY;
 }
 
-/** Advance spring toward target; `dt` in seconds (~1/60 per tick). */
+/** Advance 2D scale spring toward target; `dt` in seconds (~1/60 per tick). */
 export function stepSquish(state: SquishState, dt: number): void {
   const ax = (state.targetX - state.scaleX) * STIFFNESS;
   const ay = (state.targetY - state.scaleY) * STIFFNESS;

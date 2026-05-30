@@ -12,7 +12,7 @@ import {
   SQUISH_IDLE,
   stepSquish,
   type SquishState,
-} from "@/ui/interaction/dragSquish";
+} from "@/ui/interaction/spring";
 import {
   decaySwing,
   smoothVelocity,
@@ -49,6 +49,9 @@ type DragSession = {
   parent: Container;
   offsetX: number;
   offsetY: number;
+  downGlobalX: number;
+  downGlobalY: number;
+  activated: boolean;
   lastGlobalX: number;
   smoothVx: number;
   /** Swing target from pointer velocity — stepped toward each frame in `tickLayout`. */
@@ -60,6 +63,8 @@ type DragSession = {
   previewSlot: number;
 };
 
+const DEFAULT_DRAG_THRESHOLD = 8;
+
 export type UseReorderableRowOptions = {
   layout: ReorderableRowLayout;
   order: number[];
@@ -68,6 +73,10 @@ export type UseReorderableRowOptions = {
   swing?: DragSwingConfig;
   snapLerp?: number;
   dragSnapLerp?: number;
+  /** Pixels before pointer movement counts as drag instead of tap. */
+  dragThreshold?: number;
+  /** Fired on pointer up when movement stayed below `dragThreshold`. */
+  onItemTap?: (slotIndex: number, itemId: number, event: FederatedPointerEvent) => void;
 };
 
 export function useReorderableRow({
@@ -78,6 +87,8 @@ export function useReorderableRow({
   swing,
   snapLerp = 0.22,
   dragSnapLerp = 0.38,
+  dragThreshold = DEFAULT_DRAG_THRESHOLD,
+  onItemTap,
 }: UseReorderableRowOptions) {
   const { app } = useApplication();
   const [draggingSlot, setDraggingSlot] = useState<number | null>(null);
@@ -171,6 +182,9 @@ export function useReorderableRow({
         parent,
         offsetX: local.x - target.x,
         offsetY: local.y - target.y,
+        downGlobalX: event.globalX,
+        downGlobalY: event.globalY,
+        activated: false,
         lastGlobalX: event.globalX,
         smoothVx: 0,
         targetSwing: 0,
@@ -181,26 +195,34 @@ export function useReorderableRow({
         previewSlot: slotIndex,
       };
 
-      const squish = createSquishState(SQUISH_GRAB);
-      squishRef.current.set(dieId, squish);
-      setSquishTarget(squish, SQUISH_GRAB);
-
       dragRef.current = session;
-      setDraggingSlot(slotIndex);
-      target.cursor = "grabbing";
 
       let lifted = false;
+      let liftTimer: number | undefined;
 
-      const liftTimer = window.setTimeout(() => {
-        if (dragRef.current !== session) {
+      const activateDrag = () => {
+        if (session.activated) {
           return;
         }
-        const state = squishRef.current.get(dieId);
-        if (state) {
-          setSquishTarget(state, SQUISH_DRAG);
-          lifted = true;
-        }
-      }, 70);
+        session.activated = true;
+        setDraggingSlot(slotIndex);
+
+        const squish = createSquishState(SQUISH_GRAB);
+        squishRef.current.set(dieId, squish);
+        setSquishTarget(squish, SQUISH_GRAB);
+        target.cursor = "grabbing";
+
+        liftTimer = window.setTimeout(() => {
+          if (dragRef.current !== session) {
+            return;
+          }
+          const state = squishRef.current.get(dieId);
+          if (state) {
+            setSquishTarget(state, SQUISH_DRAG);
+            lifted = true;
+          }
+        }, 70);
+      };
 
       const onMove = (moveEvent: FederatedPointerEvent) => {
         if (
@@ -208,6 +230,15 @@ export function useReorderableRow({
           dragRef.current !== session
         ) {
           return;
+        }
+
+        if (!session.activated) {
+          const dx = moveEvent.globalX - session.downGlobalX;
+          const dy = moveEvent.globalY - session.downGlobalY;
+          if (dx * dx + dy * dy < dragThreshold * dragThreshold) {
+            return;
+          }
+          activateDrag();
         }
 
         const moveLocal = parent.toLocal(moveEvent.global);
@@ -237,6 +268,18 @@ export function useReorderableRow({
         positionsRef.current.set(session.dieId, { x: session.x, y: session.y });
       };
 
+      const cleanupListeners = () => {
+        if (liftTimer !== undefined) {
+          window.clearTimeout(liftTimer);
+        }
+        app.stage.off("globalpointermove", onMove);
+        app.stage.off("pointerup", onUp);
+        app.stage.off("pointerupoutside", onUp);
+        target.off("globalpointermove", onMove);
+        target.off("pointerup", onUp);
+        target.off("pointerupoutside", onUp);
+      };
+
       const onUp = (upEvent: FederatedPointerEvent) => {
         if (
           upEvent.pointerId !== session.pointerId ||
@@ -245,13 +288,14 @@ export function useReorderableRow({
           return;
         }
 
-        window.clearTimeout(liftTimer);
-        app.stage.off("globalpointermove", onMove);
-        app.stage.off("pointerup", onUp);
-        app.stage.off("pointerupoutside", onUp);
-        target.off("globalpointermove", onMove);
-        target.off("pointerup", onUp);
-        target.off("pointerupoutside", onUp);
+        cleanupListeners();
+
+        if (!session.activated) {
+          onItemTap?.(session.fromSlot, session.dieId, upEvent);
+          dragRef.current = null;
+          return;
+        }
+
         target.cursor = "grab";
         endDrag(session);
       };
@@ -263,12 +307,22 @@ export function useReorderableRow({
       target.on("pointerup", onUp);
       target.on("pointerupoutside", onUp);
     },
-    [app.stage, disabled, endDrag, layout.count, layout.originX, layout.pitch, swing],
+    [
+      app.stage,
+      disabled,
+      dragThreshold,
+      endDrag,
+      layout.count,
+      layout.originX,
+      layout.pitch,
+      onItemTap,
+      swing,
+    ],
   );
 
   const tickLayout = useCallback(
     (apply: (slotIndex: number, dieId: number, visual: ItemVisual) => void) => {
-      const session = dragRef.current;
+      const session = dragRef.current?.activated ? dragRef.current : null;
       const activeOrder = session
         ? getPreviewOrder(session.fromSlot, session.previewSlot)
         : orderRef.current;

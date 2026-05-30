@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 
-import type { StoryDefinition } from "@/ui/playground/storyTypes";
+import type { StoryDefinition } from "@/ui/types/storyTypes";
 
 type LoadedStory = StoryDefinition & { id: string };
 
@@ -25,7 +25,7 @@ const loadedStories: LoadedStory[] = Object.entries(storyModules)
   .map(({ id, story }) => ({ ...story, id }))
   .sort((left, right) => left.name.localeCompare(right.name));
 
-export function PlaygroundPage() {
+export function PlaygroundLayout() {
   const [selectedId, setSelectedId] = useState<string>(loadedStories[0]?.id ?? "");
 
   const selectedStory = useMemo(

@@ -1,5 +1,5 @@
 import { App } from "@/ui/app/App";
-import { PlaygroundPage } from "@/ui/playground/PlaygroundPage";
+import { PlaygroundLayout } from "@/ui/layout/PlaygroundLayout";
 
 function NotFoundPage() {
   return (
@@ -20,7 +20,7 @@ export function DevRouter() {
   const pathname = window.location.pathname;
 
   if (pathname === "/playground") {
-    return <PlaygroundPage />;
+    return <PlaygroundLayout />;
   }
   if (pathname === "/") {
     return <App />;

@@ -15,6 +15,8 @@ export type DraggableItemProps = {
   zIndex?: number;
   hitSize: number;
   disabled?: boolean;
+  /** Allow child display objects (e.g. card sell tab) to receive pointer events. */
+  interactiveChildren?: boolean;
   onPointerDown?: (event: FederatedPointerEvent) => void;
   onPointerMove?: (event: FederatedPointerEvent) => void;
   onPointerOver?: (event: FederatedPointerEvent) => void;
@@ -35,6 +37,7 @@ export const DraggableItem = forwardRef<DraggableItemHandle, DraggableItemProps>
       zIndex = 0,
       hitSize,
       disabled = false,
+      interactiveChildren = false,
       onPointerDown,
       onPointerMove,
       onPointerOver,
@@ -72,11 +75,11 @@ export const DraggableItem = forwardRef<DraggableItemHandle, DraggableItemProps>
           return;
         }
         node.hitArea = hitArea;
-        node.interactiveChildren = false;
+        node.interactiveChildren = interactiveChildren;
         node.eventMode = disabled ? "none" : "static";
         node.cursor = disabled ? "default" : "grab";
       },
-      [disabled, hitArea],
+      [disabled, hitArea, interactiveChildren],
     );
 
     return (
