@@ -1,3 +1,4 @@
+import burnImg from "@/assets/effects/burn.png";
 import cloudPuffImg from "@/assets/effects/cloud-puff.png";
 import displacementHeatImg from "@/assets/effects/displacement-heat.png.png";
 import emberImg from "@/assets/effects/ember.png";
@@ -9,6 +10,7 @@ import sparkleImg from "@/assets/effects/sparkle.png";
 import wispImg from "@/assets/effects/wisp.png";
 
 export const EFFECT_IMAGES = {
+  burn: burnImg,
   cloudPuff: cloudPuffImg,
   displacementHeat: displacementHeatImg,
   ember: emberImg,
