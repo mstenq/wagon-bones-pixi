@@ -1,8 +1,16 @@
 import { useApplication } from "@pixi/react";
 import { useTick } from "@pixi/react";
 import { Sprite, Text, TextStyle, type Container, type Filter, type Texture } from "pixi.js";
-import { forwardRef, useImperativeHandle, useMemo, useRef } from "react";
+import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef } from "react";
 
+import { getEffectTexture } from "@/assets/effects/textures";
+import {
+  burnDestroyDissolveAt,
+  createBurnDissolveFilter,
+  BURN_DESTROY,
+  type BurnDissolveFilter,
+} from "@/ui/actionEffects/burnDissolveFilter";
+import type { ActionEffectComplete } from "@/ui/actionEffects/types";
 import {
   ADJACENT_FACE_LAYOUTS,
   pickAdjacentFaceValues,
@@ -38,6 +46,16 @@ export type DieHandle = {
   setFrame: (frame: DieFrame) => void;
   reset: () => void;
   setSquishScale: (scaleX: number, scaleY: number) => void;
+  /** Burn-away destroy animation; runs on top of the die's visual effect. */
+  destroy: (onComplete?: ActionEffectComplete) => void;
+  /** Whether a destroy animation is currently playing. */
+  isDestroying: () => boolean;
+};
+
+type DestroyAnimState = {
+  progress: number;
+  duration: number;
+  onComplete?: ActionEffectComplete;
 };
 
 /** Visual die only — position via parent `DraggableItem` or any container. */
@@ -67,6 +85,41 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
     },
     setJitter() {},
   });
+  const burnDissolveRef = useRef<BurnDissolveFilter | null>(null);
+  const destroyAnimRef = useRef<DestroyAnimState | null>(null);
+  const destroyingRef = useRef(false);
+
+  const startDestroy = useCallback((onComplete?: ActionEffectComplete) => {
+    if (destroyingRef.current) {
+      return;
+    }
+
+    const burnTex = getEffectTexture("burn");
+    if (!burnTex) {
+      squishRef.current && (squishRef.current.visible = false);
+      onComplete?.();
+      return;
+    }
+
+    destroyingRef.current = true;
+
+    if (!burnDissolveRef.current) {
+      burnDissolveRef.current = createBurnDissolveFilter(burnTex);
+    }
+
+    burnDissolveRef.current.setDissolve(0);
+
+    const squish = squishRef.current;
+    if (squish) {
+      squish.filters = [burnDissolveRef.current.filter];
+    }
+
+    destroyAnimRef.current = {
+      progress: 0,
+      duration: BURN_DESTROY.duration,
+      onComplete,
+    };
+  }, []);
 
   const syncAdjacentTexts = (centerValue: number) => {
     const adjacent = pickAdjacentFaceValues(centerValue);
@@ -78,8 +131,28 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
   };
 
   useTick(() => {
+    const dt = app.ticker.deltaMS / 1000;
+    const destroyAnim = destroyAnimRef.current;
+    if (destroyAnim) {
+      destroyAnim.progress += dt / destroyAnim.duration;
+      const linear = Math.min(1, destroyAnim.progress);
+      burnDissolveRef.current?.setDissolve(burnDestroyDissolveAt(linear));
+      if (linear >= 1) {
+        const onComplete = destroyAnim.onComplete;
+        destroyAnimRef.current = null;
+        destroyingRef.current = false;
+        const squish = squishRef.current;
+        if (squish) {
+          squish.visible = false;
+          squish.filters = null;
+        }
+        onComplete?.();
+      }
+      return;
+    }
+
     const frame = effectFrameRef.current;
-    frame.dt = app.ticker.deltaMS / 1000;
+    frame.dt = dt;
     frame.time = performance.now() / 1000;
     frame.width = size;
     frame.height = size;
@@ -112,8 +185,10 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
       setSquishScale(scaleX, scaleY) {
         squishRef.current?.scale.set(scaleX, scaleY);
       },
+      destroy: startDestroy,
+      isDestroying: () => destroyingRef.current,
     }),
-    [],
+    [startDestroy],
   );
 
   return (
