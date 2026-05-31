@@ -3,6 +3,7 @@
 @theme {
   --font-score: "Jersey 10", sans-serif;
   --animate-score-bump: score-box-digit-bump 110ms cubic-bezier(0.34, 1.45, 0.64, 1) both;
+  /* Duration matches WAVE_IDLE_PERIOD_S in waveBounce.ts */
   --animate-score-idle: score-box-char-idle 2.7s ease-in-out infinite;
 }
 

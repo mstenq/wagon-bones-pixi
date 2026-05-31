@@ -135,7 +135,7 @@ export function CardContainer({ layout }: CardContainerProps) {
                 cardRefs.current[cardId] = node;
               }}
               texture={getCardTexture(cardId)}
-              effect="circuit"
+              effect="glitch"
               phase={cardId * 1.35}
               hovered={hoveredCardId === cardId}
               dragging={draggingCardId === cardId}

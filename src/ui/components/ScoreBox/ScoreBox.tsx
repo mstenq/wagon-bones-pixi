@@ -3,7 +3,7 @@ import { useRef, type CSSProperties } from "react";
 import { ScoreFlame } from "@/ui/components/ScoreBox/ScoreFlame";
 import type { ScoreBoxVariant } from "@/ui/components/ScoreBox/scoreBoxTypes";
 import { scoreBoxVariantTheme } from "@/ui/components/ScoreBox/scoreBoxTheme";
-import { WaveBounceChars } from "@/ui/components/ScoreBox/WaveBounceChars";
+import { WaveBounceChars } from "@/ui/components/WaveBounce/WaveBounceChars";
 
 export type { ScoreBoxVariant } from "@/ui/components/ScoreBox/scoreBoxTypes";
 

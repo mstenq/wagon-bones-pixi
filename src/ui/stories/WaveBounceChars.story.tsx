@@ -1,4 +1,4 @@
-import { WaveBounceChars } from "@/ui/components/ScoreBox/WaveBounceChars";
+import { WaveBounceChars } from "@/ui/components/WaveBounce/WaveBounceChars";
 import { useQueryParam } from "@/ui/hooks/useQueryParam";
 import type { StoryDefinition } from "@/ui/types/storyTypes";
 import { panelLabelClass, panelSelectClass } from "@/ui/styles/panelControls";

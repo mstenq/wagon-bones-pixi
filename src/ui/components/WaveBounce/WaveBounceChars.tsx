@@ -1,5 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
 
+import { WAVE_IDLE_STAGGER_S } from "@/ui/components/WaveBounce/waveBounce";
+
 export type WaveBounceCharRenderProps = {
   char: string;
   index: number;
@@ -20,7 +22,7 @@ const waveOuterClass =
 export function WaveBounceChars({
   text,
   className,
-  staggerSeconds = 0.1,
+  staggerSeconds = WAVE_IDLE_STAGGER_S,
   getCharKey,
   renderChar,
 }: WaveBounceCharsProps) {

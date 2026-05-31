@@ -12,51 +12,21 @@ export type ScoreBoxVariantTheme = {
   flameFrontColor: string;
 };
 
-type VariantColorScale = {
-  surfaceToken: string;
-  borderToken: string;
-  flameMidToken: string;
-  flameFrontToken: string;
-  surfaceRgb: Rgb;
-};
-
-function tokenToClass(prefix: string, token: string): string {
-  return `${prefix}-${token}`;
-}
-
-function tokenToCssVar(token: string): string {
-  return `var(--color-${token})`;
-}
-
-function createTheme(scale: VariantColorScale): ScoreBoxVariantTheme {
-  return {
-    surfaceClass: tokenToClass("bg", scale.surfaceToken),
-    borderClass: tokenToClass("border", scale.borderToken),
-    surfaceColor: tokenToCssVar(scale.surfaceToken),
-    surfaceRgb: scale.surfaceRgb,
-    flameMidColor: tokenToCssVar(scale.flameMidToken),
-    flameFrontColor: tokenToCssVar(scale.flameFrontToken),
-  };
-}
-
-const scoreBoxVariantColors: Record<ScoreBoxVariant, VariantColorScale> = {
+export const scoreBoxVariantTheme: Record<ScoreBoxVariant, ScoreBoxVariantTheme> = {
   points: {
-    surfaceToken: "blue-400",
-    borderToken: "blue-800",
-    flameMidToken: "blue-600",
-    flameFrontToken: "blue-300",
+    surfaceClass: "bg-blue-400",
+    borderClass: "border-blue-800",
+    surfaceColor: "var(--color-blue-400)",
     surfaceRgb: [96, 165, 250],
+    flameMidColor: "var(--color-blue-600)",
+    flameFrontColor: "var(--color-blue-300)",
   },
   mult: {
-    surfaceToken: "red-500",
-    borderToken: "red-900",
-    flameMidToken: "red-700",
-    flameFrontToken: "red-300",
+    surfaceClass: "bg-red-500",
+    borderClass: "border-red-900",
+    surfaceColor: "var(--color-red-500)",
     surfaceRgb: [239, 68, 68],
+    flameMidColor: "var(--color-red-700)",
+    flameFrontColor: "var(--color-red-300)",
   },
-};
-
-export const scoreBoxVariantTheme: Record<ScoreBoxVariant, ScoreBoxVariantTheme> = {
-  points: createTheme(scoreBoxVariantColors.points),
-  mult: createTheme(scoreBoxVariantColors.mult),
 };
