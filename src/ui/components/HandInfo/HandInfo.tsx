@@ -46,7 +46,7 @@ export function HandInfo({
         <WaveBounceChars
           text={handName}
           className="min-w-0 text-2xl leading-none font-bold tracking-wide text-white"
-          renderChar={({ char }) => <span className="inline-block">{char}</span>}
+          renderChar={({ displayChar }) => <span className="inline-block">{displayChar}</span>}
         />
         <span className="shrink-0 text-lg leading-none text-white">lvl.{displayLevel}</span>
       </div>

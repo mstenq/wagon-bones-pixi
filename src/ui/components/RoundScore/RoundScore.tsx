@@ -73,7 +73,7 @@ export function RoundScore({ score, className }: RoundScoreProps) {
       aria-label={`Round score ${formatRoundScoreDisplay(displayScore)}`}
       aria-live="polite"
     >
-      <div className="flex w-16 shrink-0 flex-col justify-center gap-1 text-white">
+      <div className="flex px-1  w-16 shrink-0 flex-col justify-center gap-0.5 text-white">
         <span className="text-xl leading-none">Round</span>
         <span className="text-xl leading-none">score</span>
       </div>

@@ -119,7 +119,7 @@ export function ScoreBox({
           text={waveText}
           className={variantDigitsClass[variant]}
           getCharKey={({ char, index }) => `${index}-${char}-${bumpGeneration}`}
-          renderChar={({ char, index }) => {
+          renderChar={({ displayChar, index }) => {
             const changed = changeMask[index] ?? true;
             const digitClassName = [
               "inline-block origin-bottom will-change-transform",
@@ -135,7 +135,7 @@ export function ScoreBox({
 
             return (
               <span className={digitClassName} style={bumpStyle}>
-                {char}
+                {displayChar}
               </span>
             );
           }}

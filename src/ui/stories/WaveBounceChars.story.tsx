@@ -42,7 +42,7 @@ function WaveBounceCharsStory() {
         text="Full House"
         staggerSeconds={staggerSeconds}
         className="font-score text-3xl leading-none font-bold tracking-wide text-white select-none"
-        renderChar={({ char }) => <span className="inline-block">{char}</span>}
+        renderChar={({ displayChar }) => <span className="inline-block">{displayChar}</span>}
       />
     </div>
   );

@@ -4,6 +4,8 @@ import { WAVE_IDLE_STAGGER_S } from "@/ui/components/WaveBounce/waveBounce";
 
 export type WaveBounceCharRenderProps = {
   char: string;
+  /** Safe to render inside `inline-block` per-char wrappers (spaces → nbsp). */
+  displayChar: string;
   index: number;
 };
 
@@ -18,6 +20,11 @@ export type WaveBounceCharsProps = {
 
 const waveOuterClass =
   "inline-block origin-bottom will-change-transform animate-score-idle";
+
+/** Spaces collapse inside per-char `inline-block` wrappers — use nbsp for display. */
+function waveDisplayChar(char: string): string {
+  return char === " " ? "\u00A0" : char;
+}
 
 export function WaveBounceChars({
   text,
@@ -34,11 +41,11 @@ export function WaveBounceChars({
         const waveStyle: CSSProperties = {
           animationDelay: `${index * staggerSeconds}s`,
         };
-        const key = getCharKey?.({ char, index }) ?? `${index}-${char}`;
+        const key = getCharKey?.({ char, displayChar: waveDisplayChar(char), index }) ?? `${index}-${char}`;
 
         return (
           <span key={key} className={waveOuterClass} style={waveStyle}>
-            {renderChar({ char, index })}
+            {renderChar({ char, displayChar: waveDisplayChar(char), index })}
           </span>
         );
       })}
