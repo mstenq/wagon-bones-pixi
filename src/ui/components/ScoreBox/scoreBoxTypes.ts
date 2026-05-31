@@ -1,1 +1,1 @@
-export type ScoreBoxVariant = "points" | "mult";
+export type ScoreBoxVariant = "points" | "mult" | "bank";

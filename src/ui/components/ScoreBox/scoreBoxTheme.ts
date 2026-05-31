@@ -29,4 +29,12 @@ export const scoreBoxVariantTheme: Record<ScoreBoxVariant, ScoreBoxVariantTheme>
     flameMidColor: "var(--color-red-700)",
     flameFrontColor: "var(--color-red-300)",
   },
+  bank: {
+    surfaceClass: "bg-ui-panel-inset",
+    borderClass: "border-black/40",
+    surfaceColor: "var(--color-ui-panel-inset)",
+    surfaceRgb: [42, 48, 51],
+    flameMidColor: "var(--color-amber-600)",
+    flameFrontColor: "var(--color-amber-300)",
+  },
 };

@@ -17,20 +17,32 @@ export type ScoreBoxProps = {
   className?: string;
 };
 
-const baseClass =
+const chipFaceClass =
   "min-h-8 items-center rounded-lg border-b-4 px-2.5 pt-1.5 pb-1 font-score text-5xl leading-none text-white tabular-nums select-none";
+const bankFaceClass =
+  "min-h-8 items-center rounded-lg border px-3 py-2 font-score text-5xl leading-none text-amber-400 tabular-nums select-none text-shadow-[2px_3px_0_black,-1px_-1px_0_black]";
 const shrinkClass = "inline-flex min-w-14";
 const fillClass = "flex w-full min-w-0 flex-1";
 
 function variantFaceClass(variant: ScoreBoxVariant): string {
   const theme = scoreBoxVariantTheme[variant];
-  const justify = variant === "points" ? "justify-end" : "justify-start";
-  return ["score-box__face", justify, theme.borderClass, theme.surfaceClass].join(" ");
+  const justify =
+    variant === "points"
+      ? "justify-end"
+      : variant === "mult"
+        ? "justify-start"
+        : "justify-center";
+  const face =
+    variant === "bank"
+      ? [bankFaceClass, justify, theme.borderClass, theme.surfaceClass]
+      : [chipFaceClass, justify, theme.borderClass, theme.surfaceClass];
+  return ["score-box__face", ...face].join(" ");
 }
 
 const variantDigitsClass: Record<ScoreBoxVariant, string> = {
   points: "inline-flex items-baseline justify-end gap-[0.04em]",
   mult: "inline-flex items-baseline justify-start gap-[0.04em]",
+  bank: "inline-flex items-baseline justify-center gap-[0.04em]",
 };
 
 function formatScoreValue(value: number): number {
@@ -40,20 +52,19 @@ function formatScoreValue(value: number): number {
   return Math.max(0, Math.floor(value));
 }
 
-function getDigitChars(value: number): string[] {
-  return formatScoreValue(value).toString().split("");
+function getWaveText(variant: ScoreBoxVariant, value: number): string {
+  const formatted = formatScoreValue(value).toString();
+  return variant === "bank" ? `$${formatted}` : formatted;
 }
 
-function getDigitChangeMask(previous: number, next: number): boolean[] {
-  const prevDigits = getDigitChars(previous);
-  const nextDigits = getDigitChars(next);
-  const length = Math.max(prevDigits.length, nextDigits.length);
+function getCharChangeMask(previous: string, next: string): boolean[] {
+  const length = Math.max(previous.length, next.length);
   const mask: boolean[] = [];
 
   for (let index = 0; index < length; index += 1) {
-    const prevDigit = prevDigits[prevDigits.length - length + index] ?? "";
-    const nextDigit = nextDigits[nextDigits.length - length + index] ?? "";
-    mask.push(prevDigit !== nextDigit);
+    const prevChar = previous[previous.length - length + index] ?? "";
+    const nextChar = next[next.length - length + index] ?? "";
+    mask.push(prevChar !== nextChar);
   }
 
   return mask;
@@ -67,14 +78,17 @@ export function ScoreBox({
   className,
 }: ScoreBoxProps) {
   const displayValue = formatScoreValue(value);
-  const digits = getDigitChars(displayValue);
+  const waveText = getWaveText(variant, displayValue);
 
   const previousValueRef = useRef(displayValue);
   const bumpGenerationRef = useRef(0);
-  const changeMaskRef = useRef<boolean[]>(digits.map(() => false));
+  const changeMaskRef = useRef<boolean[]>([...waveText].map(() => false));
 
   if (previousValueRef.current !== displayValue) {
-    changeMaskRef.current = getDigitChangeMask(previousValueRef.current, displayValue);
+    changeMaskRef.current = getCharChangeMask(
+      getWaveText(variant, previousValueRef.current),
+      waveText,
+    );
     bumpGenerationRef.current += 1;
     previousValueRef.current = displayValue;
   }
@@ -83,7 +97,6 @@ export function ScoreBox({
   const changeMask = changeMaskRef.current;
 
   const faceClassName = [
-    baseClass,
     fill ? fillClass : shrinkClass,
     variantFaceClass(variant),
     className,
@@ -95,12 +108,15 @@ export function ScoreBox({
     .filter(Boolean)
     .join(" ");
 
+  const ariaLabel =
+    variant === "bank" ? `Bank balance ${displayValue}` : `${variant} score ${displayValue}`;
+
   return (
-    <div className={rootClassName} aria-label={`${variant} score ${displayValue}`}>
-      <ScoreFlame variant={variant} intensity={flameIntensity} />
+    <div className={rootClassName} aria-label={ariaLabel}>
+      {variant !== "bank" ? <ScoreFlame variant={variant} intensity={flameIntensity} /> : null}
       <div className={faceClassName}>
         <WaveBounceChars
-          text={digits.join("")}
+          text={waveText}
           className={variantDigitsClass[variant]}
           getCharKey={({ char, index }) => `${index}-${char}-${bumpGeneration}`}
           renderChar={({ char, index }) => {

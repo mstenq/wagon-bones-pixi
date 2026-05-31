@@ -5,6 +5,7 @@
   --animate-score-bump: score-box-digit-bump 110ms cubic-bezier(0.34, 1.45, 0.64, 1) both;
   /* Duration matches WAVE_IDLE_PERIOD_S in waveBounce.ts */
   --animate-score-idle: score-box-char-idle 2.7s ease-in-out infinite;
+  --animate-info-rock: info-box-rock 2.8s ease-in-out infinite;
 
   /* Round / panel UI surfaces — do not use arbitrary hex in class names */
   --color-ui-panel: #1a1f21;
@@ -37,8 +38,21 @@
   }
 }
 
+@keyframes info-box-rock {
+
+  0%,
+  100% {
+    transform: rotate(-2.5deg);
+  }
+
+  50% {
+    transform: rotate(2.5deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-score-idle {
+  .animate-score-idle,
+  .animate-info-rock {
     animation: none;
   }
 
