@@ -11,7 +11,7 @@ export type BorderBounds = {
 export function borderBoundsFromSize(width: number, height: number): BorderBounds {
   const halfW = width / 2;
   const halfH = height / 2;
-  const cornerRadius = Math.min(14, Math.min(halfW, halfH) * 0.12);
+  const cornerRadius = Math.min(50, Math.min(halfW, halfH) * 0.12);
   return { halfW, halfH, cornerRadius };
 }
 

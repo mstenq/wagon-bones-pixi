@@ -61,7 +61,7 @@ export function RoundScore({ score, className }: RoundScoreProps) {
   }, [targetScore]);
 
   const rootClassName = [
-    "font-score flex w-72 max-w-full items-stretch gap-2 overflow-hidden rounded-xl bg-ui-panel p-2 select-none",
+    "font-score flex w-full min-w-0 max-w-full items-stretch gap-1.5 overflow-hidden rounded-xl bg-ui-panel p-1.5 select-none md:gap-2 md:p-2",
     className,
   ]
     .filter(Boolean)
@@ -73,13 +73,13 @@ export function RoundScore({ score, className }: RoundScoreProps) {
       aria-label={`Round score ${formatRoundScoreDisplay(displayScore)}`}
       aria-live="polite"
     >
-      <div className="flex px-1  w-16 shrink-0 flex-col justify-center gap-0.5 text-white">
-        <span className="text-xl leading-none">Round</span>
-        <span className="text-xl leading-none">score</span>
+      <div className="flex w-12 shrink-0 flex-col justify-center gap-0.5 px-1 text-white md:w-16">
+        <span className="text-lg leading-none md:text-xl">Round</span>
+        <span className="text-lg leading-none md:text-xl">score</span>
       </div>
 
-      <div className="flex min-w-0 flex-1 items-center justify-end rounded-lg bg-ui-panel-inset px-3 py-2">
-        <span className="max-w-full truncate text-right text-4xl leading-none font-bold text-white tabular-nums">
+      <div className="flex min-w-0 flex-1 items-center justify-end rounded-lg bg-ui-panel-inset px-2 py-1 md:px-3 md:py-2">
+        <span className="max-w-full truncate text-right text-3xl leading-none font-bold text-white tabular-nums md:text-4xl">
           {formatRoundScoreDisplay(displayScore)}
         </span>
       </div>

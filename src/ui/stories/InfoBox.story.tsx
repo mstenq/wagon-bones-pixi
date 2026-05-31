@@ -8,7 +8,7 @@ import type { StoryDefinition } from "@/ui/types/storyTypes";
 function InfoBoxStory() {
   return (
     <div className="flex flex-col items-center gap-8">
-      <div className="flex w-72 max-w-full gap-3">
+      <div className="flex w-full max-w-xl gap-3">
         <InfoBox label="Hands">
           <InfoBoxRockValue tone="blue" value={4} />
         </InfoBox>
@@ -17,7 +17,7 @@ function InfoBoxStory() {
         </InfoBox>
       </div>
 
-      <div className="flex w-72 max-w-full gap-3">
+      <div className="flex w-full max-w-xl gap-3">
         <InfoBox label="Ante">
           <InfoBoxAnteValue current={1} total={8} />
         </InfoBox>

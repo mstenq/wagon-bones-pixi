@@ -31,7 +31,7 @@ export function HandInfo({
   const displayLevel = formatLevel(level);
 
   const rootClassName = [
-    "font-score flex w-72 max-w-full flex-col gap-3 rounded-xl bg-ui-panel p-3 select-none",
+    "font-score flex w-full min-w-0 max-w-full flex-col gap-2 rounded-xl bg-ui-panel p-2 select-none md:gap-3 md:p-3",
     className,
   ]
     .filter(Boolean)
@@ -45,13 +45,15 @@ export function HandInfo({
       <div className="flex items-baseline justify-center gap-2">
         <WaveBounceChars
           text={handName}
-          className="min-w-0 text-2xl leading-none font-bold tracking-wide text-white"
+          className="min-w-0 text-xl leading-none font-bold tracking-wide text-white md:text-2xl"
           renderChar={({ displayChar }) => <span className="inline-block">{displayChar}</span>}
         />
-        <span className="shrink-0 text-lg leading-none text-white">lvl.{displayLevel}</span>
+        <span className="shrink-0 text-base leading-none text-white md:text-lg">
+          lvl.{displayLevel}
+        </span>
       </div>
 
-      <div className="flex w-full items-center gap-2.5">
+      <div className="flex w-full items-center gap-2 md:gap-2.5">
         <ScoreBox
           fill
           variant="points"
@@ -59,7 +61,7 @@ export function HandInfo({
           flameIntensity={flameIntensity}
         />
         <span
-          className="shrink-0 text-2xl leading-none font-bold text-red-500"
+          className="shrink-0 text-xl leading-none font-bold text-red-500 md:text-2xl"
           aria-hidden
         >
           x

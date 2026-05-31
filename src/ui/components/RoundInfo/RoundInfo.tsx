@@ -45,12 +45,12 @@ export function RoundInfo({
 
   const header = (
     <header
-      className="flex h-full items-center justify-center rounded-xl border-b-3 border-black/50 px-3 py-2"
+      className="flex h-full items-center justify-center rounded-xl border-b-3 border-black/50 px-2 py-1 md:px-3 md:py-2"
       style={{ backgroundColor: headerColor }}
     >
       <WaveBounceChars
         text={title}
-        className="text-center text-3xl leading-none font-bold tracking-wide text-white"
+        className="text-center text-2xl leading-none font-bold tracking-wide text-white md:text-3xl"
         renderChar={({ displayChar }) => <span className="inline-block">{displayChar}</span>}
       />
     </header>
@@ -58,24 +58,28 @@ export function RoundInfo({
 
   const body = (
     <div
-      className="flex h-full flex-col rounded-xl border-b-3 border-black/30 px-3 pt-2 pb-3"
+      className="flex h-full flex-col rounded-xl border-b-3 border-black/30 px-2 pt-1.5 pb-2 md:px-3 md:pt-2 md:pb-3"
       style={{ backgroundColor: bodyColor }}
     >
       {subtitle ? (
-        <p className="mb-2 text-center text-xl leading-snug text-white">{subtitle}</p>
+        <p className="mb-1.5 text-center text-lg leading-snug text-white md:mb-2 md:text-xl">
+          {subtitle}
+        </p>
       ) : null}
 
-      <div className="flex flex-1 items-stretch gap-2">
+      <div className="flex flex-1 items-stretch gap-1.5 md:gap-2">
         <div className="flex w-1/4 shrink-0 items-center justify-center">
-          <div className="aspect-square w-full max-w-16 rounded-full border-2 border-black/50 bg-black/20">
+          <div className="aspect-square w-full max-w-12 rounded-full border-2 border-black/50 bg-black/20 md:max-w-16">
             {iconSrc ? (
               <img src={iconSrc} alt="" className="size-full rounded-full object-cover" />
             ) : null}
           </div>
         </div>
 
-        <div className="flex w-3/4 min-w-0 flex-col items-center justify-center gap-1 rounded-lg bg-ui-panel-well px-2 py-2.5">
-          <p className="text-center text-xl leading-none text-white">Score at least</p>
+        <div className="flex w-3/4 min-w-0 flex-col items-center justify-center gap-1 rounded-lg bg-ui-panel-well px-2 py-1.5 md:py-2.5">
+          <p className="text-center text-lg leading-none text-white md:text-xl">
+            Score at least
+          </p>
 
           <div className="flex items-center justify-center gap-2">
             <span
@@ -83,12 +87,12 @@ export function RoundInfo({
               style={{ backgroundColor: difficultyColor }}
               aria-hidden
             />
-            <p className="text-3xl leading-none text-red-500 tabular-nums">
+            <p className="text-2xl leading-none text-red-500 tabular-nums md:text-3xl">
               {formattedScore}
             </p>
           </div>
 
-          <p className="text-center text-xl leading-none">
+          <p className="text-center text-lg leading-none md:text-xl">
             <span className="text-white">payout </span>
             <span className="text-yellow-400">{formattedPayout}</span>
           </p>
@@ -125,7 +129,7 @@ export function RoundInfo({
   }
 
   const rootClassName = [
-    "font-score w-72 max-w-sm overflow-hidden select-none",
+    "font-score w-full min-w-0 overflow-hidden select-none",
     className,
   ]
     .filter(Boolean)

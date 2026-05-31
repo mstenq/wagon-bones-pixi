@@ -49,7 +49,7 @@ function GameInfoActionButton({
   className,
 }: GameInfoActionButtonProps) {
   const buttonClassName = [
-    "font-score flex min-h-14 w-full cursor-pointer items-center justify-center rounded-xl border-b-3 border-black/30 px-3 py-2 text-xl leading-none font-bold text-white select-none",
+    "font-score flex min-h-10 w-full cursor-pointer items-center justify-center rounded-xl border-b-3 border-black/30 px-2 py-1.5 text-lg leading-none font-bold text-white select-none md:min-h-14 md:px-3 md:py-2 md:text-xl",
     actionToneClass[tone],
     className,
   ]
@@ -77,7 +77,7 @@ function GameInfoActionButtons({
   direction = "column",
 }: GameInfoActionButtonsProps) {
   const rootClassName = [
-    "flex min-w-0 gap-2",
+    "flex min-w-0 shrink-0 gap-1 md:gap-2",
     direction === "row" ? "flex-row" : "flex-col",
     className,
   ]
@@ -92,11 +92,10 @@ function GameInfoActionButtons({
   );
 }
 
-
 function GameInfoPortraitStats({ stats, balance }: { stats: GameInfoStats; balance: number }) {
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex gap-2">
+    <div className="flex flex-col gap-1 md:gap-2">
+      <div className="flex gap-1 md:gap-2">
         <InfoBox label="Hands">
           <InfoBoxRockValue tone="blue" value={stats.hands} />
         </InfoBox>
@@ -107,7 +106,7 @@ function GameInfoPortraitStats({ stats, balance }: { stats: GameInfoStats; balan
 
       <BankInfo balance={balance} className="w-full" fill />
 
-      <div className="flex gap-2">
+      <div className="flex gap-1 md:gap-2">
         <InfoBox label="Ante">
           <InfoBoxAnteValue current={stats.anteCurrent} total={stats.anteTotal} />
         </InfoBox>
@@ -136,7 +135,7 @@ function GameInfoBottomGrid({
 }: GameInfoBottomGridProps) {
   if (displayMode === "portrait") {
     return (
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1 md:gap-2">
         <GameInfoPortraitStats stats={stats} balance={balance} />
         <GameInfoActionButtons
           direction="row"
@@ -148,9 +147,7 @@ function GameInfoBottomGrid({
   }
 
   return (
-    <div className="flex w-[calc(18rem*2+0.5rem)] max-w-full gap-2">
-
-
+    <div className="flex w-full min-w-0 gap-1 md:gap-2">
       <InfoBox label="Hands">
         <InfoBoxRockValue tone="blue" value={stats.hands} />
       </InfoBox>
@@ -168,7 +165,6 @@ function GameInfoBottomGrid({
       </InfoBox>
 
       <GameInfoActionButtons
-        className="w-[5.5rem] shrink-0"
         onRunInfoClick={onRunInfoClick}
         onOptionsClick={onOptionsClick}
       />
@@ -188,8 +184,7 @@ export function GameInfo({
   className,
 }: GameInfoProps) {
   const rootClassName = [
-    "font-score flex select-none flex-col gap-2",
-    displayMode === "portrait" ? "w-72 max-w-full" : "w-[calc(18rem*2+0.5rem)] max-w-full",
+    "font-score flex w-full min-w-0 select-none flex-col gap-1 md:gap-2",
     className,
   ]
     .filter(Boolean)
@@ -214,11 +209,14 @@ export function GameInfo({
 
   return (
     <section className={rootClassName} aria-label="Game information">
-      <div className="grid grid-cols-2 gap-2">
-        <RoundInfo {...roundInfo} segment="header" className="min-h-0" />
-        <RoundScore score={roundScore} className="h-full w-full max-w-none min-h-0" />
-        <RoundInfo {...roundInfo} segment="body" className="min-h-0" />
-        <HandInfo {...handInfo} className="h-full w-full max-w-none min-h-0 flex-col justify-between" />
+      <div className="grid min-w-0 grid-cols-2 gap-1 md:gap-2">
+        <RoundInfo {...roundInfo} segment="header" className="min-h-0 min-w-0 w-full" />
+        <RoundScore score={roundScore} className="h-full min-h-0 min-w-0 w-full max-w-none" />
+        <RoundInfo {...roundInfo} segment="body" className="min-h-0 min-w-0 w-full" />
+        <HandInfo
+          {...handInfo}
+          className="flex h-full min-h-0 min-w-0 w-full max-w-none flex-col justify-between"
+        />
       </div>
 
       <GameInfoBottomGrid

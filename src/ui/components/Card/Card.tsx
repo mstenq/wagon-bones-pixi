@@ -199,8 +199,8 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     applyFilters: (filters: Filter[] | null) => void;
     setJitter: (dx: number, dy: number) => void;
   }>({
-    applyFilters: () => {},
-    setJitter() {},
+    applyFilters: () => { },
+    setJitter() { },
   });
   effectArtRef.current.applyFilters = applyArtFilters;
   const actionTabRef = useRef<Container | null>(null);
@@ -388,38 +388,38 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   );
 
   const startDestroy = useCallback((onComplete?: ActionEffectComplete) => {
-      if (destroyingRef.current) {
-        return;
-      }
+    if (destroyingRef.current) {
+      return;
+    }
 
-      const burnTex = getEffectTexture("burn");
-      if (!burnTex) {
-        rootRef.current && (rootRef.current.visible = false);
-        onComplete?.();
-        return;
-      }
+    const burnTex = getEffectTexture("burn");
+    if (!burnTex) {
+      rootRef.current && (rootRef.current.visible = false);
+      onComplete?.();
+      return;
+    }
 
-      destroyingRef.current = true;
-      deselect(true);
-      hideCardChrome();
+    destroyingRef.current = true;
+    deselect(true);
+    hideCardChrome();
 
-      if (!burnDissolveRef.current) {
-        burnDissolveRef.current = createBurnDissolveFilter(burnTex);
-      }
+    if (!burnDissolveRef.current) {
+      burnDissolveRef.current = createBurnDissolveFilter(burnTex);
+    }
 
-      burnDissolveRef.current.setDissolve(0);
+    burnDissolveRef.current.setDissolve(0);
 
-      const squish = squishRef.current;
-      if (squish) {
-        squish.filters = [burnDissolveRef.current.filter];
-      }
+    const squish = squishRef.current;
+    if (squish) {
+      squish.filters = [burnDissolveRef.current.filter];
+    }
 
-      destroyAnimRef.current = {
-        progress: 0,
-        duration: BURN_DESTROY.duration,
-        onComplete,
-      };
-    }, [deselect, hideCardChrome]);
+    destroyAnimRef.current = {
+      progress: 0,
+      duration: BURN_DESTROY.duration,
+      onComplete,
+    };
+  }, [deselect, hideCardChrome]);
 
   useImperativeHandle(
     ref,

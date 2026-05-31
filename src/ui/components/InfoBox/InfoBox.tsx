@@ -9,10 +9,10 @@ export type InfoBoxProps = {
 const rootClass =
   "font-score flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-ui-panel select-none";
 
-const labelClass = "p-1 text-center text-xl leading-none text-white";
+const labelClass = "p-1 text-center text-base leading-none text-white md:text-xl";
 
 const bodyClass =
-  "mx-2 mb-2 flex min-h-12 flex-1 items-center justify-center rounded-lg bg-ui-panel-inset";
+  "mx-2 mb-1.5 flex min-h-9 flex-1 items-center justify-center rounded-lg bg-ui-panel-inset md:mb-2 md:min-h-12";
 
 export function InfoBox({ label, children, className }: InfoBoxProps) {
   const rootClassName = [rootClass, className].filter(Boolean).join(" ");
@@ -28,7 +28,7 @@ export function InfoBox({ label, children, className }: InfoBoxProps) {
 export type InfoBoxRockTone = "blue" | "red" | "amber";
 
 const valueTextClass =
-  "text-5xl leading-none tabular-nums text-shadow-[1px_5px_2px_black]";
+  "text-4xl leading-none tabular-nums text-shadow-[1px_5px_2px_black] md:text-5xl";
 
 const rockToneClass: Record<InfoBoxRockTone, string> = {
   blue: "text-blue-400",
@@ -63,12 +63,15 @@ export type InfoBoxAnteValueProps = {
   total: number;
 };
 
-/** Ante tracker — static amber current, white total. */
+/** Ante tracker — current only below md; full `current / total` at md+. */
 export function InfoBoxAnteValue({ current, total }: InfoBoxAnteValueProps) {
   return (
-    <div className="flex items-center justify-center gap-0.5 leading-none">
+    <div
+      className="flex items-center justify-center leading-none"
+      aria-label={`Ante ${current} of ${total}`}
+    >
       <span className={staticAmberClass}>{current}</span>
-      <span className="text-2xl text-white tabular-nums">/ {total}</span>
+      <span className="hidden text-2xl text-white tabular-nums md:inline">/ {total}</span>
     </div>
   );
 }

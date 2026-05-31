@@ -18,9 +18,9 @@ export type ScoreBoxProps = {
 };
 
 const chipFaceClass =
-  "min-h-8 items-center rounded-lg border-b-4 px-2.5 pt-1.5 pb-1 font-score text-5xl leading-none text-white tabular-nums select-none";
+  "min-h-7 items-center rounded-lg border-b-4 px-2 pt-1 pb-1 font-score text-4xl leading-none text-white tabular-nums select-none md:min-h-8 md:px-2.5 md:pt-1.5 md:pb-1 md:text-5xl";
 const bankFaceClass =
-  "min-h-8 items-center rounded-lg border px-3 py-2 font-score text-5xl leading-none text-amber-400 tabular-nums select-none text-shadow-[2px_3px_0_black,-1px_-1px_0_black]";
+  "min-h-7 items-center rounded-lg border px-2 py-1.5 font-score text-4xl leading-none text-amber-400 tabular-nums select-none text-shadow-[2px_3px_0_black,-1px_-1px_0_black] md:min-h-8 md:px-3 md:py-2 md:text-5xl";
 const shrinkClass = "inline-flex min-w-14";
 const fillClass = "flex w-full min-w-0 flex-1";
 
@@ -104,7 +104,10 @@ export function ScoreBox({
     .filter(Boolean)
     .join(" ");
 
-  const rootClassName = ["relative min-h-8 min-w-0", fill ? "flex flex-1" : "inline-flex"]
+  const rootClassName = [
+    "relative min-h-7 min-w-0 md:min-h-8",
+    fill ? "flex flex-1" : "inline-flex",
+  ]
     .filter(Boolean)
     .join(" ");
 
