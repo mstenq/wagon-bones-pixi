@@ -1,5 +1,9 @@
 use composer-2.5 for subagents, never use composer-2.5-fast for subagents
 
+## Tailwind colors
+
+Do not use arbitrary hex/rgb in class names (`bg-[#...]`). Add `--color-*` tokens in `src/ui/css/index.css` `@theme` and use named utilities. Dynamic per-instance colors from props may use inline `style`.
+
 ## React: avoid `useEffect`
 
 Prefer **not** to use `useEffect`. Handle behavior through:

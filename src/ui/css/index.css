@@ -5,6 +5,11 @@
   --animate-score-bump: score-box-digit-bump 110ms cubic-bezier(0.34, 1.45, 0.64, 1) both;
   /* Duration matches WAVE_IDLE_PERIOD_S in waveBounce.ts */
   --animate-score-idle: score-box-char-idle 2.7s ease-in-out infinite;
+
+  /* Round / panel UI surfaces — do not use arbitrary hex in class names */
+  --color-ui-panel: #1a1f21;
+  --color-ui-panel-inset: #2a3033;
+  --color-ui-panel-well: #1e2325;
 }
 
 @layer base {

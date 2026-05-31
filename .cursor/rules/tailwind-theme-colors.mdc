@@ -1,0 +1,23 @@
+---
+description: Use @theme tokens for colors; never arbitrary hex/rgb in Tailwind classes
+alwaysApply: true
+---
+
+# Tailwind colors use theme tokens
+
+Do **not** put literal colors in utility class names, for example:
+
+- `bg-[#1a1f21]`, `text-[#fff]`, `border-[rgb(...)]`
+- Any `*-[\#...]` or `*-[\[rgb` pattern
+
+Instead:
+
+1. Add named colors under `@theme` in [`src/ui/css/index.css`](src/ui/css/index.css) as `--color-<name>: <value>`.
+2. Use the generated utilities (`bg-ui-panel`, `text-ui-panel-well`, etc.).
+
+**Exceptions:**
+
+- **Dynamic theme props** (e.g. boss round `headerColor` / `bodyColor`) may use inline `style={{ backgroundColor: ... }}` when the value comes from data.
+- Opacity on palette names is fine (`bg-black/80`, `text-white/90`).
+
+When introducing a new fixed UI color, extend `@theme` with a semantic name (e.g. `ui-panel-inset`), not a hex copied into JSX.

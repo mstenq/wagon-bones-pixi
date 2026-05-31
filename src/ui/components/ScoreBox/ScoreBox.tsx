@@ -12,10 +12,15 @@ export type ScoreBoxProps = {
   value: number;
   /** 0–1 flame strength from game logic; 0 is off. */
   flameIntensity?: number;
+  /** Grow to fill a flex parent (e.g. HandInfo score row). */
+  fill?: boolean;
   className?: string;
 };
 
-const baseClass = "inline-flex min-h-8 min-w-14 items-center rounded-lg border-b-4  px-2.5 pt-1.5 pb-1 font-score text-5xl leading-none text-white tabular-nums select-none";
+const baseClass =
+  "min-h-8 items-center rounded-lg border-b-4 px-2.5 pt-1.5 pb-1 font-score text-5xl leading-none text-white tabular-nums select-none";
+const shrinkClass = "inline-flex min-w-14";
+const fillClass = "flex w-full min-w-0 flex-1";
 
 function variantFaceClass(variant: ScoreBoxVariant): string {
   const theme = scoreBoxVariantTheme[variant];
@@ -54,7 +59,13 @@ function getDigitChangeMask(previous: number, next: number): boolean[] {
   return mask;
 }
 
-export function ScoreBox({ variant, value, flameIntensity = 0, className }: ScoreBoxProps) {
+export function ScoreBox({
+  variant,
+  value,
+  flameIntensity = 0,
+  fill = false,
+  className,
+}: ScoreBoxProps) {
   const displayValue = formatScoreValue(value);
   const digits = getDigitChars(displayValue);
 
@@ -71,10 +82,21 @@ export function ScoreBox({ variant, value, flameIntensity = 0, className }: Scor
   const bumpGeneration = bumpGenerationRef.current;
   const changeMask = changeMaskRef.current;
 
-  const faceClassName = [baseClass, variantFaceClass(variant), className].filter(Boolean).join(" ");
+  const faceClassName = [
+    baseClass,
+    fill ? fillClass : shrinkClass,
+    variantFaceClass(variant),
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const rootClassName = ["relative min-h-8 min-w-0", fill ? "flex flex-1" : "inline-flex"]
+    .filter(Boolean)
+    .join(" ");
 
   return (
-    <div className="relative inline-flex" aria-label={`${variant} score ${displayValue}`}>
+    <div className={rootClassName} aria-label={`${variant} score ${displayValue}`}>
       <ScoreFlame variant={variant} intensity={flameIntensity} />
       <div className={faceClassName}>
         <WaveBounceChars

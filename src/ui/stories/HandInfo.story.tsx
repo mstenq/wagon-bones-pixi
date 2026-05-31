@@ -1,4 +1,4 @@
-import { ScoreBox } from "@/ui/components/ScoreBox/ScoreBox";
+import { HandInfo } from "@/ui/components/HandInfo/HandInfo";
 import { useQueryParam } from "@/ui/hooks/useQueryParam";
 import type { StoryDefinition } from "@/ui/types/storyTypes";
 import { panelButtonClass, panelLabelClass } from "@/ui/styles/panelControls";
@@ -6,6 +6,9 @@ import { panelButtonClass, panelLabelClass } from "@/ui/styles/panelControls";
 const FLAME_MIN = 0;
 const FLAME_MAX = 1;
 const FLAME_STEP = 0.01;
+
+const BASE_CHIPS = 40;
+const BASE_MULT = 4;
 
 function randomIncrement(): number {
   return Math.floor(Math.random() * 20) + 1;
@@ -24,14 +27,14 @@ function parseFlameIntensity(raw: string): number | undefined {
   return value;
 }
 
-function ScoreBoxStory() {
-  const [points, setPoints] = useQueryParam("points", {
-    default: 86,
+function HandInfoStory() {
+  const [chips, setChips] = useQueryParam("chips", {
+    default: BASE_CHIPS,
     parse: parseNonNegativeInt,
     serialize: String,
   });
   const [mult, setMult] = useQueryParam("mult", {
-    default: 6,
+    default: BASE_MULT,
     parse: parseNonNegativeInt,
     serialize: String,
   });
@@ -48,8 +51,8 @@ function ScoreBoxStory() {
           type="button"
           className={panelButtonClass}
           onClick={() => {
-            setPoints(0);
-            setMult(0);
+            setChips(BASE_CHIPS);
+            setMult(BASE_MULT);
           }}
         >
           Reset
@@ -58,7 +61,7 @@ function ScoreBoxStory() {
           type="button"
           className={panelButtonClass}
           onClick={() => {
-            setPoints(points + randomIncrement());
+            setChips(chips + randomIncrement());
             setMult(mult + randomIncrement());
           }}
         >
@@ -79,23 +82,20 @@ function ScoreBoxStory() {
         />
       </label>
 
-      <div className="flex items-center gap-2.5">
-        <ScoreBox variant="points" value={points} flameIntensity={flameIntensity} />
-        <span
-          className="font-score text-2xl leading-none font-bold text-red-500 select-none"
-          aria-hidden
-        >
-          x
-        </span>
-        <ScoreBox variant="mult" value={mult} flameIntensity={flameIntensity} />
-      </div>
+      <HandInfo
+        handName="Full House"
+        level={1}
+        chips={chips}
+        mult={mult}
+        flameIntensity={flameIntensity}
+      />
     </div>
   );
 }
 
-const scoreBoxStory: StoryDefinition = {
-  name: "ScoreBox",
-  component: <ScoreBoxStory />,
+const handInfoStory: StoryDefinition = {
+  name: "HandInfo",
+  component: <HandInfoStory />,
 };
 
-export default scoreBoxStory;
+export default handInfoStory;
