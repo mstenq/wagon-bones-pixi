@@ -1,3 +1,5 @@
+import type { Filter, Texture } from "pixi.js";
+
 export type IsfInputType =
   | "image"
   | "float"
@@ -51,9 +53,10 @@ export type IsfTickContext = {
 };
 
 export type IsfPixiFilter = {
-  filter: import("pixi.js").Filter;
+  filter: Filter;
   metadata: IsfMetadata;
   inputs: IsfInput[];
   tick: (ctx: IsfTickContext) => void;
   setValue: (name: string, value: number | boolean | readonly number[]) => void;
+  setImage: (name: string, texture: Texture | null) => void;
 };

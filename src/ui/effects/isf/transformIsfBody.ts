@@ -5,12 +5,19 @@ function replaceIsfImageMacros(body: string): string {
 
   result = result.replace(/IMG_THIS_NORM_PIXEL\(\s*inputImage\s*\)/g, "texture(uTexture, vTextureCoord)");
   result = result.replace(/IMG_THIS_PIXEL\(\s*inputImage\s*\)/g, "texture(uTexture, vTextureCoord)");
-  result = result.replace(/IMG_NORM_PIXEL\(\s*inputImage\s*,\s*/g, "texture(uTexture, ");
   result = result.replace(
-    /IMG_PIXEL\(\s*inputImage\s*,\s*([\s\S]+?)\)/g,
-    "texture(uTexture, ($1) / RENDERSIZE)",
+    /IMG_NORM_PIXEL\(\s*([A-Za-z_]\w*)\s*,\s*/g,
+    (_match, imageName: string) => `texture(${imageName === "inputImage" ? "uTexture" : imageName}, `,
   );
-  result = result.replace(/IMG_SIZE\(\s*inputImage\s*\)/g, "RENDERSIZE");
+  result = result.replace(
+    /IMG_PIXEL\(\s*([A-Za-z_]\w*)\s*,\s*([\s\S]+?)\)/g,
+    (_match, imageName: string, coords: string) =>
+      `texture(${imageName === "inputImage" ? "uTexture" : imageName}, (${coords}) / RENDERSIZE)`,
+  );
+  result = result.replace(
+    /IMG_SIZE\(\s*([A-Za-z_]\w*)\s*\)/g,
+    (_match, imageName: string) => (imageName === "inputImage" ? "RENDERSIZE" : `${imageName}Size`),
+  );
 
   return result;
 }
@@ -54,11 +61,15 @@ export function buildIsfUniformDeclarations(inputs: readonly IsfInput[]): string
   const lines: string[] = [];
 
   for (const input of inputs) {
-    if (input.TYPE === "image") {
+    if (input.TYPE === "image" && input.NAME === "inputImage") {
       continue;
     }
 
     switch (input.TYPE) {
+      case "image":
+        lines.push(`uniform sampler2D ${input.NAME};`);
+        lines.push(`uniform vec2 ${input.NAME}Size;`);
+        break;
       case "float":
         lines.push(`uniform float ${input.NAME};`);
         break;

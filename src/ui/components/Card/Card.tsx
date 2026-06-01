@@ -547,21 +547,22 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
         destroyingRef.current ||
         !interactive ||
         draggingRef.current ||
-        !hoveredRef.current ||
-        isSelectedRef.current ||
-        displayMode === "shop"
+        !hoveredRef.current
       ) {
         return;
       }
       const target = event.currentTarget as Container;
       const local = target.toLocal(event.global);
+      pointerNormRef.current = {
+        x: Math.max(0, Math.min(1, (local.x + width / 2) / width)),
+        y: Math.max(0, Math.min(1, (local.y + height / 2) / height)),
+      };
+      if (isSelectedRef.current || displayMode === "shop") {
+        return;
+      }
       const { angleX, angleY } = pointerToTiltAngles(local.x, local.y, tiltConfig);
       targetAngleXRef.current = angleX;
       targetAngleYRef.current = angleY;
-      pointerNormRef.current = {
-        x: (local.x + width / 2) / width,
-        y: (local.y + height / 2) / height,
-      };
     },
     [interactive, tiltConfig, width, height],
   );

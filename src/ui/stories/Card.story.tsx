@@ -108,7 +108,7 @@ function CardStory() {
             <Card
               key={cardKey}
               ref={cardRef}
-              texture={getCardTexture(1)}
+              texture={getCardTexture(4)}
               displayMode={displayMode}
               effect={effect}
               price={5}

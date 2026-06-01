@@ -1,4 +1,4 @@
-import { Filter, GlProgram, UniformGroup } from "pixi.js";
+import { Filter, GlProgram, Texture, UniformGroup } from "pixi.js";
 
 import { parseIsf } from "@/ui/effects/isf/parseIsf";
 import {
@@ -70,6 +70,14 @@ function buildUniformResources(inputs: readonly IsfInput[]): UniformStructures {
 
   for (const input of inputs) {
     switch (input.TYPE) {
+      case "image":
+        if (input.NAME !== "inputImage") {
+          resources[`${input.NAME}Size`] = {
+            value: new Float32Array([1, 1]),
+            type: "vec2<f32>",
+          };
+        }
+        break;
       case "float":
         resources[input.NAME] = { value: defaultNumber(input), type: "f32" };
         break;
@@ -166,13 +174,23 @@ export function createPixiFilterFromIsf(source: string, padding = 4): IsfPixiFil
   const parsed = parseIsf(source);
   const uniformResources = buildUniformResources(parsed.inputs);
   const fragment = buildFragmentShader(parsed.body, parsed.inputs);
+  const imageInputs = parsed.inputs
+    .filter((input) => input.TYPE === "image" && input.NAME !== "inputImage")
+    .map((input) => input.NAME);
+  const fallbackTexture = Texture.WHITE;
+  const resources: Record<string, unknown> = {
+    isfUniforms: uniformResources,
+  };
+  for (const name of imageInputs) {
+    const defaultSource = fallbackTexture.source;
+    resources[name] = defaultSource;
+    resources[`${name}Sampler`] = defaultSource.style;
+  }
 
   const filter = new Filter({
     glProgram: GlProgram.from({ vertex: FILTER_VERTEX, fragment }),
     padding,
-    resources: {
-      isfUniforms: uniformResources,
-    },
+    resources,
   });
 
   let frameIndex = 0;
@@ -181,6 +199,22 @@ export function createPixiFilterFromIsf(source: string, padding = 4): IsfPixiFil
     filter,
     metadata: parsed.metadata,
     inputs: parsed.inputs,
+    setImage(name, texture) {
+      if (!imageInputs.includes(name)) {
+        console.warn(`[isf] No image input named "${name}"`);
+        return;
+      }
+      const resolved = texture ?? fallbackTexture;
+      filter.resources[name] = resolved.source;
+      filter.resources[`${name}Sampler`] = resolved.source.style;
+      const group = getUniformGroup(filter);
+      const size = group.uniforms[`${name}Size`];
+      if (size instanceof Float32Array) {
+        size[0] = Math.max(1, resolved.width);
+        size[1] = Math.max(1, resolved.height);
+      }
+      group.update();
+    },
     setValue(name, value) {
       setUniformValue(getUniformGroup(filter), name, value);
     },

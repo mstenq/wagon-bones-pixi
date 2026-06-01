@@ -34,7 +34,7 @@ const rootClass = [
   "select-none",
   "text-shadow-[1px_2px_0_var(--color-cardboard-button-text-shadow)]",
   "transition-transform",
-  "active:scale-[0.98]",
+  "active:translate-y-0.5",
   "disabled:cursor-not-allowed",
   "disabled:opacity-55",
   "disabled:active:scale-100",

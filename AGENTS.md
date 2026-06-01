@@ -26,3 +26,7 @@ Card/die visuals live in `src/ui/effects/`. To add a **new effect from an ISF sh
 **Read the project skill** `.cursor/skills/isf-effects/SKILL.md` for the full checklist, API (`setValue`, `tick`, padding), tunable `setValue` lines in `step`, ISF→Pixi transforms, limits, and troubleshooting.
 
 Constraints: single-pass **filter** shaders with `inputImage` only; WebGL renderer (`PIXI_RENDERER_PREFERENCE` in `appDefaults.ts`). Do not declare `uInputSize` in the fragment shader.
+
+### TypeScript
+
+- **No inline type imports.** Never use `import('./module').Type` or `import('../foo').Bar` in type positions — not on fields, parameters, or return types. Add a top-level `import type { Foo } from './module'` (or a value import when the symbol is an enum) and reference `Foo` directly.

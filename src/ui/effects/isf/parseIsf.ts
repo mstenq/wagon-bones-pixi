@@ -46,15 +46,6 @@ export function parseIsf(source: string): ParsedIsf {
     );
   }
 
-  const unsupportedImages = inputs.filter(
-    (input) => input.TYPE === "image" && input.NAME !== "inputImage",
-  );
-  if (unsupportedImages.length > 0) {
-    throw new Error(
-      `Unsupported image inputs: ${unsupportedImages.map((input) => input.NAME).join(", ")}. Only inputImage is supported.`,
-    );
-  }
-
   const filterType = inferFilterType(inputs);
   if (filterType !== "filter") {
     throw new Error(
