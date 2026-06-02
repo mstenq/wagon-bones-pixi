@@ -1,9 +1,9 @@
 import { useApplication } from "@pixi/react";
 import { useTick } from "@pixi/react";
 import { Sprite, Text, TextStyle, type Container, type Filter, type Texture } from "pixi.js";
-import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef } from "react";
+import { forwardRef, use, useCallback, useImperativeHandle, useMemo, useRef } from "react";
 
-import { getEffectTexture } from "@/assets/effects/textures";
+import { effectsTexturesReady, getEffectTexture } from "@/assets/effects/textures";
 import {
   burnDestroyDissolveAt,
   createBurnDissolveFilter,
@@ -64,6 +64,8 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
   ref,
 ) {
   const { app } = useApplication();
+  use(effectsTexturesReady);
+
   const squishRef = useRef<Container | null>(null);
   const rollRef = useRef<Container | null>(null);
   const spriteRef = useRef<Sprite | null>(null);

@@ -1,0 +1,17 @@
+---
+description: Keep card edge effects aligned with perspective tilt
+globs: src/ui/effects/**/*.ts
+alwaysApply: false
+---
+
+# Perspective-Aware Effects
+
+Card artwork is rendered with a `PerspectiveMesh`, while effect `Graphics` layers are flat siblings.
+
+When drawing graphics or sprites that should hug the tilted card face, project local card coordinates through `projectPointToSurface` from `src/ui/effects/shared/surfaceProjection.ts` with the current `EffectFrameContext`.
+
+Use this for border strokes, edge flames/lightning, hover impact points, and card-surface particles. Do not duplicate the projection math in effect definitions.
+
+If an effect uses `getEffectTexture(...)`, ensure the host rendering path suspends with `use(effectsTexturesReady)` before creating effect runtimes. Missing this can create reload-dependent texture races and inconsistent effect brightness/fills.
+
+For die edge effects, reuse `DIE_EDGE_POINTS` / `createDieEdgeLoop` from `src/ui/effects/shared/dieOutline.ts`. Do not duplicate die outline points or approximate dice with circles/hexes in individual effect definitions.

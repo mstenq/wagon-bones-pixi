@@ -8,7 +8,7 @@ description: >-
 
 # ISF filter effects
 
-Card and die visuals use a Pixi **effect** system (`src/ui/effects/`). ISF **filter** shaders (single-pass, with `inputImage`) plug in via `createPixiFilterFromIsf`.
+Card and die visuals use a Pixi **effect** system (`src/ui/effects/`). ISF **filter** shaders (single-pass, with `inputImage`, plus optional extra `image` inputs) plug in via `createPixiFilterFromIsf`.
 
 **Examples:** `glitch` (VHS), `retroDither`.
 
@@ -92,9 +92,11 @@ export const myEffect: EffectDefinition = {
     applyArtFilters(art, [isf.filter]);
 
     const step = (frame: EffectFrameContext) => {
-      // One setValue per tunable ISF INPUT (everything except inputImage).
+      // One setValue per non-image ISF INPUT (everything except inputImage/images).
       // Start each line at the ISF DEFAULT; add `// default <value>` so tweaks are easy to reset.
       isf.setValue("Intensity", 1.0); // default 1.0
+      // Optional: bind extra image inputs declared in INPUTS.
+      // isf.setImage("noiseTex", getEffectTexture("myNoise"));
       isf.tick({
         time: frame.time,
         dt: frame.dt,
@@ -110,8 +112,11 @@ export const myEffect: EffectDefinition = {
 
 **Tunable inputs (required for new ISF effects):** In `step`, before `tick()`, add a `setValue` line for **every** non-`image` entry in the shader’s `INPUTS` JSON — `float`, `bool`, `color`, `point2D`, etc. Use the ISF `DEFAULT` as the initial value and a trailing comment `// default <value>` (see `circuit.ts` for a full example). When `INPUTS` change, update these lines to match.
 
+**Image inputs:** Additional ISF `image` inputs (beyond `inputImage`) are supported. Bind them with `isf.setImage("inputName", textureOrNull)` after creating the filter and before/within `step` as needed. If unset/null, the runtime falls back to a white texture.
+
 - **`padding`** (2nd arg): increase if the shader samples outside UV bounds (blur, displacement, dither neighbors). Start with `2`–`4`. Preserve source alpha on filters (`gl_FragColor = vec4(color * src.a, src.a)`) and `clamp` sample UVs to avoid black letterboxing — see `circuit.isf.ts`.
 - **`setValue(name, value)`**: names must match ISF `INPUTS` exactly. Supports `number`, `boolean`, `[r,g,b,a]`, `[x,y]`. Wrong names log `[isf] No uniform named "..."` in the console.
+- **`setImage(name, texture)`**: for extra ISF `image` inputs only (not `inputImage`). Names must match `INPUTS`; wrong names log `[isf] No image input named "..."`.
 - **`tick()`**: required each frame for `TIME`, `RENDERSIZE`, `TIMEDELTA`, etc.
 - **Per-instance desync:** avoid lockstep clones by offsetting time in `tick` with stable per-instance values (e.g. `frame.phase` + seed).
 - Wire the definition in **`registry.ts`** only (a duplicate filename like `circut.ts` will not load).
@@ -157,9 +162,12 @@ Or inline:
 | ISF | Pixi filter |
 |-----|-------------|
 | `inputImage` | `uTexture` (auto) |
+| extra `image` input (e.g. `noiseTex`) | sampler2D uniform with same name; bind via `setImage("noiseTex", tex)` |
 | `isf_FragNormCoord` | `vTextureCoord` |
 | `IMG_NORM_PIXEL(inputImage, uv)` | `texture(uTexture, uv)` |
+| `IMG_NORM_PIXEL(noiseTex, uv)` | `texture(noiseTex, uv)` |
 | `IMG_PIXEL(inputImage, px)` | `texture(uTexture, px / RENDERSIZE)` |
+| `IMG_PIXEL(noiseTex, px)` | `texture(noiseTex, px / RENDERSIZE)` |
 | `RENDERSIZE` | `uniform vec2 RENDERSIZE` (updated in `tick`) |
 | `TIME`, `TIMEDELTA`, `DATE`, `FRAMEINDEX` | built-in uniforms |
 | `gl_FragColor` | `finalColor` |
@@ -201,7 +209,6 @@ See `holy.ts` for a non-ISF reference; `circuit.ts` for ISF + tuning block; `gli
 - Multi-pass ISF (`PASSES` with render targets)
 - Generator shaders (no `inputImage`)
 - Transition shaders (`startImage` / `endImage` / `progress`)
-- Extra image inputs beyond `inputImage`
 - WebGPU-native ISF (no `gpuProgram` yet)
 
 ## Key files

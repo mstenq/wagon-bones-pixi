@@ -42,6 +42,12 @@ export type EffectFrameContext = {
   pointerNormX: number;
   pointerNormY: number;
   phase: number;
+  surfaceCorners: [
+    { x: number; y: number },
+    { x: number; y: number },
+    { x: number; y: number },
+    { x: number; y: number },
+  ];
 };
 
 export type EffectMountContext = {

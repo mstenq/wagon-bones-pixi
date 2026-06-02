@@ -23,9 +23,17 @@ Card/die visuals live in `src/ui/effects/`. To add a **new effect from an ISF sh
 2. Wire with `createPixiFilterFromIsf` in `src/ui/effects/definitions/` — see `glitch.ts` / `retroDither.ts`
 3. Register: add id to `EFFECT_IDS` in `types.ts`, import in `registry.ts`
 
-**Read the project skill** `.cursor/skills/isf-effects/SKILL.md` for the full checklist, API (`setValue`, `tick`, padding), tunable `setValue` lines in `step`, ISF→Pixi transforms, limits, and troubleshooting.
+**Read the project skill** `.cursor/skills/isf-effects/SKILL.md` for the full checklist, API (`setValue`, `setImage`, `tick`, padding), tunable uniform/image setup lines in `step`, ISF→Pixi transforms, limits, and troubleshooting.
 
-Constraints: single-pass **filter** shaders with `inputImage` only; WebGL renderer (`PIXI_RENDERER_PREFERENCE` in `appDefaults.ts`). Do not declare `uInputSize` in the fragment shader.
+Constraints: single-pass **filter** shaders with `inputImage` (plus optional extra `image` inputs supported via `setImage(...)`); WebGL renderer (`PIXI_RENDERER_PREFERENCE` in `appDefaults.ts`). Do not declare `uInputSize` in the fragment shader.
+
+## Perspective-aware effects
+
+Card artwork uses a `PerspectiveMesh` for hover tilt. Edge/front/back `Graphics` effect layers are flat siblings, so any effect that should hug the card face while tilted must project local card points through `projectPointToSurface` from `src/ui/effects/shared/surfaceProjection.ts` using `EffectFrameContext.surfaceCorners`. Use this for border strokes, edge particles, impact points, and other card-surface-aligned graphics.
+
+Effects that read `getEffectTexture(...)` depend on preloaded effect assets. Card rendering should suspend with `use(effectsTexturesReady)` before effect runtimes are created; otherwise texture races can make the same effect render differently across reloads.
+
+Die edge effects should reuse the tuned d20-ish outline in `src/ui/effects/shared/dieOutline.ts` (`DIE_EDGE_POINTS` / `createDieEdgeLoop`) instead of hand-rolling circles, hexes, or duplicate point lists.
 
 ### TypeScript
 

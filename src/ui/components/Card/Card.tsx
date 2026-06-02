@@ -14,6 +14,7 @@ import {
 import { useTick } from "@pixi/react";
 import {
   forwardRef,
+  use,
   useCallback,
   useImperativeHandle,
   useMemo,
@@ -71,7 +72,7 @@ import {
   resetMeshCorners,
   type PerspectiveTiltConfig,
 } from "@/ui/pixi/perspectiveTilt";
-import { getEffectTexture } from "@/assets/effects/textures";
+import { effectsTexturesReady, getEffectTexture } from "@/assets/effects/textures";
 import {
   burnDestroyDissolveAt,
   createBurnDissolveFilter,
@@ -165,6 +166,8 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   ref,
 ) {
   const { app } = useApplication();
+  use(effectsTexturesReady);
+
   const interactive = displayMode !== undefined;
   const selfInteractive = interactive && !embedded;
 
@@ -720,6 +723,28 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
         texHeight,
         tiltConfig,
       );
+    }
+
+    const surfaceCorners = frame.surfaceCorners;
+    if (mesh) {
+      const [tl, tr, br, bl] = corners.outPoints;
+      surfaceCorners[0].x = -width / 2 + tl!.x * artScaleX;
+      surfaceCorners[0].y = -height / 2 + tl!.y * artScaleY;
+      surfaceCorners[1].x = -width / 2 + tr!.x * artScaleX;
+      surfaceCorners[1].y = -height / 2 + tr!.y * artScaleY;
+      surfaceCorners[2].x = -width / 2 + br!.x * artScaleX;
+      surfaceCorners[2].y = -height / 2 + br!.y * artScaleY;
+      surfaceCorners[3].x = -width / 2 + bl!.x * artScaleX;
+      surfaceCorners[3].y = -height / 2 + bl!.y * artScaleY;
+    } else {
+      surfaceCorners[0].x = -width / 2;
+      surfaceCorners[0].y = -height / 2;
+      surfaceCorners[1].x = width / 2;
+      surfaceCorners[1].y = -height / 2;
+      surfaceCorners[2].x = width / 2;
+      surfaceCorners[2].y = height / 2;
+      surfaceCorners[3].x = -width / 2;
+      surfaceCorners[3].y = height / 2;
     }
 
     if (interactive) {

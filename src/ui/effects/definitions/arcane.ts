@@ -2,6 +2,8 @@ import { BlurFilter } from "pixi.js";
 
 import { addGlowLayer, makeRuntime, noopDestroy, pulse01 } from "@/ui/effects/effectHelpers";
 import { borderBoundsFromSize } from "@/ui/effects/shared/borderFrame";
+import { createDieEdgeLoop } from "@/ui/effects/shared/dieOutline";
+import { projectPointToSurface } from "@/ui/effects/shared/surfaceProjection";
 import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
 
 type Point = { x: number; y: number };
@@ -124,27 +126,6 @@ function createCardLoop(halfW: number, halfH: number, samples: number): Point[] 
   return points;
 }
 
-function createHexLoop(halfW: number, halfH: number, samples: number): Point[] {
-  const points: Point[] = [];
-  const vertices: Point[] = [];
-  for (let i = 0; i < 6; i++) {
-    const a = -Math.PI / 2 + (i / 6) * TAU;
-    vertices.push({ x: Math.cos(a) * halfW, y: Math.sin(a) * halfH });
-  }
-  for (let i = 0; i < samples; i++) {
-    const t = (i / samples) * 6;
-    const seg = Math.floor(t);
-    const local = t - seg;
-    const a = vertices[seg % 6]!;
-    const b = vertices[(seg + 1) % 6]!;
-    points.push({
-      x: a.x + (b.x - a.x) * local,
-      y: a.y + (b.y - a.y) * local,
-    });
-  }
-  return points;
-}
-
 function createNormals(points: Point[]): Point[] {
   const normals: Point[] = [];
   for (let i = 0; i < points.length; i++) {
@@ -215,7 +196,7 @@ export const arcaneEffect: EffectDefinition = {
     const baseHalfH = bounds.halfH * ARCANE_TUNE.ringInsetScale;
     const sampleCount = mount.hostKind === "die" ? ARCANE_TUNE.sampleCount.die : ARCANE_TUNE.sampleCount.card;
     const ringPoints = mount.hostKind === "die"
-      ? createHexLoop(baseHalfW, baseHalfH, sampleCount)
+      ? createDieEdgeLoop(baseHalfW, baseHalfH, sampleCount)
       : createCardLoop(baseHalfW, baseHalfH, sampleCount);
     const ringNormals = createNormals(ringPoints);
 
@@ -337,6 +318,7 @@ export const arcaneEffect: EffectDefinition = {
           const offsetT = tangentWiggle * ARCANE_TUNE.shape.tangentOffset;
           const x = p.x + n.x * offsetN + -n.y * offsetT;
           const y = p.y + n.y * offsetN + n.x * offsetT;
+          const projected = projectPointToSurface({ x, y }, frame);
 
           const gateNoise = hash(idx * 13.1 + lane * 97.1 + Math.floor((t + gateNudge) * gateCadence));
           const gateWave = 0.5
@@ -356,14 +338,14 @@ export const arcaneEffect: EffectDefinition = {
           }
 
           if (!started) {
-            aura.moveTo(x, y);
-            strands.moveTo(x, y);
-            core.moveTo(x, y);
+            aura.moveTo(projected.x, projected.y);
+            strands.moveTo(projected.x, projected.y);
+            core.moveTo(projected.x, projected.y);
             started = true;
           } else {
-            aura.lineTo(x, y);
-            strands.lineTo(x, y);
-            core.lineTo(x, y);
+            aura.lineTo(projected.x, projected.y);
+            strands.lineTo(projected.x, projected.y);
+            core.lineTo(projected.x, projected.y);
           }
         }
       }
@@ -383,15 +365,17 @@ export const arcaneEffect: EffectDefinition = {
         const alphaT = Math.min(1, lifeT * 1.8);
         const path = strike.path;
         if (path.length > 1) {
-          strikeAura.moveTo(path[0]!.x, path[0]!.y);
-          strikeCore.moveTo(path[0]!.x, path[0]!.y);
+          const start = projectPointToSurface(path[0]!, frame);
+          strikeAura.moveTo(start.x, start.y);
+          strikeCore.moveTo(start.x, start.y);
           for (let j = 1; j < path.length; j++) {
-            const p = path[j]!;
+            const p = projectPointToSurface(path[j]!, frame);
             strikeAura.lineTo(p.x, p.y);
             strikeCore.lineTo(p.x, p.y);
           }
         }
-        strikeAura.circle(strike.impact.x, strike.impact.y, ARCANE_TUNE.hoverStrike.impactRadius * alphaT);
+        const impact = projectPointToSurface(strike.impact, frame);
+        strikeAura.circle(impact.x, impact.y, ARCANE_TUNE.hoverStrike.impactRadius * alphaT);
         strikeAura.fill({ color: ARCANE_OUTER, alpha: ARCANE_TUNE.hoverStrike.impactAlpha * alphaT });
       }
 

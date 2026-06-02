@@ -25,5 +25,11 @@ export function createDefaultEffectFrame(
     pointerNormX: 0.5,
     pointerNormY: 0.5,
     phase,
+    surfaceCorners: [
+      { x: -width / 2, y: -height / 2 },
+      { x: width / 2, y: -height / 2 },
+      { x: width / 2, y: height / 2 },
+      { x: -width / 2, y: height / 2 },
+    ],
   };
 }
