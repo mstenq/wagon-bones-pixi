@@ -124,7 +124,7 @@
             <key>data</key>
             <struct type="DataFile">
                 <key>name</key>
-                <filename></filename>
+                <filename>dice.json</filename>
             </struct>
         </map>
         <key>multiPackMode</key>
@@ -259,7 +259,6 @@
             <key type="filename">steel/steel-10.png</key>
             <key type="filename">steel/steel-11.png</key>
             <key type="filename">steel/steel-12.png</key>
-            <key type="filename">stone/origami-dice-v2 (13).png</key>
             <key type="filename">wooden/wooden-01.png</key>
             <key type="filename">wooden/wooden-02.png</key>
             <key type="filename">wooden/wooden-03.png</key>
@@ -275,6 +274,21 @@
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>0.2</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>256,256,512,512</rect>
+                <key>scale9Paddings</key>
+                <rect>256,256,512,512</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">stone/stone.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0,0</point_f>
                 <key>spriteScale</key>
                 <double>0.2</double>
                 <key>scale9Enabled</key>
@@ -365,7 +379,6 @@
                     <filename>standard/standard-10.png</filename>
                     <filename>standard/standard-11.png</filename>
                     <filename>standard/standard-12.png</filename>
-                    <filename>stone/origami-dice-v2 (13).png</filename>
                     <filename>wooden/wooden-01.png</filename>
                     <filename>wooden/wooden-02.png</filename>
                     <filename>wooden/wooden-03.png</filename>
@@ -390,6 +403,7 @@
                     <filename>steel/steel-10.png</filename>
                     <filename>steel/steel-11.png</filename>
                     <filename>steel/steel-12.png</filename>
+                    <filename>stone/stone.png</filename>
                 </array>
             </struct>
         </map>

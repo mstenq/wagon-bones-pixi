@@ -16,6 +16,19 @@ export const DICE_TYPES = [
 
 export type DiceType = (typeof DICE_TYPES)[number];
 
+/** Alphabetical order for enhancement picker UIs. */
+export const DICE_ENHANCEMENT_OPTIONS = [
+  "bone",
+  "diamond",
+  "gold",
+  "loaded",
+  "lucky",
+  "standard",
+  "steel",
+  "stone",
+  "wooden",
+] as const satisfies readonly DiceType[];
+
 export const DICE_LABELS: Record<DiceType, string> = {
   standard: "Standard",
   wooden: "Wooden",

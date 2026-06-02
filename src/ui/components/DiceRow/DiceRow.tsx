@@ -6,7 +6,7 @@ import {
   type DraggableItemHandle,
 } from "@/ui/components/DraggableItem/DraggableItem";
 import { Die, DEFAULT_DIE_SIZE, type DieHandle } from "@/ui/components/Dice/Die";
-import { getDiceTexture, texturesReady } from "@/assets/dice/textures";
+import { texturesReady } from "@/assets/dice/textures";
 import { DICE_COUNT } from "@/data/dice";
 import { gameFacade } from "@/game/facade";
 import { rollSpinFrame, useRunStore } from "@/game/store/runStore";
@@ -35,8 +35,6 @@ export function DiceRow({ layout }: DiceRowProps) {
   const isRolling = useRunStore((state) => state.isRolling);
   const rollTargets = useRunStore((state) => state.rollTargets);
   const setDiceOrder = useRunStore((state) => state.setDiceOrder);
-
-  const texture = getDiceTexture(diceType);
 
   const dragRefs = useRef<(DraggableItemHandle | null)[]>([]);
   const dieRefs = useRef<(DieHandle | null)[]>([]);
@@ -118,8 +116,9 @@ export function DiceRow({ layout }: DiceRowProps) {
               ref={(node) => {
                 dieRefs.current[itemId] = node;
               }}
-              texture={texture}
+              diceType={diceType}
               value={dieValues[itemId] ?? 1}
+              effect="fire"
             />
           </DraggableItem>
         );

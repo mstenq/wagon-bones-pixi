@@ -1,8 +1,10 @@
 import { useApplication } from "@pixi/react";
 import { useTick } from "@pixi/react";
-import { Sprite, Text, TextStyle, type Container, type Filter, type Texture } from "pixi.js";
-import { forwardRef, use, useCallback, useImperativeHandle, useMemo, useRef } from "react";
+import { Sprite, type Container, type Filter } from "pixi.js";
+import { forwardRef, use, useCallback, useImperativeHandle, useRef } from "react";
 
+import { getDiceFaceTexture, texturesReady } from "@/assets/dice/textures";
+import type { DiceType } from "@/data/dice";
 import { effectsTexturesReady, getEffectTexture } from "@/assets/effects/textures";
 import {
   burnDestroyDissolveAt,
@@ -11,25 +13,14 @@ import {
   type BurnDissolveFilter,
 } from "@/ui/actionEffects/burnDissolveFilter";
 import type { ActionEffectComplete } from "@/ui/actionEffects/types";
-import {
-  ADJACENT_FACE_LAYOUTS,
-  pickAdjacentFaceValues,
-} from "@/ui/components/Dice/dieAdjacentFaces";
 import { EffectMount } from "@/ui/effects/EffectMount";
 import { createDefaultEffectFrame } from "@/ui/effects/context";
 import type { EffectFrameContext, EffectId } from "@/ui/effects/types";
 
 export const DEFAULT_DIE_SIZE = 88;
 
-export const dieTextStyle = new TextStyle({
-  fontFamily: "Inter, system-ui, sans-serif",
-  fontSize: 24,
-  fontWeight: "500",
-  fill: "#000000",
-});
-
 export type DieProps = {
-  texture: Texture | null;
+  diceType: DiceType;
   size?: number;
   value?: number;
   effect?: EffectId;
@@ -60,18 +51,18 @@ type DestroyAnimState = {
 
 /** Visual die only — position via parent `DraggableItem` or any container. */
 export const Die = forwardRef<DieHandle, DieProps>(function Die(
-  { texture, size = DEFAULT_DIE_SIZE, value = 1, effect = "none", phase = 0 },
+  { diceType, size = DEFAULT_DIE_SIZE, value = 1, effect = "none", phase = 0 },
   ref,
 ) {
   const { app } = useApplication();
+  use(texturesReady);
   use(effectsTexturesReady);
+
+  const faceTexture = getDiceFaceTexture(diceType, value);
 
   const squishRef = useRef<Container | null>(null);
   const rollRef = useRef<Container | null>(null);
   const spriteRef = useRef<Sprite | null>(null);
-  const textRef = useRef<Text | null>(null);
-  const adjacentTextRefs = useRef<(Text | null)[]>([]);
-  const adjacentValues = useMemo(() => pickAdjacentFaceValues(value), [value]);
   const effectFrameRef = useRef<EffectFrameContext>(
     createDefaultEffectFrame("die", size, size, phase),
   );
@@ -123,15 +114,6 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
     };
   }, []);
 
-  const syncAdjacentTexts = (centerValue: number) => {
-    const adjacent = pickAdjacentFaceValues(centerValue);
-    adjacentTextRefs.current.forEach((node, index) => {
-      if (node) {
-        node.text = String(adjacent[index]);
-      }
-    });
-  };
-
   useTick(() => {
     const dt = app.ticker.deltaMS / 1000;
     const destroyAnim = destroyAnimRef.current;
@@ -167,15 +149,14 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
     () => ({
       setFrame({ rotation, scale, value: face }) {
         const roll = rollRef.current;
-        const text = textRef.current;
+        const sprite = spriteRef.current;
         if (roll) {
           roll.rotation = rotation;
           roll.scale.set(scale);
         }
-        if (text) {
-          text.text = String(face);
+        if (sprite) {
+          sprite.texture = getDiceFaceTexture(diceType, face);
         }
-        syncAdjacentTexts(face);
       },
       reset() {
         const roll = rollRef.current;
@@ -190,7 +171,7 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
       destroy: startDestroy,
       isDestroying: () => destroyingRef.current,
     }),
-    [startDestroy],
+    [diceType, startDestroy],
   );
 
   return (
@@ -204,46 +185,14 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
         artRef={effectArtRef}
       >
         <pixiContainer ref={rollRef} eventMode="none">
-          {texture ? (
-            <pixiSprite
-              ref={spriteRef}
-              texture={texture}
-              anchor={0.5}
-              width={size}
-              height={size}
-              eventMode="none"
-            />
-          ) : null}
-          <pixiText
-            ref={textRef}
-            text={String(value)}
+          <pixiSprite
+            ref={spriteRef}
+            texture={faceTexture}
             anchor={0.5}
-            y={-4}
-            style={dieTextStyle}
+            width={size}
+            height={size}
             eventMode="none"
           />
-          {ADJACENT_FACE_LAYOUTS.map((layout, index) => (
-            <pixiContainer
-              key={index}
-              x={layout.x * size}
-              y={layout.y * size}
-              rotation={layout.rotation}
-              scale={{ x: layout.scaleX, y: layout.scaleY }}
-              skew={{ x: layout.skewX, y: 0 }}
-              alpha={layout.alpha}
-              eventMode="none"
-            >
-              <pixiText
-                ref={(node) => {
-                  adjacentTextRefs.current[index] = node;
-                }}
-                text={String(adjacentValues[index])}
-                anchor={0.5}
-                style={dieTextStyle}
-                eventMode="none"
-              />
-            </pixiContainer>
-          ))}
         </pixiContainer>
       </EffectMount>
     </pixiContainer>

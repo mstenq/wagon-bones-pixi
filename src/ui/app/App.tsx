@@ -1,20 +1,12 @@
 import { GameCanvas } from "@/ui/app/GameCanvas";
 import { RollDiceButton } from "@/ui/components/Dice/RollDiceButton";
-import { DICE_LABELS, type DiceType } from "@/ui/components/Dice/config";
+import {
+  DICE_ENHANCEMENT_OPTIONS,
+  DICE_LABELS,
+  type DiceType,
+} from "@/ui/components/Dice/config";
 import { useRunStore } from "@/game/store/runStore";
 import { panelLabelClass, panelSelectClass } from "@/ui/styles/panelControls";
-
-const DICE_ENHANCEMENT_OPTIONS: DiceType[] = [
-  "bone",
-  "diamond",
-  "gold",
-  "loaded",
-  "lucky",
-  "standard",
-  "steel",
-  "stone",
-  "wooden",
-];
 
 function DiceEnhancementSelect() {
   const diceType = useRunStore((state) => state.diceType);

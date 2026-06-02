@@ -3,14 +3,16 @@ export type DieOutlinePoint = { x: number; y: number };
 // Normalized clockwise outline for the d20-ish die silhouette. Tweak these
 // points to move die edge effects; x/y are multiplied by the die half-size.
 export const DIE_EDGE_POINTS: DieOutlinePoint[] = [
-  { x: 0.0, y: -1.0 }, // top middle
-  { x: 0.72, y: -0.73 }, // top right
-  { x: 1, y: -0.05 }, // middle right
-  { x: 0.80, y: 0.65 }, // bottom right
-  { x: 0.05, y: 1.05 }, // bottom middle
-  { x: -0.75, y: 0.75 }, // bottom left
-  { x: -1, y: 0 }, // middle left
-  { x: -0.70, y: -0.78 }, // top left
+  { x: 0.0, y: -1.0 }, // noon
+  { x: 0.6, y: -0.8 }, // 2pm
+  { x: 0.95, y: -0.2 }, // 3pm
+  { x: 1, y: 0.12 }, // 4pm
+  { x: .6, y: 0.8 }, // 5pm
+  { x: 0.0, y: 1.0 }, // 6pm
+  { x: -0.6, y: 0.8 }, // 7pm
+  { x: -0.95, y: 0.25 }, // 8pm
+  { x: -0.95, y: -0.12 }, // 9pm
+  { x: -0.60, y: -0.78 }, // 11pm
 ];
 
 export function createDieEdgeLoop(
