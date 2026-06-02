@@ -2,6 +2,7 @@ import { BlurFilter, ColorMatrixFilter, Graphics } from "pixi.js";
 
 import { addGlowLayer, applyArtFilters, makeRuntime, noopDestroy } from "@/ui/effects/effectHelpers";
 import { borderBoundsFromSize } from "@/ui/effects/shared/borderFrame";
+import { setGlowFilterAreaForMount } from "@/ui/effects/shared/glow";
 import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
 
 export const shadowEffect: EffectDefinition = {
@@ -11,6 +12,7 @@ export const shadowEffect: EffectDefinition = {
     const bounds = borderBoundsFromSize(mount.width, mount.height);
     const tendrils = addGlowLayer(layers.back, 0);
     tendrils.filters = [new BlurFilter({ strength: 8, quality: 4 })];
+    setGlowFilterAreaForMount(tendrils, mount, 24);
     const dark = new ColorMatrixFilter();
     dark.brightness(0.75, false);
     applyArtFilters(art, [dark]);

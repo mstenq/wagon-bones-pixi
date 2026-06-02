@@ -3,6 +3,7 @@ import { BlurFilter } from "pixi.js";
 import { addGlowLayer, makeRuntime, noopDestroy, pulse01 } from "@/ui/effects/effectHelpers";
 import { borderBoundsFromSize } from "@/ui/effects/shared/borderFrame";
 import { createDieEdgeLoop } from "@/ui/effects/shared/dieOutline";
+import { setGlowFilterAreaForMount } from "@/ui/effects/shared/glow";
 import { projectPointToSurface } from "@/ui/effects/shared/surfaceProjection";
 import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
 
@@ -202,11 +203,14 @@ export const arcaneEffect: EffectDefinition = {
 
     const aura = addGlowLayer(layers.front, 0);
     aura.filters = [new BlurFilter(ARCANE_TUNE.stroke.auraBlur)];
+    setGlowFilterAreaForMount(aura, mount, 10);
     const strands = addGlowLayer(layers.front, 1);
     strands.filters = [new BlurFilter(ARCANE_TUNE.stroke.strandsBlur)];
+    setGlowFilterAreaForMount(strands, mount, 4);
     const core = addGlowLayer(layers.front, 2);
     const strikeAura = addGlowLayer(layers.front, 4);
     strikeAura.filters = [new BlurFilter(ARCANE_TUNE.hoverStrike.auraBlur)];
+    setGlowFilterAreaForMount(strikeAura, mount, 8);
     const strikeCore = addGlowLayer(layers.front, 5);
 
     const seed = Math.random();

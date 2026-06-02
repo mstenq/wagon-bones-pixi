@@ -3,6 +3,7 @@ import { BlurFilter, ColorMatrixFilter, Graphics } from "pixi.js";
 import { getEffectTexture } from "@/assets/effects/textures";
 import { addGlowLayer, addSpriteLayer, applyArtFilters, makeRuntime, noopDestroy } from "@/ui/effects/effectHelpers";
 import { borderBoundsFromSize } from "@/ui/effects/shared/borderFrame";
+import { setGlowFilterAreaForMount } from "@/ui/effects/shared/glow";
 import { orbitPosition } from "@/ui/effects/shared/orbit";
 import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
 
@@ -13,6 +14,7 @@ export const crystalEffect: EffectDefinition = {
     const bounds = borderBoundsFromSize(mount.width, mount.height);
     const glow = addGlowLayer(layers.back, 0);
     glow.filters = [new BlurFilter({ strength: 12, quality: 4 })];
+    setGlowFilterAreaForMount(glow, mount, 12);
     const shards: Graphics[] = [];
     const sparkleTex = getEffectTexture("sparkle");
     const sparkles = Array.from({ length: 6 }, (_, i) =>

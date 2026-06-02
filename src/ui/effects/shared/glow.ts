@@ -77,3 +77,15 @@ export function applyBlurredGlowForMount(
   const str = dieBlurStrength(mount, strength);
   return applyBlurredGlow(g, mount.width, mount.height, pad, str);
 }
+
+export function setGlowFilterAreaForMount(
+  g: Graphics,
+  mount: EffectMountContext,
+  extraPadding = 0,
+): void {
+  g.filterArea = filterAreaForBounds(
+    mount.width,
+    mount.height,
+    dieBlurPadding(mount) + extraPadding,
+  );
+}

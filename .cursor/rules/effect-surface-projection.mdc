@@ -15,3 +15,5 @@ Use this for border strokes, edge flames/lightning, hover impact points, and car
 If an effect uses `getEffectTexture(...)`, ensure the host rendering path suspends with `use(effectsTexturesReady)` before creating effect runtimes. Missing this can create reload-dependent texture races and inconsistent effect brightness/fills.
 
 For die edge effects, reuse `DIE_EDGE_POINTS` / `createDieEdgeLoop` from `src/ui/effects/shared/dieOutline.ts`. Do not duplicate die outline points or approximate dice with circles/hexes in individual effect definitions.
+
+When applying `BlurFilter` to effect `Graphics`, always set a fixed local `filterArea`. Prefer `applyBlurredGlowForMount(...)` when creating the blur, or call `setGlowFilterAreaForMount(...)` after assigning custom blur filters. Animated blurred graphics without a bounded filter area can leave faint additive glow bleed in later filtered layers.

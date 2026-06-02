@@ -20,7 +20,7 @@ import {
 import { drawEffectBackdrop } from "@/ui/effects/shared/cardEffect";
 import type { BorderBounds } from "@/ui/effects/shared/borderFrame";
 import { createDieEdgeLoop } from "@/ui/effects/shared/dieOutline";
-import { applyBlurredGlowForMount } from "@/ui/effects/shared/glow";
+import { applyBlurredGlowForMount, setGlowFilterAreaForMount } from "@/ui/effects/shared/glow";
 import { createParticlePool, spawnParticle, stepParticles } from "@/ui/effects/shared/particles";
 import { burstTimer } from "@/ui/effects/shared/pseudoRandom";
 import { projectPointToSurface } from "@/ui/effects/shared/surfaceProjection";
@@ -306,8 +306,10 @@ export const fireEffect: EffectDefinition = {
 
     const flameGlow = addGlowLayer(layers.front, 0);
     flameGlow.filters = [new BlurFilter(FIRE_TUNE.stroke.glowBlur)];
+    setGlowFilterAreaForMount(flameGlow, mount, 12);
     const flameAura = addGlowLayer(layers.front, 1);
     flameAura.filters = [new BlurFilter(FIRE_TUNE.stroke.auraBlur)];
+    setGlowFilterAreaForMount(flameAura, mount, 8);
     const flameBody = addGlowLayer(layers.front, 2);
     const flameCore = addGlowLayer(layers.front, 3);
 

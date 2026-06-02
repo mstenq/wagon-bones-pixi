@@ -2,6 +2,7 @@ import { BlurFilter, Graphics } from "pixi.js";
 
 import { addGlowLayer, makeRuntime, noopDestroy } from "@/ui/effects/effectHelpers";
 import { borderBoundsFromSize } from "@/ui/effects/shared/borderFrame";
+import { setGlowFilterAreaForMount } from "@/ui/effects/shared/glow";
 import { createParticlePool, drawParticles, spawnParticle, stepParticles } from "@/ui/effects/shared/particles";
 import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
 
@@ -12,6 +13,7 @@ export const voidEffect: EffectDefinition = {
     const bounds = borderBoundsFromSize(mount.width, mount.height);
     const core = addGlowLayer(layers.back, 0);
     core.filters = [new BlurFilter({ strength: 6, quality: 4 })];
+    setGlowFilterAreaForMount(core, mount, 6);
     const ring = addGlowLayer(layers.back, 1);
     const particles = createParticlePool(30);
 

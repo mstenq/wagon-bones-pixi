@@ -118,7 +118,7 @@ export function DiceRow({ layout }: DiceRowProps) {
               }}
               diceType={diceType}
               value={dieValues[itemId] ?? 1}
-              effect="fire"
+              effect="arcane"
             />
           </DraggableItem>
         );

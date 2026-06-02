@@ -3,6 +3,7 @@ import { BlurFilter, ColorMatrixFilter, Graphics, Sprite } from "pixi.js";
 import { getEffectTexture } from "@/assets/effects/textures";
 import { addGlowLayer, addSpriteLayer, applyArtFilters, makeRuntime, noopDestroy } from "@/ui/effects/effectHelpers";
 import { borderBoundsFromSize, drawRoundedRectFrame } from "@/ui/effects/shared/borderFrame";
+import { setGlowFilterAreaForMount } from "@/ui/effects/shared/glow";
 import { burstTimer } from "@/ui/effects/shared/pseudoRandom";
 import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
 
@@ -55,6 +56,7 @@ export const stormEffect: EffectDefinition = {
     };
 
     flashGfx.filters = [new BlurFilter({ strength: 6, quality: 3 })];
+    setGlowFilterAreaForMount(flashGfx, mount, 6);
 
     return makeRuntime("storm", step, noopDestroy(() => applyArtFilters(art, null), () => {
       clouds.forEach((c) => c.destroy());

@@ -2,6 +2,7 @@ import { BlurFilter, Graphics } from "pixi.js";
 
 import { addGlowLayer, makeRuntime, noopDestroy } from "@/ui/effects/effectHelpers";
 import { borderBoundsFromSize } from "@/ui/effects/shared/borderFrame";
+import { setGlowFilterAreaForMount } from "@/ui/effects/shared/glow";
 import { createParticlePool, drawParticles, spawnParticle, stepParticles } from "@/ui/effects/shared/particles";
 import { orbitPosition } from "@/ui/effects/shared/orbit";
 import { burstTimer } from "@/ui/effects/shared/pseudoRandom";
@@ -14,6 +15,7 @@ export const dragonEffect: EffectDefinition = {
     const bounds = borderBoundsFromSize(mount.width, mount.height);
     const body = addGlowLayer(layers.front, 0);
     body.filters = [new BlurFilter({ strength: 2, quality: 3 })];
+    setGlowFilterAreaForMount(body, mount, 8);
     const eyes = addGlowLayer(layers.front, 1);
     const trail = addGlowLayer(layers.front, 2);
     const particles = createParticlePool(16);

@@ -2,6 +2,7 @@ import { BlurFilter, Graphics } from "pixi.js";
 
 import { addGlowLayer, makeRuntime, noopDestroy } from "@/ui/effects/effectHelpers";
 import { borderBoundsFromSize } from "@/ui/effects/shared/borderFrame";
+import { setGlowFilterAreaForMount } from "@/ui/effects/shared/glow";
 import { burstTimer } from "@/ui/effects/shared/pseudoRandom";
 import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
 
@@ -12,6 +13,7 @@ export const cosmicEffect: EffectDefinition = {
     const bounds = borderBoundsFromSize(mount.width, mount.height);
     const nebula = addGlowLayer(layers.back, 0);
     nebula.filters = [new BlurFilter({ strength: 18, quality: 4 })];
+    setGlowFilterAreaForMount(nebula, mount, 18);
     const stars = addGlowLayer(layers.back, 1);
     const shooting = addGlowLayer(layers.front, 0);
 
