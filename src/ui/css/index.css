@@ -13,22 +13,6 @@
   --color-ui-panel-inset: #2a3033;
   --color-ui-panel-well: #1e2325;
 
-  /* CardboardButton label */
-  --color-cardboard-button-text: #3d2a1a;
-  --color-cardboard-button-text-shadow: #743e123b;
-
-  /*
-   * border-image slices (px in source PNG, ~716×180–195 after trim).
-   * Order: top right bottom left. Keep horizontal slices ~24–28px so
-   * corrugated center is not pulled into the side borders.
-   */
-  --cardboard-button-slice: 24 24 24 24 fill;
-  --cardboard-button-border-y: 5px;
-  --cardboard-button-border-x: 5px;
-
-  /* CardboardContainer — cardboard-tile.png; keep in sync with theme.ts */
-  --cardboard-container-slice: 40 fill;
-  --cardboard-container-border: 40px;
 }
 
 @layer base {
@@ -121,32 +105,5 @@
 
   100% {
     transform: scale(1);
-  }
-}
-
-@layer components {
-  .cardboard-button {
-    border-style: solid;
-    border-width: var(--cardboard-button-border-y) var(--cardboard-button-border-x);
-    border-image-slice: var(--cardboard-button-slice);
-    border-image-repeat: stretch;
-    background: transparent;
-    min-height: 52px;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .cardboard-button:active:not(:disabled) {
-      transform: none;
-    }
-  }
-
-  .cardboard-container {
-    border-style: solid;
-    border-width: var(--cardboard-container-border);
-    border-image-slice: var(--cardboard-container-slice);
-    border-image-repeat: repeat;
-    background-repeat: repeat;
-    background-clip: padding-box;
-    background-origin: padding-box;
   }
 }

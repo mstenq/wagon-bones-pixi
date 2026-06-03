@@ -5,7 +5,6 @@ import { DEFAULT_CARD_HEIGHT, DEFAULT_CARD_WIDTH } from "@/ui/components/Card/Ca
 import { CardContainer } from "@/ui/components/CardContainer/CardContainer";
 import { DiceRow } from "@/ui/components/DiceRow/DiceRow";
 import { computeGameLayout } from "@/ui/layout/gameLayout";
-import { PixiCardboardRowPanel } from "@/ui/pixi/cardboard/PixiCardboardRowPanel";
 
 export function GameScene() {
   const { app } = useApplication();
