@@ -5,7 +5,13 @@ import { effectsTexturesReady } from "@/assets/effects/textures";
 import { texturesReady } from "@/assets/dice/textures";
 import { DICE_TYPES, type DiceType } from "@/data/dice";
 import { Die, type DieHandle } from "@/ui/components/Dice/Die";
-import { DICE_ENHANCEMENT_OPTIONS, DICE_LABELS } from "@/ui/components/Dice/config";
+import {
+  DICE_ENHANCEMENT_OPTIONS,
+  DICE_LABELS,
+  DIE_MODE_LABELS,
+  DIE_MODES,
+  type DieMode,
+} from "@/ui/components/Dice/config";
 import { itemShakeAnim, itemTextAnim } from "@/ui/animation/itemAnimations";
 import { EFFECT_OPTIONS } from "@/ui/effects/effectOptions";
 import { useQueryParam } from "@/ui/hooks/useQueryParam";
@@ -54,6 +60,11 @@ function DieStory() {
       EFFECT_OPTIONS.some((option) => option.id === raw) ? (raw as EffectId) : undefined,
   });
 
+  const [mode, setMode] = useQueryParam<DieMode>("mode", {
+    default: "base",
+    parse: (raw) => (DIE_MODES.includes(raw as DieMode) ? (raw as DieMode) : undefined),
+  });
+
   const finishAnim = useCallback((started: boolean) => {
     if (!started) {
       return;
@@ -97,6 +108,20 @@ function DieStory() {
   return (
     <div className="flex flex-col items-center gap-4">
       <div className="flex flex-wrap justify-center gap-4">
+        <label className={panelLabelClass}>
+          Mode
+          <select
+            className={panelSelectClass}
+            value={mode}
+            onChange={(event) => setMode(event.target.value as DieMode)}
+          >
+            {DIE_MODES.map((option) => (
+              <option key={option} value={option}>
+                {DIE_MODE_LABELS[option]}
+              </option>
+            ))}
+          </select>
+        </label>
         <label className={panelLabelClass}>
           Enhancement
           <select
@@ -227,6 +252,7 @@ function DieStory() {
               diceType={enhancement}
               value={value}
               effect={effect}
+              mode={mode}
             />
           </pixiContainer>
         ) : null}

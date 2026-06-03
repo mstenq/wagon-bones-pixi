@@ -1,7 +1,7 @@
 import { useApplication } from "@pixi/react";
 import { useTick } from "@pixi/react";
-import { Sprite, type Container, type Filter } from "pixi.js";
-import { forwardRef, use, useImperativeHandle, useMemo, useRef } from "react";
+import { Sprite, TextStyle, type Container, type Filter } from "pixi.js";
+import { forwardRef, use, useImperativeHandle, useMemo, useRef, useState } from "react";
 
 import { getDiceFaceTexture, texturesReady } from "@/assets/dice/textures";
 import type { DiceType } from "@/data/dice";
@@ -13,9 +13,20 @@ import {
   useItemAnimations,
   type ItemAnimationRefs,
 } from "@/ui/animation/useItemAnimations";
+import {
+  DIE_SELECTED_LIFT_PX,
+  dieModeAlpha,
+  type DieMode,
+} from "@/ui/components/Dice/config";
 import { EffectMount } from "@/ui/effects/EffectMount";
 import { createDefaultEffectFrame } from "@/ui/effects/context";
 import type { EffectFrameContext, EffectId } from "@/ui/effects/types";
+import {
+  createScalarSpring,
+  setScalarTarget,
+  stepScalarSpring,
+  type ScalarSpringState,
+} from "@/ui/interaction/spring";
 
 export const DEFAULT_DIE_SIZE = 88;
 
@@ -25,6 +36,7 @@ export type DieProps = {
   value?: number;
   effect?: EffectId;
   phase?: number;
+  mode?: DieMode;
 };
 
 export type DieFrame = {
@@ -45,7 +57,14 @@ export type DieHandle = {
 
 /** Visual die only — position via parent `DraggableItem` or any container. */
 export const Die = forwardRef<DieHandle, DieProps>(function Die(
-  { diceType, size = DEFAULT_DIE_SIZE, value = 1, effect = "none", phase = 0 },
+  {
+    diceType,
+    size = DEFAULT_DIE_SIZE,
+    value = 1,
+    effect = "none",
+    phase = 0,
+    mode = "base",
+  },
   ref,
 ) {
   const { app } = useApplication();
@@ -56,9 +75,11 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
 
   const rootRef = useRef<Container | null>(null);
   const animOverlayRef = useRef<Container | null>(null);
+  const liftRef = useRef<Container | null>(null);
   const squishRef = useRef<Container | null>(null);
   const rollRef = useRef<Container | null>(null);
   const spriteRef = useRef<Sprite | null>(null);
+  const liftSpringRef = useRef<ScalarSpringState>(createScalarSpring(0, 0));
   const effectFrameRef = useRef<EffectFrameContext>(
     createDefaultEffectFrame("die", size, size, phase),
   );
@@ -76,6 +97,37 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
   });
   const externalSquishRef = useRef({ scaleX: 1, scaleY: 1 });
 
+  const [prevMode, setPrevMode] = useState(mode);
+  if (mode !== prevMode) {
+    setPrevMode(mode);
+    setScalarTarget(
+      liftSpringRef.current,
+      mode === "selected" ? DIE_SELECTED_LIFT_PX : 0,
+    );
+  }
+
+  const debuffXStyle = useMemo(
+    () =>
+      new TextStyle({
+        fontFamily: "Inter, system-ui, sans-serif",
+        fontSize: size * 0.5,
+        fontWeight: "100",
+        fill: "#dc2626",
+        align: "center",
+      }),
+    [size],
+  );
+
+  const lockStyle = useMemo(
+    () =>
+      new TextStyle({
+        fontFamily: "Inter, system-ui, sans-serif",
+        fontSize: size * 0.28,
+        align: "center",
+      }),
+    [size],
+  );
+
   const itemAnimRefs = useMemo(
     (): ItemAnimationRefs => ({
       root: rootRef,
@@ -91,6 +143,8 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
     refs: itemAnimRefs,
   });
 
+  const artAlpha = dieModeAlpha(mode);
+
   useTick(() => {
     const dt = app.ticker.deltaMS / 1000;
     const { destroyBlocksTick, growPopMul, shakeX } = stepAnimations(dt);
@@ -105,6 +159,12 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
       growPopMul,
       shakeX,
     );
+
+    stepScalarSpring(liftSpringRef.current, dt);
+    const lift = liftRef.current;
+    if (lift) {
+      lift.y = -liftSpringRef.current.value;
+    }
 
     const frame = effectFrameRef.current;
     frame.dt = dt;
@@ -148,26 +208,47 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
   return (
     <pixiContainer ref={rootRef} sortableChildren eventMode="none">
       <pixiContainer ref={animOverlayRef} zIndex={10} eventMode="none" />
-      <pixiContainer ref={squishRef} zIndex={2} eventMode="none">
-        <EffectMount
-          effect={effect}
-          hostKind="die"
-          width={size}
-          height={size}
-          frameRef={effectFrameRef}
-          artRef={effectArtRef}
-        >
-          <pixiContainer ref={rollRef} eventMode="none">
-            <pixiSprite
-              ref={spriteRef}
-              texture={faceTexture}
-              anchor={0.5}
-              width={size}
-              height={size}
-              eventMode="none"
-            />
-          </pixiContainer>
-        </EffectMount>
+      <pixiContainer ref={liftRef} zIndex={2} eventMode="none">
+        <pixiContainer ref={squishRef} alpha={artAlpha} eventMode="none">
+          <EffectMount
+            effect={effect}
+            hostKind="die"
+            width={size}
+            height={size}
+            frameRef={effectFrameRef}
+            artRef={effectArtRef}
+          >
+            <pixiContainer ref={rollRef} eventMode="none">
+              <pixiSprite
+                ref={spriteRef}
+                texture={faceTexture}
+                anchor={0.5}
+                width={size}
+                height={size}
+                eventMode="none"
+              />
+            </pixiContainer>
+          </EffectMount>
+        </pixiContainer>
+        {mode === "debuffed" ? (
+          <pixiText
+            text="✕"
+            anchor={0.5}
+            zIndex={5}
+            style={debuffXStyle}
+            eventMode="none"
+          />
+        ) : null}
+        {mode === "locked" ? (
+          <pixiText
+            text="🔒"
+            anchor={{ x: 0.5, y: 0 }}
+            y={size / 2 + 10}
+            zIndex={5}
+            style={lockStyle}
+            eventMode="none"
+          />
+        ) : null}
       </pixiContainer>
     </pixiContainer>
   );
