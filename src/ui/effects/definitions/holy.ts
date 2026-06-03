@@ -47,11 +47,18 @@ const HOLY_TUNE = {
     thresholdStep: 0.08,
   },
   halo: {
-    yOffset: { die: 0, card: 25 },
+    yOffset: { die: -5, card: 25 },
     rxScale: { die: 0.46, card: 0.546 },
     ryScale: { die: 0.11, card: 0.0715 },
     glowBlur: { die: 5, card: 7 },
     orbitSpeed: 0.34,
+    idle: {
+      driftX: { die: 1.2, card: 5 },
+      driftY: { die: 1.2, card: 3 },
+      wobbleScale: { die: 0.06, card: 0.02 },
+      rotation: { die: 0.08, card: 0.02 },
+      speed: 1.05,
+    },
   },
 } as const;
 
@@ -146,13 +153,18 @@ function drawHaloArc(
   width: number,
   color: number,
   alpha: number,
+  rotation = 0,
 ): void {
   const samples = 28;
+  const cr = Math.cos(rotation);
+  const sr = Math.sin(rotation);
   for (let i = 0; i <= samples; i++) {
     const t = i / samples;
     const a = startAngle + (endAngle - startAngle) * t;
-    const x = cx + Math.cos(a) * rx;
-    const y = cy + Math.sin(a) * ry;
+    const localX = Math.cos(a) * rx;
+    const localY = Math.sin(a) * ry;
+    const x = cx + localX * cr - localY * sr;
+    const y = cy + localX * sr + localY * cr;
     if (i === 0) {
       gfx.moveTo(x, y);
     } else {
@@ -171,14 +183,19 @@ function drawHalo(
   width: number,
   color: number,
   alpha: number,
+  rotation = 0,
 ): void {
-  drawHaloArc(gfx, cx, cy, rx, ry, 0, TAU, width, color, alpha);
+  drawHaloArc(gfx, cx, cy, rx, ry, 0, TAU, width, color, alpha, rotation);
 }
 
-function haloPoint(cx: number, cy: number, rx: number, ry: number, angle: number): Point {
+function haloPoint(cx: number, cy: number, rx: number, ry: number, angle: number, rotation = 0): Point {
+  const localX = Math.cos(angle) * rx;
+  const localY = Math.sin(angle) * ry;
+  const cr = Math.cos(rotation);
+  const sr = Math.sin(rotation);
   return {
-    x: cx + Math.cos(angle) * rx,
-    y: cy + Math.sin(angle) * ry,
+    x: cx + localX * cr - localY * sr,
+    y: cy + localX * sr + localY * cr,
   };
 }
 
@@ -293,17 +310,27 @@ export const holyEffect: EffectDefinition = {
       }
 
       const showHalo = !frame.hideHalo;
-      const haloDrift = Math.sin(t * 0.9 + frame.phase) * (isDie ? 1.2 : 2);
+      const haloIdle = HOLY_TUNE.halo.idle;
+      const haloIdleT = t * haloIdle.speed + frame.phase;
+      const haloDriftX = Math.sin(haloIdleT * 0.84) * (isDie ? haloIdle.driftX.die : haloIdle.driftX.card);
+      const haloDriftY = Math.cos(haloIdleT) * (isDie ? haloIdle.driftY.die : haloIdle.driftY.card);
+      const haloWobble = 1 + Math.sin(haloIdleT * 1.17 + 0.6) * (isDie ? haloIdle.wobbleScale.die : haloIdle.wobbleScale.card);
+      const haloCounterWobble = 1 - Math.sin(haloIdleT * 1.17 + 0.6) * (isDie ? haloIdle.wobbleScale.die : haloIdle.wobbleScale.card) * 0.55;
+      const haloRotation = Math.sin(haloIdleT * 0.72) * (isDie ? haloIdle.rotation.die : haloIdle.rotation.card);
+      const haloX = haloCx + haloDriftX;
+      const haloY = haloCy + haloDriftY;
+      const haloAnimatedRx = haloRx * haloWobble;
+      const haloAnimatedRy = haloRy * haloCounterWobble;
       const orbitAngle = t * HOLY_TUNE.halo.orbitSpeed * TAU + frame.phase;
       if (showHalo) {
         const haloAlpha = (0.42 + pulse * 0.12) * hoverBoost * activeBoost;
-        drawHalo(haloGlow, haloCx, haloCy + haloDrift, haloRx, haloRy, isDie ? 8 : 10, GOLD, 0.12 * hoverBoost);
-        drawHalo(haloGlow, haloCx, haloCy + haloDrift, haloRx * 0.96, haloRy * 0.86, isDie ? 4 : 5, GOLD_BRIGHT, 0.16 * hoverBoost);
-        drawHaloArc(haloCore, haloCx, haloCy + haloDrift, haloRx, haloRy, Math.PI, TAU, isDie ? 1.2 : 1.5, GOLD, haloAlpha * 0.42);
-        drawHaloArc(haloCore, haloCx, haloCy + haloDrift, haloRx, haloRy, 0, Math.PI, isDie ? 1.6 : 2.1, GOLD_BRIGHT, haloAlpha);
+        drawHalo(haloGlow, haloX, haloY, haloAnimatedRx, haloAnimatedRy, isDie ? 8 : 10, GOLD, 0.12 * hoverBoost, haloRotation);
+        drawHalo(haloGlow, haloX, haloY, haloAnimatedRx * 0.96, haloAnimatedRy * 0.86, isDie ? 4 : 5, GOLD_BRIGHT, 0.16 * hoverBoost, haloRotation);
+        drawHaloArc(haloCore, haloX, haloY, haloAnimatedRx, haloAnimatedRy, Math.PI, TAU, isDie ? 1.2 : 1.5, GOLD, haloAlpha * 0.42, haloRotation);
+        drawHaloArc(haloCore, haloX, haloY, haloAnimatedRx, haloAnimatedRy, 0, Math.PI, isDie ? 1.6 : 2.1, GOLD_BRIGHT, haloAlpha, haloRotation);
 
-        const light = haloPoint(haloCx, haloCy + haloDrift, haloRx, haloRy, orbitAngle);
-        const trail = haloPoint(haloCx, haloCy + haloDrift, haloRx, haloRy, orbitAngle - 0.36);
+        const light = haloPoint(haloX, haloY, haloAnimatedRx, haloAnimatedRy, orbitAngle, haloRotation);
+        const trail = haloPoint(haloX, haloY, haloAnimatedRx, haloAnimatedRy, orbitAngle - 0.36, haloRotation);
         haloLight.moveTo(trail.x, trail.y);
         haloLight.lineTo(light.x, light.y);
         haloLight.stroke({ width: isDie ? 4 : 6, color: GOLD_BRIGHT, alpha: 0.36 * hoverBoost, cap: "round" });
@@ -351,7 +378,7 @@ export const holyEffect: EffectDefinition = {
 
       if (flare) {
         const flash = burstTimer(t, 2, 3.2, 0.12);
-        const flarePoint = haloPoint(haloCx, haloCy + Math.sin(t * 0.9 + frame.phase) * (isDie ? 1.2 : 2), haloRx, haloRy, t * HOLY_TUNE.halo.orbitSpeed * TAU + frame.phase);
+        const flarePoint = haloPoint(haloX, haloY, haloAnimatedRx, haloAnimatedRy, orbitAngle, haloRotation);
         flare.alpha = (0.34 + flash * 0.36) * (frame.hovered ? 1.15 : 1);
         flare.scale.set((isDie ? 0.45 : 0.58) + flash * (isDie ? 0.16 : 0.22));
         flare.rotation = t * 1.2;
