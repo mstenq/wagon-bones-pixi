@@ -1,9 +1,11 @@
 import { useApplication, useTick } from "@pixi/react";
 import { useCallback, useMemo, useState } from "react";
 
+import { DEFAULT_CARD_HEIGHT, DEFAULT_CARD_WIDTH } from "@/ui/components/Card/Card";
 import { CardContainer } from "@/ui/components/CardContainer/CardContainer";
 import { DiceRow } from "@/ui/components/DiceRow/DiceRow";
 import { computeGameLayout } from "@/ui/layout/gameLayout";
+import { PixiCardboardRowPanel } from "@/ui/pixi/cardboard/PixiCardboardRowPanel";
 
 export function GameScene() {
   const { app } = useApplication();

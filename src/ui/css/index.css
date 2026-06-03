@@ -24,6 +24,10 @@
   --cardboard-button-slice: 24 24 24 24 fill;
   --cardboard-button-border-y: 5px;
   --cardboard-button-border-x: 5px;
+
+  /* CardboardContainer — cardboard-tile.png; keep in sync with theme.ts */
+  --cardboard-container-slice: 40 fill;
+  --cardboard-container-border: 40px;
 }
 
 @layer base {
@@ -133,5 +137,15 @@
     .cardboard-button:active:not(:disabled) {
       transform: none;
     }
+  }
+
+  .cardboard-container {
+    border-style: solid;
+    border-width: var(--cardboard-container-border);
+    border-image-slice: var(--cardboard-container-slice);
+    border-image-repeat: repeat;
+    background-repeat: repeat;
+    background-clip: padding-box;
+    background-origin: padding-box;
   }
 }

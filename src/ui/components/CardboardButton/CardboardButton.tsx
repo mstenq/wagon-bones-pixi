@@ -1,13 +1,13 @@
 import {
   CARDBOARD_BUTTON_IMAGES,
   type CardboardButtonVariant,
-} from "@/ui/components/CardboardButton/cardboardButtonTheme";
+} from "@/ui/cardboard/assets";
 
-export type { CardboardButtonVariant } from "@/ui/components/CardboardButton/cardboardButtonTheme";
+export type { CardboardButtonVariant } from "@/ui/cardboard/assets";
 export {
   CARDBOARD_BUTTON_IMAGES,
   CARDBOARD_BUTTON_VARIANTS,
-} from "@/ui/components/CardboardButton/cardboardButtonTheme";
+} from "@/ui/cardboard/assets";
 
 export type CardboardButtonProps = {
   variant: CardboardButtonVariant;
