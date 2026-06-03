@@ -940,6 +940,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
             hostKind="card"
             width={width}
             height={height}
+            hideHalo={displayMode === "shop"}
             frameRef={effectFrameRef}
             artRef={effectArtRef}
           >

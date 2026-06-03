@@ -42,6 +42,7 @@ export type EffectFrameContext = {
   pointerNormX: number;
   pointerNormY: number;
   phase: number;
+  hideHalo?: boolean;
   surfaceCorners: [
     { x: number; y: number },
     { x: number; y: number },
@@ -55,6 +56,7 @@ export type EffectMountContext = {
   width: number;
   height: number;
   padding: number;
+  hideHalo?: boolean;
 };
 
 export type EffectLayers = {

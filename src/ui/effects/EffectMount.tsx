@@ -27,6 +27,7 @@ export type EffectMountProps = {
   width: number;
   height: number;
   padding?: number;
+  hideHalo?: boolean;
   frameRef: MutableRefObject<EffectFrameContext>;
   artRef: MutableRefObject<{
     applyFilters: (filters: Filter[] | null) => void;
@@ -41,6 +42,7 @@ export function EffectMount({
   width,
   height,
   padding,
+  hideHalo = false,
   frameRef,
   artRef,
   children,
@@ -90,10 +92,10 @@ export function EffectMount({
     runtimeRef.current = createEffectRuntime(
       effect,
       { back, front },
-      { hostKind, width, height, padding: resolvedPadding },
+      { hostKind, width, height, padding: resolvedPadding, hideHalo },
       art,
     );
-  }, [artRef, effect, frontRef, height, hostKind, resolvedPadding, width]);
+  }, [artRef, effect, frontRef, height, hideHalo, hostKind, resolvedPadding, width]);
 
   const bindBack = useCallback(
     (node: Container | null) => {
@@ -136,6 +138,7 @@ export function EffectMount({
     frame.width = width;
     frame.height = height;
     frame.hostKind = hostKind;
+    frame.hideHalo = hideHalo;
     stepEffect(runtime, frame);
   });
 
