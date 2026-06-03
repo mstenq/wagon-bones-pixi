@@ -4,10 +4,14 @@ import { use, useCallback, useRef, useState } from "react";
 import { effectsTexturesReady } from "@/assets/effects/textures";
 import { getCardTexture, itemTexturesReady } from "@/assets/items/textures";
 import type { CardDisplayMode } from "@/ui/components/Card/config";
-import { useQueryParam } from "@/ui/hooks/useQueryParam";
 import { Card, type CardHandle } from "@/ui/components/Card/Card";
+import {
+  cardShakeAnim,
+  cardTextAnim,
+} from "@/ui/components/Card/cardAnimations";
 import { EFFECT_OPTIONS } from "@/ui/effects/effectOptions";
 import type { EffectId } from "@/ui/effects/types";
+import { useQueryParam } from "@/ui/hooks/useQueryParam";
 import { PIXI_RENDERER_PREFERENCE } from "@/ui/pixi/appDefaults";
 import type { StoryDefinition } from "@/ui/types/storyTypes";
 import { panelButtonClass, panelLabelClass, panelSelectClass } from "@/ui/styles/panelControls";
@@ -21,7 +25,7 @@ function CardStory() {
   const cardRef = useRef<CardHandle | null>(null);
   const [cardKey, setCardKey] = useState(0);
   const [cardVisible, setCardVisible] = useState(true);
-  const [destroying, setDestroying] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   const [displayMode, setDisplayMode] = useQueryParam<CardDisplayMode>("mode", {
     default: "shop",
@@ -33,23 +37,45 @@ function CardStory() {
       EFFECT_OPTIONS.some((option) => option.id === raw) ? (raw as EffectId) : undefined,
   });
 
+  const finishAnim = useCallback((started: boolean) => {
+    if (!started) {
+      return;
+    }
+    setBusy(true);
+  }, []);
+
+  const runAnim = useCallback((config: Parameters<CardHandle["animate"]>[0]) => {
+    const card = cardRef.current;
+    if (!card) {
+      return;
+    }
+    finishAnim(card.animate(config, () => {
+      setBusy(cardRef.current?.isPlayingAnimation() ?? false);
+    }));
+  }, [finishAnim]);
+
+  const handleAppear = useCallback(() => {
+    runAnim({ type: "appear" });
+  }, [runAnim]);
+
   const handleDestroy = useCallback(() => {
     const card = cardRef.current;
-    if (!card || card.isDestroying()) {
+    if (!card || !cardVisible || card.isPlayingAnimation()) {
       return;
     }
 
-    setDestroying(true);
-    card.destroy(() => {
-      console.log("animation completed");
+    finishAnim(card.animate({ type: "destroy" }, () => {
+      console.log("destroy completed");
       setCardVisible(false);
       window.setTimeout(() => {
         setCardKey((key) => key + 1);
         setCardVisible(true);
-        setDestroying(false);
+        setBusy(false);
       }, RESTORE_DELAY_MS);
-    });
-  }, []);
+    }));
+  }, [cardVisible, finishAnim]);
+
+  const animDisabled = !cardVisible || busy;
 
   return (
     <div className="flex flex-col items-center gap-4">
@@ -80,17 +106,74 @@ function CardStory() {
             ))}
           </select>
         </label>
-        <label className={panelLabelClass}>
+      </div>
+
+      <div className="flex flex-wrap justify-center gap-2">
+        <span className={panelLabelClass}>Animations</span>
+        <button
+          type="button"
+          className={panelButtonClass}
+          disabled={animDisabled}
+          onClick={handleAppear}
+        >
+          Appear
+        </button>
+        <button
+          type="button"
+          className={panelButtonClass}
+          disabled={animDisabled}
+          onClick={handleDestroy}
+        >
           Destroy
-          <button
-            type="button"
-            className={panelButtonClass}
-            disabled={!cardVisible || destroying}
-            onClick={handleDestroy}
-          >
-            Destroy
-          </button>
-        </label>
+        </button>
+        <button
+          type="button"
+          className={panelButtonClass}
+          disabled={animDisabled}
+          onClick={() => runAnim(cardShakeAnim({ amount: 5 }))}
+        >
+          Shake
+        </button>
+        <button
+          type="button"
+          className={panelButtonClass}
+          disabled={animDisabled}
+          onClick={() => runAnim(cardTextAnim.mult(4))}
+        >
+          + mult
+        </button>
+        <button
+          type="button"
+          className={panelButtonClass}
+          disabled={animDisabled}
+          onClick={() => runAnim(cardTextAnim.mile(20))}
+        >
+          + miles
+        </button>
+        <button
+          type="button"
+          className={panelButtonClass}
+          disabled={animDisabled}
+          onClick={() => runAnim(cardTextAnim.retrigger())}
+        >
+          Retrigger
+        </button>
+        <button
+          type="button"
+          className={panelButtonClass}
+          disabled={animDisabled}
+          onClick={() => runAnim(cardTextAnim.money(5))}
+        >
+          + money
+        </button>
+        <button
+          type="button"
+          className={panelButtonClass}
+          disabled={animDisabled}
+          onClick={() => runAnim(cardTextAnim.moneyTrigger(5))}
+        >
+          + money trigger
+        </button>
       </div>
 
       <Application

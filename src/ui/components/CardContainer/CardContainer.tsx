@@ -6,7 +6,12 @@ import {
   DraggableItem,
   type DraggableItemHandle,
 } from "@/ui/components/DraggableItem/DraggableItem";
-import { Card, DEFAULT_CARD_HEIGHT, DEFAULT_CARD_WIDTH, type CardHandle } from "@/ui/components/Card/Card";
+import {
+  Card,
+  DEFAULT_CARD_HEIGHT,
+  DEFAULT_CARD_WIDTH,
+  type CardHandle,
+} from "@/ui/components/Card/Card";
 import { getCardTexture, itemTexturesReady } from "@/assets/items/textures";
 import { CARD_SELECTED_Z_INDEX } from "@/ui/components/Card/config";
 import { cardContainerHitArea } from "@/ui/components/Card/containerHitArea";
@@ -36,8 +41,28 @@ export function CardContainer({ layout }: CardContainerProps) {
   );
 
   const [hoveredCardId, setHoveredCardId] = useState<number | null>(null);
+  const prevOrderRef = useRef(order);
+  const pendingAppearRef = useRef(new Set<number>());
   const dragRefs = useRef<(DraggableItemHandle | null)[]>([]);
   const cardRefs = useRef<(CardHandle | null)[]>([]);
+
+  if (order !== prevOrderRef.current) {
+    const prev = new Set(prevOrderRef.current);
+    const added = order.filter((id) => !prev.has(id));
+    prevOrderRef.current = order;
+    for (const cardId of added) {
+      pendingAppearRef.current.add(cardId);
+    }
+  }
+
+  const bindCardRef = useCallback((cardId: number, node: CardHandle | null) => {
+    cardRefs.current[cardId] = node;
+    if (!node || !pendingAppearRef.current.has(cardId)) {
+      return;
+    }
+    pendingAppearRef.current.delete(cardId);
+    node.animate({ type: "appear" });
+  }, []);
 
   const { onPointerDown, tickLayout, slotHome, draggingSlot } = useReorderableRow({
     layout,
@@ -131,11 +156,9 @@ export function CardContainer({ layout }: CardContainerProps) {
             onPointerOut={() => onCardPointerOut(cardId)}
           >
             <Card
-              ref={(node) => {
-                cardRefs.current[cardId] = node;
-              }}
+              ref={(node) => bindCardRef(cardId, node)}
               texture={getCardTexture(cardId)}
-              effect="fire"
+              effect="holy"
               phase={cardId * 1.35}
               hovered={hoveredCardId === cardId}
               dragging={draggingCardId === cardId}

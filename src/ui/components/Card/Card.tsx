@@ -73,13 +73,21 @@ import {
   type PerspectiveTiltConfig,
 } from "@/ui/pixi/perspectiveTilt";
 import { effectsTexturesReady, getEffectTexture } from "@/assets/effects/textures";
-import {
-  burnDestroyDissolveAt,
-  createBurnDissolveFilter,
-  BURN_DESTROY,
-  type BurnDissolveFilter,
-} from "@/ui/actionEffects/burnDissolveFilter";
+import type { BurnDissolveFilter } from "@/ui/actionEffects/burnDissolveFilter";
 import type { ActionEffectComplete } from "@/ui/actionEffects/types";
+import {
+  createCardAnimationRuntime,
+  getGrowPopSquishMultiplier,
+  getShakeOffsetX,
+  isCardAnimationBusy,
+  shouldBlockCardPointer,
+  startCardAnimation,
+  stepCardAnimation,
+  type CardAnimationConfig,
+  type CardAnimationHostContext,
+} from "@/ui/components/Card/cardAnimations";
+
+export type { CardAnimationConfig } from "@/ui/components/Card/cardAnimations";
 import { EffectMount } from "@/ui/effects/EffectMount";
 import { createDefaultEffectFrame } from "@/ui/effects/context";
 import type { EffectFrameContext, EffectId } from "@/ui/effects/types";
@@ -130,16 +138,8 @@ export type CardHandle = {
   /** For embedded container: tap on sell tab while drag wrapper owns the pointer. */
   hitsSellTabAtGlobal: (globalX: number, globalY: number) => boolean;
   triggerSell: () => void;
-  /** Burn-away destroy animation; runs on top of the card's visual effect. */
-  destroy: (onComplete?: ActionEffectComplete) => void;
-  /** Whether a destroy animation is currently playing. */
-  isDestroying: () => boolean;
-};
-
-type DestroyAnimState = {
-  progress: number;
-  duration: number;
-  onComplete?: ActionEffectComplete;
+  animate: (config: CardAnimationConfig, onComplete?: ActionEffectComplete) => boolean;
+  isPlayingAnimation: () => boolean;
 };
 
 /** Visual card — position via parent `DraggableItem`, or self-interactive when `displayMode` is set. */
@@ -174,7 +174,9 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   const rootRef = useRef<Container | null>(null);
   const liftRef = useRef<Container | null>(null);
   const squishRef = useRef<Container | null>(null);
+  const animOverlayRef = useRef<Container | null>(null);
   const idleRef = useRef<Container | null>(null);
+  const animRuntimeRef = useRef(createCardAnimationRuntime());
   const meshRef = useRef<PerspectiveMesh | null>(null);
   const flatSpriteRef = useRef<Sprite | null>(null);
   const pendingArtFiltersRef = useRef<Filter[] | null>(null);
@@ -239,8 +241,20 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   onSellRef.current = onSell;
 
   const burnDissolveRef = useRef<BurnDissolveFilter | null>(null);
-  const destroyAnimRef = useRef<DestroyAnimState | null>(null);
-  const destroyingRef = useRef(false);
+
+  const animHostRef = useRef<CardAnimationHostContext>({
+    root: null,
+    squish: null,
+    overlay: null,
+    cardHeight: height,
+    hideCardChrome: () => {},
+    deselect: () => {},
+    getBurnTexture: () => getEffectTexture("burn"),
+    burnDissolve: null,
+    setBurnDissolve: (filter) => {
+      burnDissolveRef.current = filter;
+    },
+  });
 
   const [raised, setRaised] = useState(false);
   const [enlarged, setEnlarged] = useState(false);
@@ -390,39 +404,32 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     [applyOwnedEnlargedTargets, displayMode, interactive, notifySelectedChange],
   );
 
-  const startDestroy = useCallback((onComplete?: ActionEffectComplete) => {
-    if (destroyingRef.current) {
-      return;
-    }
-
-    const burnTex = getEffectTexture("burn");
-    if (!burnTex) {
-      rootRef.current && (rootRef.current.visible = false);
-      onComplete?.();
-      return;
-    }
-
-    destroyingRef.current = true;
-    deselect(true);
-    hideCardChrome();
-
-    if (!burnDissolveRef.current) {
-      burnDissolveRef.current = createBurnDissolveFilter(burnTex);
-    }
-
-    burnDissolveRef.current.setDissolve(0);
-
-    const squish = squishRef.current;
-    if (squish) {
-      squish.filters = [burnDissolveRef.current.filter];
-    }
-
-    destroyAnimRef.current = {
-      progress: 0,
-      duration: BURN_DESTROY.duration,
-      onComplete,
+  const getAnimationHost = useCallback((): CardAnimationHostContext => {
+    const host = animHostRef.current;
+    host.root = rootRef.current;
+    host.squish = squishRef.current;
+    host.overlay = animOverlayRef.current;
+    host.cardHeight = height;
+    host.hideCardChrome = hideCardChrome;
+    host.deselect = deselect;
+    host.burnDissolve = burnDissolveRef.current;
+    host.setBurnDissolve = (filter) => {
+      burnDissolveRef.current = filter;
     };
-  }, [deselect, hideCardChrome]);
+    return host;
+  }, [deselect, height, hideCardChrome]);
+
+  const runAnimate = useCallback(
+    (config: CardAnimationConfig, onComplete?: ActionEffectComplete) => {
+      return startCardAnimation(
+        animRuntimeRef.current,
+        getAnimationHost(),
+        config,
+        onComplete,
+      );
+    },
+    [getAnimationHost],
+  );
 
   useImperativeHandle(
     ref,
@@ -455,8 +462,8 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
       deselect,
       hitsSellTabAtGlobal,
       triggerSell,
-      destroy: startDestroy,
-      isDestroying: () => destroyingRef.current,
+      animate: runAnimate,
+      isPlayingAnimation: () => isCardAnimationBusy(animRuntimeRef.current),
     }),
     [
       applyOwnedEnlargedTargets,
@@ -466,7 +473,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
       hitsSellTabAtGlobal,
       interactive,
       notifySelectedChange,
-      startDestroy,
+      runAnimate,
       tiltConfig,
       triggerClickSquish,
       triggerSell,
@@ -495,7 +502,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
 
   const onCardPointerDown = useCallback(
     (event: FederatedPointerEvent) => {
-      if (destroyingRef.current || !interactive || draggingRef.current) {
+      if (shouldBlockCardPointer(animRuntimeRef.current) || !interactive || draggingRef.current) {
         return;
       }
       event.stopPropagation();
@@ -527,7 +534,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   );
 
   const onCardPointerOver = useCallback(() => {
-    if (destroyingRef.current || !interactive || draggingRef.current) {
+    if (shouldBlockCardPointer(animRuntimeRef.current) || !interactive || draggingRef.current) {
       return;
     }
     if (interactive && !draggingRef.current) {
@@ -536,7 +543,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   }, [interactive]);
 
   const onCardPointerOut = useCallback(() => {
-    if (destroyingRef.current) {
+    if (shouldBlockCardPointer(animRuntimeRef.current)) {
       return;
     }
     if (interactive) {
@@ -547,7 +554,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   const onCardPointerMove = useCallback(
     (event: FederatedPointerEvent) => {
       if (
-        destroyingRef.current ||
+        shouldBlockCardPointer(animRuntimeRef.current) ||
         !interactive ||
         draggingRef.current ||
         !hoveredRef.current
@@ -614,25 +621,12 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
 
   useTick(() => {
     const dt = app.ticker.deltaMS / 1000;
-    const destroyAnim = destroyAnimRef.current;
-    if (destroyAnim) {
-      destroyAnim.progress += dt / destroyAnim.duration;
-      const linear = Math.min(1, destroyAnim.progress);
-      burnDissolveRef.current?.setDissolve(burnDestroyDissolveAt(linear));
-      if (linear >= 1) {
-        const onComplete = destroyAnim.onComplete;
-        destroyAnimRef.current = null;
-        destroyingRef.current = false;
-        const root = rootRef.current;
-        if (root) {
-          root.visible = false;
-        }
-        const squish = squishRef.current;
-        if (squish) {
-          squish.filters = null;
-        }
-        onComplete?.();
-      }
+    const animRuntime = animRuntimeRef.current;
+    const animStep = stepCardAnimation(animRuntime, getAnimationHost(), dt);
+    const growPopMul = getGrowPopSquishMultiplier(animRuntime);
+    const shakeX = getShakeOffsetX(animRuntime);
+
+    if (animStep.destroyBlocksTick) {
       return;
     }
 
@@ -792,7 +786,11 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
         : squishSpring.scaleY * ownedScale;
 
       if (squishNode) {
-        squishNode.scale.set(scaleX, scaleY);
+        squishNode.scale.set(
+          scaleX * growPopMul.scaleX,
+          scaleY * growPopMul.scaleY,
+        );
+        squishNode.x = shakeX;
       }
 
       if (lift) {
@@ -919,6 +917,8 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
             </pixiContainer>
           </pixiContainer>
         ) : null}
+
+        <pixiContainer ref={animOverlayRef} zIndex={8} eventMode="none" />
 
         <pixiContainer ref={squishRef} zIndex={2} sortableChildren eventMode="passive">
           {selfInteractive ? (
