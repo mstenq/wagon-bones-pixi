@@ -5,6 +5,7 @@ import { useQueryParam } from "@/ui/hooks/useQueryParam";
 import { PIXI_RENDERER_PREFERENCE } from "@/ui/pixi/appDefaults";
 import type { StoryDefinition } from "@/ui/types/storyTypes";
 import { panelButtonClass, panelLabelClass, panelSelectClass } from "@/ui/styles/panelControls";
+import { UI_BACKGROUND_COLOR } from "../uiConstants";
 
 const GRID: { variant: ButtonVariant; label: string; x: number; y: number }[] = [
   { variant: "primary", label: "Play", x: 160, y: 120 },
@@ -81,7 +82,7 @@ function ButtonStory() {
       <Application
         width={640}
         height={400}
-        background="#171824"
+        background={UI_BACKGROUND_COLOR}
         antialias
         autoDensity
         preference={PIXI_RENDERER_PREFERENCE}

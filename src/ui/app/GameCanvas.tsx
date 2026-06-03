@@ -3,6 +3,7 @@ import { memo, Suspense } from "react";
 
 import { GameScene } from "@/ui/scenes/GameScene";
 import { PIXI_RENDERER_PREFERENCE } from "@/ui/pixi/appDefaults";
+import { UI_BACKGROUND_COLOR } from "../uiConstants";
 
 export const GameCanvas = memo(function GameCanvas() {
   return (
@@ -10,7 +11,7 @@ export const GameCanvas = memo(function GameCanvas() {
       <Suspense fallback={<p className="m-0 p-6">Loading…</p>}>
         <Application
           resizeTo={typeof window !== "undefined" ? window : undefined}
-          background="#1a1a24"
+          background={UI_BACKGROUND_COLOR}
           antialias
           autoDensity
           preference={PIXI_RENDERER_PREFERENCE}

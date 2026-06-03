@@ -23,7 +23,7 @@ function CardboardButtonStory() {
         />
       </label>
 
-      <div className="flex w-full max-w-5xl flex-wrap justify-center gap-8 rounded-xl bg-ui-panel p-8">
+      <div className="flex w-full max-w-5xl flex-wrap justify-center gap-8 rounded-xl  p-8">
         {CARDBOARD_BUTTON_VARIANTS.map((variant) => (
           <div key={variant} className="flex flex-col items-center gap-2">
             <CardboardButton

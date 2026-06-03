@@ -1,18 +1,18 @@
 import { useApplication } from "@pixi/react";
 import { useTick } from "@pixi/react";
 import { Sprite, type Container, type Filter } from "pixi.js";
-import { forwardRef, use, useCallback, useImperativeHandle, useRef } from "react";
+import { forwardRef, use, useImperativeHandle, useMemo, useRef } from "react";
 
 import { getDiceFaceTexture, texturesReady } from "@/assets/dice/textures";
 import type { DiceType } from "@/data/dice";
-import { effectsTexturesReady, getEffectTexture } from "@/assets/effects/textures";
-import {
-  burnDestroyDissolveAt,
-  createBurnDissolveFilter,
-  BURN_DESTROY,
-  type BurnDissolveFilter,
-} from "@/ui/actionEffects/burnDissolveFilter";
+import { effectsTexturesReady } from "@/assets/effects/textures";
 import type { ActionEffectComplete } from "@/ui/actionEffects/types";
+import type { ItemAnimationConfig } from "@/ui/animation/itemAnimations";
+import {
+  applyItemAnimationSquish,
+  useItemAnimations,
+  type ItemAnimationRefs,
+} from "@/ui/animation/useItemAnimations";
 import { EffectMount } from "@/ui/effects/EffectMount";
 import { createDefaultEffectFrame } from "@/ui/effects/context";
 import type { EffectFrameContext, EffectId } from "@/ui/effects/types";
@@ -33,20 +33,14 @@ export type DieFrame = {
   value: number;
 };
 
+export type DieAnimationConfig = ItemAnimationConfig;
+
 export type DieHandle = {
   setFrame: (frame: DieFrame) => void;
   reset: () => void;
   setSquishScale: (scaleX: number, scaleY: number) => void;
-  /** Burn-away destroy animation; runs on top of the die's visual effect. */
-  destroy: (onComplete?: ActionEffectComplete) => void;
-  /** Whether a destroy animation is currently playing. */
-  isDestroying: () => boolean;
-};
-
-type DestroyAnimState = {
-  progress: number;
-  duration: number;
-  onComplete?: ActionEffectComplete;
+  animate: (config: ItemAnimationConfig, onComplete?: ActionEffectComplete) => boolean;
+  isPlayingAnimation: () => boolean;
 };
 
 /** Visual die only — position via parent `DraggableItem` or any container. */
@@ -60,6 +54,8 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
 
   const faceTexture = getDiceFaceTexture(diceType, value);
 
+  const rootRef = useRef<Container | null>(null);
+  const animOverlayRef = useRef<Container | null>(null);
   const squishRef = useRef<Container | null>(null);
   const rollRef = useRef<Container | null>(null);
   const spriteRef = useRef<Sprite | null>(null);
@@ -78,62 +74,37 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
     },
     setJitter() {},
   });
-  const burnDissolveRef = useRef<BurnDissolveFilter | null>(null);
-  const destroyAnimRef = useRef<DestroyAnimState | null>(null);
-  const destroyingRef = useRef(false);
+  const externalSquishRef = useRef({ scaleX: 1, scaleY: 1 });
 
-  const startDestroy = useCallback((onComplete?: ActionEffectComplete) => {
-    if (destroyingRef.current) {
-      return;
-    }
+  const itemAnimRefs = useMemo(
+    (): ItemAnimationRefs => ({
+      root: rootRef,
+      squish: squishRef,
+      overlay: animOverlayRef,
+    }),
+    [],
+  );
 
-    const burnTex = getEffectTexture("burn");
-    if (!burnTex) {
-      squishRef.current && (squishRef.current.visible = false);
-      onComplete?.();
-      return;
-    }
-
-    destroyingRef.current = true;
-
-    if (!burnDissolveRef.current) {
-      burnDissolveRef.current = createBurnDissolveFilter(burnTex);
-    }
-
-    burnDissolveRef.current.setDissolve(0);
-
-    const squish = squishRef.current;
-    if (squish) {
-      squish.filters = [burnDissolveRef.current.filter];
-    }
-
-    destroyAnimRef.current = {
-      progress: 0,
-      duration: BURN_DESTROY.duration,
-      onComplete,
-    };
-  }, []);
+  const { runAnimate, isPlayingAnimation, stepAnimations } = useItemAnimations({
+    hostExtent: size,
+    textPlacement: "above",
+    refs: itemAnimRefs,
+  });
 
   useTick(() => {
     const dt = app.ticker.deltaMS / 1000;
-    const destroyAnim = destroyAnimRef.current;
-    if (destroyAnim) {
-      destroyAnim.progress += dt / destroyAnim.duration;
-      const linear = Math.min(1, destroyAnim.progress);
-      burnDissolveRef.current?.setDissolve(burnDestroyDissolveAt(linear));
-      if (linear >= 1) {
-        const onComplete = destroyAnim.onComplete;
-        destroyAnimRef.current = null;
-        destroyingRef.current = false;
-        const squish = squishRef.current;
-        if (squish) {
-          squish.visible = false;
-          squish.filters = null;
-        }
-        onComplete?.();
-      }
+    const { destroyBlocksTick, growPopMul, shakeX } = stepAnimations(dt);
+
+    if (destroyBlocksTick) {
       return;
     }
+
+    applyItemAnimationSquish(
+      squishRef.current,
+      externalSquishRef.current,
+      growPopMul,
+      shakeX,
+    );
 
     const frame = effectFrameRef.current;
     frame.dt = dt;
@@ -166,35 +137,38 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
         }
       },
       setSquishScale(scaleX, scaleY) {
-        squishRef.current?.scale.set(scaleX, scaleY);
+        externalSquishRef.current = { scaleX, scaleY };
       },
-      destroy: startDestroy,
-      isDestroying: () => destroyingRef.current,
+      animate: runAnimate,
+      isPlayingAnimation,
     }),
-    [diceType, startDestroy],
+    [diceType, isPlayingAnimation, runAnimate],
   );
 
   return (
-    <pixiContainer ref={squishRef} eventMode="none">
-      <EffectMount
-        effect={effect}
-        hostKind="die"
-        width={size}
-        height={size}
-        frameRef={effectFrameRef}
-        artRef={effectArtRef}
-      >
-        <pixiContainer ref={rollRef} eventMode="none">
-          <pixiSprite
-            ref={spriteRef}
-            texture={faceTexture}
-            anchor={0.5}
-            width={size}
-            height={size}
-            eventMode="none"
-          />
-        </pixiContainer>
-      </EffectMount>
+    <pixiContainer ref={rootRef} sortableChildren eventMode="none">
+      <pixiContainer ref={animOverlayRef} zIndex={10} eventMode="none" />
+      <pixiContainer ref={squishRef} zIndex={2} eventMode="none">
+        <EffectMount
+          effect={effect}
+          hostKind="die"
+          width={size}
+          height={size}
+          frameRef={effectFrameRef}
+          artRef={effectArtRef}
+        >
+          <pixiContainer ref={rollRef} eventMode="none">
+            <pixiSprite
+              ref={spriteRef}
+              texture={faceTexture}
+              anchor={0.5}
+              width={size}
+              height={size}
+              eventMode="none"
+            />
+          </pixiContainer>
+        </EffectMount>
+      </pixiContainer>
     </pixiContainer>
   );
 });

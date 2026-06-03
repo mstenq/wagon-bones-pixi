@@ -41,7 +41,7 @@ export function PlaygroundLayout() {
   );
 
   return (
-    <main className="flex min-h-screen flex-col gap-4 p-6 bg-green-900">
+    <main className="flex min-h-screen flex-col gap-4 p-6 bg-background">
       <header>
         <h1 className="m-0 text-2xl font-bold">Playground</h1>
       </header>

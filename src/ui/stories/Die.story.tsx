@@ -6,12 +6,14 @@ import { texturesReady } from "@/assets/dice/textures";
 import { DICE_TYPES, type DiceType } from "@/data/dice";
 import { Die, type DieHandle } from "@/ui/components/Dice/Die";
 import { DICE_ENHANCEMENT_OPTIONS, DICE_LABELS } from "@/ui/components/Dice/config";
+import { itemShakeAnim, itemTextAnim } from "@/ui/animation/itemAnimations";
 import { EFFECT_OPTIONS } from "@/ui/effects/effectOptions";
 import { useQueryParam } from "@/ui/hooks/useQueryParam";
 import type { EffectId } from "@/ui/effects/types";
 import { PIXI_RENDERER_PREFERENCE } from "@/ui/pixi/appDefaults";
 import type { StoryDefinition } from "@/ui/types/storyTypes";
 import { panelButtonClass, panelLabelClass, panelSelectClass } from "@/ui/styles/panelControls";
+import { UI_BACKGROUND_COLOR } from "../uiConstants";
 
 const RESTORE_DELAY_MS = 700;
 
@@ -34,7 +36,7 @@ function DieStory() {
   const dieRef = useRef<DieHandle | null>(null);
   const [dieKey, setDieKey] = useState(0);
   const [dieVisible, setDieVisible] = useState(true);
-  const [destroying, setDestroying] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   const [enhancement, setEnhancement] = useQueryParam<DiceType>("enhancement", {
     default: "standard",
@@ -52,23 +54,45 @@ function DieStory() {
       EFFECT_OPTIONS.some((option) => option.id === raw) ? (raw as EffectId) : undefined,
   });
 
+  const finishAnim = useCallback((started: boolean) => {
+    if (!started) {
+      return;
+    }
+    setBusy(true);
+  }, []);
+
+  const runAnim = useCallback((config: Parameters<DieHandle["animate"]>[0]) => {
+    const die = dieRef.current;
+    if (!die) {
+      return;
+    }
+    finishAnim(die.animate(config, () => {
+      setBusy(dieRef.current?.isPlayingAnimation() ?? false);
+    }));
+  }, [finishAnim]);
+
+  const handleAppear = useCallback(() => {
+    runAnim({ type: "appear" });
+  }, [runAnim]);
+
   const handleDestroy = useCallback(() => {
     const die = dieRef.current;
-    if (!die || die.isDestroying()) {
+    if (!die || !dieVisible || die.isPlayingAnimation()) {
       return;
     }
 
-    setDestroying(true);
-    die.destroy(() => {
-      console.log("animation completed");
+    finishAnim(die.animate({ type: "destroy" }, () => {
+      console.log("destroy completed");
       setDieVisible(false);
       window.setTimeout(() => {
         setDieKey((key) => key + 1);
         setDieVisible(true);
-        setDestroying(false);
+        setBusy(false);
       }, RESTORE_DELAY_MS);
-    });
-  }, []);
+    }));
+  }, [dieVisible, finishAnim]);
+
+  const animDisabled = !dieVisible || busy;
 
   return (
     <div className="flex flex-col items-center gap-4">
@@ -115,23 +139,80 @@ function DieStory() {
             ))}
           </select>
         </label>
-        <label className={panelLabelClass}>
+      </div>
+
+      <div className="flex flex-wrap justify-center gap-2">
+        <span className={panelLabelClass}>Animations</span>
+        <button
+          type="button"
+          className={panelButtonClass}
+          disabled={animDisabled}
+          onClick={handleAppear}
+        >
+          Appear
+        </button>
+        <button
+          type="button"
+          className={panelButtonClass}
+          disabled={animDisabled}
+          onClick={handleDestroy}
+        >
           Destroy
-          <button
-            type="button"
-            className={panelButtonClass}
-            disabled={!dieVisible || destroying}
-            onClick={handleDestroy}
-          >
-            Destroy
-          </button>
-        </label>
+        </button>
+        <button
+          type="button"
+          className={panelButtonClass}
+          disabled={animDisabled}
+          onClick={() => runAnim(itemShakeAnim({ amount: 5 }))}
+        >
+          Shake
+        </button>
+        <button
+          type="button"
+          className={panelButtonClass}
+          disabled={animDisabled}
+          onClick={() => runAnim(itemTextAnim.mult(4))}
+        >
+          + mult
+        </button>
+        <button
+          type="button"
+          className={panelButtonClass}
+          disabled={animDisabled}
+          onClick={() => runAnim(itemTextAnim.mile(20))}
+        >
+          + miles
+        </button>
+        <button
+          type="button"
+          className={panelButtonClass}
+          disabled={animDisabled}
+          onClick={() => runAnim(itemTextAnim.retrigger())}
+        >
+          Retrigger
+        </button>
+        <button
+          type="button"
+          className={panelButtonClass}
+          disabled={animDisabled}
+          onClick={() => runAnim(itemTextAnim.money(5))}
+        >
+          + money
+        </button>
+        <button
+          type="button"
+          className={panelButtonClass}
+          disabled={animDisabled}
+          onClick={() => runAnim(itemTextAnim.moneyTrigger(5))}
+        >
+          + money trigger
+        </button>
       </div>
 
       <Application
         width={480}
         height={360}
-        background="#171824"
+        background={UI_BACKGROUND_COLOR}
         antialias
         autoDensity
         preference={PIXI_RENDERER_PREFERENCE}

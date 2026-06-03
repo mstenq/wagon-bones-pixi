@@ -16,24 +16,24 @@ import {
 import type { ActionEffectComplete } from "@/ui/actionEffects/types";
 import type { SquishTargets } from "@/ui/interaction/spring";
 
-export type CardShakeConfig = {
+export type ItemShakeConfig = {
   amount?: number;
   duration?: number;
 };
 
-export type CardTextEffectConfig = {
+export type ItemTextEffectConfig = {
   text: string;
   color: ColorSource;
-  shake?: CardShakeConfig;
+  shake?: ItemShakeConfig;
   /** Total on-screen time in seconds (whip-in, hold, fade). Omit for the default quick timing. */
   duration?: number;
 };
 
-export type CardAnimationConfig =
+export type ItemAnimationConfig =
   | { type: "appear" }
   | { type: "destroy" }
-  | { type: "shake"; shake?: CardShakeConfig }
-  | { type: "textEffect"; textEffect: CardTextEffectConfig };
+  | { type: "shake"; shake?: ItemShakeConfig }
+  | { type: "textEffect"; textEffect: ItemTextEffectConfig };
 
 const SHAKE_DEFAULT_AMOUNT = 3;
 const SHAKE_FREQ = 48;
@@ -45,7 +45,7 @@ const TEXT_EFFECT_MONEY_PAYOUT_DURATION = 0.6;
 const TEXT_WHIP_PLAY_DURATION = 0.15;
 const TEXT_WHIP_STAGGER_SPAN = TEXT_WHIP_PLAY_DURATION * 0.6;
 const TEXT_WHIP_CHAR_DURATION = TEXT_WHIP_PLAY_DURATION * 0.52;
-const TEXT_BELOW_CARD_GAP = 32;
+const TEXT_EFFECT_GAP = 32;
 const TEXT_EFFECT_FONT_SIZE = 42;
 
 /** Shared grow-to-peak-then-settle curve (appear + shake). */
@@ -78,7 +78,7 @@ function easeInCubic(t: number): number {
   return x * x * x;
 }
 
-/** `startScale` 0 for appear pop-in, 1 for shake on an existing card. */
+/** `startScale` 0 for appear pop-in, 1 for shake on an existing item. */
 function computeGrowPopScale(
   normalizedTime: number,
   timing: GrowPopTiming,
@@ -145,19 +145,19 @@ type TextEffectAnimState = {
   onComplete?: ActionEffectComplete;
 };
 
-type ActiveCardAnimation =
+type ActiveItemAnimation =
   | DestroyAnimState
   | AppearAnimState
   | ShakeAnimState
   | TextEffectAnimState;
 
-export type CardAnimationHostContext = {
+export type ItemAnimationHostContext = {
   root: Container | null;
   squish: Container | null;
   overlay: Container | null;
-  cardHeight: number;
-  hideCardChrome: () => void;
-  deselect: (silent?: boolean) => void;
+  hostExtent: number;
+  textPlacement: "above" | "below";
+  beforeDestroy?: () => void;
   getBurnTexture: () => Texture | null | undefined;
   burnDissolve: BurnDissolveFilter | null;
   setBurnDissolve: (filter: BurnDissolveFilter | null) => void;
@@ -169,14 +169,14 @@ type GrowPopState = {
   startScale: number;
 };
 
-export type CardAnimationRuntime = {
-  active: ActiveCardAnimation | null;
+export type ItemAnimationRuntime = {
+  active: ActiveItemAnimation | null;
   floatTextRow: FloatTextRow | null;
-  /** One-shot grow / squash / settle layered on card squish scale. */
+  /** One-shot grow / squash / settle layered on item squish scale. */
   growPop: GrowPopState | null;
 };
 
-export function createCardAnimationRuntime(): CardAnimationRuntime {
+export function createItemAnimationRuntime(): ItemAnimationRuntime {
   return {
     active: null,
     floatTextRow: null,
@@ -184,24 +184,24 @@ export function createCardAnimationRuntime(): CardAnimationRuntime {
   };
 }
 
-function resolveShakeAmount(shake?: CardShakeConfig): number {
+function resolveShakeAmount(shake?: ItemShakeConfig): number {
   return shake?.amount ?? SHAKE_DEFAULT_AMOUNT;
 }
 
-function resolveShakeDuration(shake?: CardShakeConfig): number {
+function resolveShakeDuration(shake?: ItemShakeConfig): number {
   return shake?.duration ?? SHAKE_DURATION;
 }
 
-export function isCardAnimationBusy(runtime: CardAnimationRuntime): boolean {
+export function isItemAnimationBusy(runtime: ItemAnimationRuntime): boolean {
   return runtime.active !== null;
 }
 
-export function shouldBlockCardPointer(runtime: CardAnimationRuntime): boolean {
+export function shouldBlockItemPointer(runtime: ItemAnimationRuntime): boolean {
   const kind = runtime.active?.kind;
   return kind === "destroy" || kind === "appear";
 }
 
-function getGrowPopScale(runtime: CardAnimationRuntime): number {
+function getGrowPopScale(runtime: ItemAnimationRuntime): number {
   const body = runtime.growPop;
   if (!body) {
     return 1;
@@ -210,12 +210,12 @@ function getGrowPopScale(runtime: CardAnimationRuntime): number {
   return computeGrowPopScale(u, body.timing, body.startScale);
 }
 
-export function getGrowPopSquishMultiplier(runtime: CardAnimationRuntime): SquishTargets {
+export function getGrowPopSquishMultiplier(runtime: ItemAnimationRuntime): SquishTargets {
   const scale = getGrowPopScale(runtime);
   return { scaleX: scale, scaleY: scale };
 }
 
-function getActiveShakeAmount(runtime: CardAnimationRuntime): number {
+function getActiveShakeAmount(runtime: ItemAnimationRuntime): number {
   const anim = runtime.active;
   if (!anim || anim.kind === "destroy" || anim.kind === "appear") {
     return 0;
@@ -223,7 +223,7 @@ function getActiveShakeAmount(runtime: CardAnimationRuntime): number {
   return anim.amount;
 }
 
-function getActiveShakeTiming(runtime: CardAnimationRuntime): { elapsed: number; duration: number } | null {
+function getActiveShakeTiming(runtime: ItemAnimationRuntime): { elapsed: number; duration: number } | null {
   const anim = runtime.active;
   if (!anim || anim.kind === "destroy" || anim.kind === "appear") {
     return null;
@@ -231,7 +231,7 @@ function getActiveShakeTiming(runtime: CardAnimationRuntime): { elapsed: number;
   return { elapsed: anim.elapsed, duration: anim.duration };
 }
 
-export function getShakeOffsetX(runtime: CardAnimationRuntime): number {
+export function getShakeOffsetX(runtime: ItemAnimationRuntime): number {
   const amount = getActiveShakeAmount(runtime);
   const timing = getActiveShakeTiming(runtime);
   if (amount <= 0 || !timing) {
@@ -290,7 +290,15 @@ function createWhipTextRow(text: string, color: ColorSource): FloatTextRow {
   return { row, chars };
 }
 
-function attachFloatTextRow(ctx: CardAnimationHostContext, floatRow: FloatTextRow): boolean {
+function floatTextY(ctx: ItemAnimationHostContext): number {
+  const half = ctx.hostExtent / 2;
+  if (ctx.textPlacement === "above") {
+    return -half - TEXT_EFFECT_GAP;
+  }
+  return half + TEXT_EFFECT_GAP;
+}
+
+function attachFloatTextRow(ctx: ItemAnimationHostContext, floatRow: FloatTextRow): boolean {
   const overlay = ctx.overlay;
   if (!overlay || floatRow.row.destroyed) {
     return false;
@@ -302,7 +310,7 @@ function attachFloatTextRow(ctx: CardAnimationHostContext, floatRow: FloatTextRo
     overlay.addChild(floatRow.row);
   }
   floatRow.row.x = 0;
-  floatRow.row.y = ctx.cardHeight / 2 + TEXT_BELOW_CARD_GAP;
+  floatRow.row.y = floatTextY(ctx);
   floatRow.row.alpha = 1;
   return true;
 }
@@ -314,7 +322,7 @@ function removeFloatTextRow(floatRow: FloatTextRow | null): void {
   floatRow.row.destroy({ children: true });
 }
 
-function resolveTextEffectDuration(textEffect: CardTextEffectConfig): number {
+function resolveTextEffectDuration(textEffect: ItemTextEffectConfig): number {
   return textEffect.duration ?? TEXT_EFFECT_DEFAULT_DURATION;
 }
 
@@ -396,7 +404,7 @@ function smoothstep(t: number): number {
   return x * x * (3 - 2 * x);
 }
 
-function startGrowPop(runtime: CardAnimationRuntime, duration: number, startScale: number): void {
+function startGrowPop(runtime: ItemAnimationRuntime, duration: number, startScale: number): void {
   runtime.growPop = {
     elapsed: 0,
     timing: {
@@ -408,7 +416,7 @@ function startGrowPop(runtime: CardAnimationRuntime, duration: number, startScal
   };
 }
 
-function isGrowPopSettled(runtime: CardAnimationRuntime): boolean {
+function isGrowPopSettled(runtime: ItemAnimationRuntime): boolean {
   const body = runtime.growPop;
   if (!body) {
     return true;
@@ -416,7 +424,7 @@ function isGrowPopSettled(runtime: CardAnimationRuntime): boolean {
   return body.elapsed >= body.timing.duration;
 }
 
-function stepGrowPop(runtime: CardAnimationRuntime, dt: number): void {
+function stepGrowPop(runtime: ItemAnimationRuntime, dt: number): void {
   const body = runtime.growPop;
   if (!body) {
     return;
@@ -424,17 +432,17 @@ function stepGrowPop(runtime: CardAnimationRuntime, dt: number): void {
   body.elapsed = Math.min(body.timing.duration, body.elapsed + dt);
 }
 
-function clearGrowPop(runtime: CardAnimationRuntime): void {
+function clearGrowPop(runtime: ItemAnimationRuntime): void {
   runtime.growPop = null;
 }
 
-export function startCardAnimation(
-  runtime: CardAnimationRuntime,
-  ctx: CardAnimationHostContext,
-  config: CardAnimationConfig,
+export function startItemAnimation(
+  runtime: ItemAnimationRuntime,
+  ctx: ItemAnimationHostContext,
+  config: ItemAnimationConfig,
   onComplete?: ActionEffectComplete,
 ): boolean {
-  if (isCardAnimationBusy(runtime)) {
+  if (isItemAnimationBusy(runtime)) {
     return false;
   }
 
@@ -459,8 +467,7 @@ export function startCardAnimation(
       return true;
     }
 
-    ctx.deselect(true);
-    ctx.hideCardChrome();
+    ctx.beforeDestroy?.();
 
     let burn = ctx.burnDissolve;
     if (!burn) {
@@ -521,13 +528,13 @@ export function startCardAnimation(
   return true;
 }
 
-export type CardAnimationStepResult = {
+export type ItemAnimationStepResult = {
   destroyBlocksTick: boolean;
 };
 
-function finishCardAnimation(
-  runtime: CardAnimationRuntime,
-  anim: ActiveCardAnimation,
+function finishItemAnimation(
+  runtime: ItemAnimationRuntime,
+  anim: ActiveItemAnimation,
 ): void {
   if (anim.kind === "textEffect") {
     removeFloatTextRow(runtime.floatTextRow);
@@ -539,15 +546,15 @@ function finishCardAnimation(
   onComplete?.();
 }
 
-function isTimedAnimationDone(runtime: CardAnimationRuntime, anim: AppearAnimState | ShakeAnimState | TextEffectAnimState): boolean {
+function isTimedAnimationDone(runtime: ItemAnimationRuntime, anim: AppearAnimState | ShakeAnimState | TextEffectAnimState): boolean {
   return isGrowPopSettled(runtime) || anim.elapsed >= anim.duration;
 }
 
-export function stepCardAnimation(
-  runtime: CardAnimationRuntime,
-  ctx: CardAnimationHostContext,
+export function stepItemAnimation(
+  runtime: ItemAnimationRuntime,
+  ctx: ItemAnimationHostContext,
   dt: number,
-): CardAnimationStepResult {
+): ItemAnimationStepResult {
   const anim = runtime.active;
   if (!anim) {
     return { destroyBlocksTick: false };
@@ -565,7 +572,7 @@ export function stepCardAnimation(
       if (ctx.squish) {
         ctx.squish.filters = null;
       }
-      finishCardAnimation(runtime, anim);
+      finishItemAnimation(runtime, anim);
       return { destroyBlocksTick: true };
     }
 
@@ -590,7 +597,7 @@ export function stepCardAnimation(
     }
 
     if (anim.elapsed >= anim.duration) {
-      finishCardAnimation(runtime, anim);
+      finishItemAnimation(runtime, anim);
     }
 
     return { destroyBlocksTick: false };
@@ -598,27 +605,27 @@ export function stepCardAnimation(
 
   if (anim.kind === "appear" || anim.kind === "shake") {
     if (isTimedAnimationDone(runtime, anim)) {
-      finishCardAnimation(runtime, anim);
+      finishItemAnimation(runtime, anim);
     }
   }
 
   return { destroyBlocksTick: false };
 }
 
-export const cardTextAnim = {
-  retrigger: (): CardAnimationConfig => ({
+export const itemTextAnim = {
+  retrigger: (): ItemAnimationConfig => ({
     type: "textEffect",
     textEffect: { text: "Again!", color: "#a855f7", shake: { amount: 5 } },
   }),
-  mult: (n: number): CardAnimationConfig => ({
+  mult: (n: number): ItemAnimationConfig => ({
     type: "textEffect",
     textEffect: { text: `+${n} mult`, color: "#ef4444", shake: { amount: 2 } },
   }),
-  mile: (n: number): CardAnimationConfig => ({
+  mile: (n: number): ItemAnimationConfig => ({
     type: "textEffect",
     textEffect: { text: `+${n} miles`, color: "#60a5fa", shake: { amount: 2 } },
   }),
-  money: (n: number): CardAnimationConfig => ({
+  money: (n: number): ItemAnimationConfig => ({
     type: "textEffect",
     textEffect: {
       text: `+$${n}`,
@@ -626,12 +633,12 @@ export const cardTextAnim = {
       duration: TEXT_EFFECT_MONEY_PAYOUT_DURATION,
     },
   }),
-  moneyTrigger: (n: number): CardAnimationConfig => ({
+  moneyTrigger: (n: number): ItemAnimationConfig => ({
     type: "textEffect",
     textEffect: { text: `+$${n}`, color: "#facc15" },
   }),
 };
 
-export function cardShakeAnim(shake?: CardShakeConfig): CardAnimationConfig {
+export function itemShakeAnim(shake?: ItemShakeConfig): ItemAnimationConfig {
   return { type: "shake", shake };
 }

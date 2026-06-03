@@ -5,16 +5,14 @@ import { effectsTexturesReady } from "@/assets/effects/textures";
 import { getCardTexture, itemTexturesReady } from "@/assets/items/textures";
 import type { CardDisplayMode } from "@/ui/components/Card/config";
 import { Card, type CardHandle } from "@/ui/components/Card/Card";
-import {
-  cardShakeAnim,
-  cardTextAnim,
-} from "@/ui/components/Card/cardAnimations";
+import { itemShakeAnim, itemTextAnim } from "@/ui/animation/itemAnimations";
 import { EFFECT_OPTIONS } from "@/ui/effects/effectOptions";
 import type { EffectId } from "@/ui/effects/types";
 import { useQueryParam } from "@/ui/hooks/useQueryParam";
 import { PIXI_RENDERER_PREFERENCE } from "@/ui/pixi/appDefaults";
 import type { StoryDefinition } from "@/ui/types/storyTypes";
 import { panelButtonClass, panelLabelClass, panelSelectClass } from "@/ui/styles/panelControls";
+import { UI_BACKGROUND_COLOR } from "../uiConstants";
 
 const RESTORE_DELAY_MS = 700;
 
@@ -130,7 +128,7 @@ function CardStory() {
           type="button"
           className={panelButtonClass}
           disabled={animDisabled}
-          onClick={() => runAnim(cardShakeAnim({ amount: 5 }))}
+          onClick={() => runAnim(itemShakeAnim({ amount: 5 }))}
         >
           Shake
         </button>
@@ -138,7 +136,7 @@ function CardStory() {
           type="button"
           className={panelButtonClass}
           disabled={animDisabled}
-          onClick={() => runAnim(cardTextAnim.mult(4))}
+          onClick={() => runAnim(itemTextAnim.mult(4))}
         >
           + mult
         </button>
@@ -146,7 +144,7 @@ function CardStory() {
           type="button"
           className={panelButtonClass}
           disabled={animDisabled}
-          onClick={() => runAnim(cardTextAnim.mile(20))}
+          onClick={() => runAnim(itemTextAnim.mile(20))}
         >
           + miles
         </button>
@@ -154,7 +152,7 @@ function CardStory() {
           type="button"
           className={panelButtonClass}
           disabled={animDisabled}
-          onClick={() => runAnim(cardTextAnim.retrigger())}
+          onClick={() => runAnim(itemTextAnim.retrigger())}
         >
           Retrigger
         </button>
@@ -162,7 +160,7 @@ function CardStory() {
           type="button"
           className={panelButtonClass}
           disabled={animDisabled}
-          onClick={() => runAnim(cardTextAnim.money(5))}
+          onClick={() => runAnim(itemTextAnim.money(5))}
         >
           + money
         </button>
@@ -170,7 +168,7 @@ function CardStory() {
           type="button"
           className={panelButtonClass}
           disabled={animDisabled}
-          onClick={() => runAnim(cardTextAnim.moneyTrigger(5))}
+          onClick={() => runAnim(itemTextAnim.moneyTrigger(5))}
         >
           + money trigger
         </button>
@@ -179,7 +177,7 @@ function CardStory() {
       <Application
         width={480}
         height={360}
-        background="#171824"
+        background={UI_BACKGROUND_COLOR}
         antialias
         autoDensity
         preference={PIXI_RENDERER_PREFERENCE}
