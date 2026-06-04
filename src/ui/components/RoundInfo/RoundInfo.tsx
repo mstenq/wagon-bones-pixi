@@ -32,8 +32,8 @@ export function RoundInfo({
         {subtitle ? (
           <p
             className={[
-              "mb-1 text-center leading-snug text-black xl:mb-2 xl:text-xl",
-              compact ? "text-[10px]" : "text-sm lg:text-base xl:text-xl",
+              "mb-1 text-center leading-snug text-black xl:mb-2 xl:text-xl pt-2 px-2",
+              compact ? "text-[12px]" : "text-sm lg:text-base xl:text-xl",
             ].join(" ")}
           >
             {subtitle}
@@ -76,9 +76,9 @@ export function RoundInfo({
               className={[
                 "text-center leading-none text-black xl:text-xl",
                 compact ? "text-[10px]" : "text-sm lg:text-base xl:text-xl",
-            ].join(" ")}
-          >
-            Score at least
+              ].join(" ")}
+            >
+              Score at least
             </p>
 
             <div className="flex items-center justify-center gap-1 xl:gap-2">
@@ -104,9 +104,9 @@ export function RoundInfo({
               className={[
                 "text-center leading-none xl:text-xl",
                 compact ? "text-[10px]" : "text-sm lg:text-base xl:text-xl",
-            ].join(" ")}
-          >
-            <span className="text-black">payout </span>
+              ].join(" ")}
+            >
+              <span className="text-black">payout </span>
               <span className="font-header text-primary">{formattedPayout}</span>
             </p>
           </div>

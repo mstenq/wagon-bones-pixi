@@ -39,13 +39,13 @@ export function App() {
   const isLandscapeViewport = useMediaQuery("(orientation: landscape)");
 
   return (
-    <UiPrimaryProvider className="flex h-dvh w-full flex-col landscape:flex-row">
+    <UiPrimaryProvider className="box-border flex h-dvh w-full flex-col pt-safe-top pr-safe-right pb-safe-bottom pl-safe-left landscape:flex-row">
       <aside className="w-full bg-background  shrink-0 overflow-y-auto bg-background max-h-[22dvh] landscape:max-h-none landscape:min-w-0 landscape:w-[clamp(11.5rem,20vw,15rem)] lg:landscape:w-[clamp(16rem,22vw,18rem)] xl:landscape:w-96">
         <GameInfo
           displayMode={isLandscapeViewport ? "portrait" : "landscape"}
           roundInfo={{
             title: "Round 1",
-            subtitle: "",
+            subtitle: "Can only play straights",
             iconSrc: "",
             difficultyColor: "red",
             targetScore: 100,
