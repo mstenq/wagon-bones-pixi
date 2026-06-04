@@ -17,7 +17,7 @@ If `useEffect` is unavoidable (e.g. subscribing to an external system with no ev
 
 ## Card/die aura effects
 
-Auras live in `src/ui/effects/`. Shipped ids: `none`, `holy`, `fire`, `arcane`, `ghost` (`EFFECT_IDS` in `types.ts`, wired in `registry.ts`). Reference implementations: `definitions/holy.ts`, `fire.ts`, `arcane.ts`, `ghost.ts` — Pixi `Graphics`, sprites, `ColorMatrixFilter`, and built-in filters via `applyArtFilters` on card/die art.
+Auras live in `src/ui/effects/`. Shipped ids: `none`, `holy`, `fire`, `arcane`, `ghost` (`EFFECT_IDS` in `types.ts`, wired in `registry.ts`). Reference implementations: `definitions/holy.ts`, `fire.ts`, `arcane.ts`, `ghost.ts` — Pixi `Graphics`, sprites, `ColorMatrixFilter`, custom GLSL in `filters/` (e.g. `ghostAuraFilter.ts`), and built-in filters via `applyArtFilters` on card/die art.
 
 To add an aura: create `definitions/myEffect.ts` (`EffectDefinition`), register in `registry.ts`, add the id to `EFFECT_IDS`. Use shared helpers under `shared/` (`glow`, `particles`, `surfaceProjection`, `dieOutline`, etc.). Preload textures in `src/assets/effects/images.ts` when needed; hosts must `use(effectsTexturesReady)` before mounting effects.
 
