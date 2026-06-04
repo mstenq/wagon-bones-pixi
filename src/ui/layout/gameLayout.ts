@@ -7,6 +7,44 @@ import type { ReorderableRowLayout } from "@/ui/interaction/useReorderableRow";
 
 export const DESIGN_WIDTH = 880;
 
+/** Viewport width at and above which game content uses 1:1 screen coordinates. */
+export const VIEWPORT_SCALE_BREAKPOINT = 1000;
+
+const VIEWPORT_DESIGN_WIDTH = VIEWPORT_SCALE_BREAKPOINT;
+
+/** Unscaled layout height (cards + dice rows + roll-button margin). */
+export const VIEWPORT_DESIGN_HEIGHT =
+  52 +
+  36 +
+  48 +
+  22 +
+  28 +
+  DEFAULT_CARD_HEIGHT / 2 +
+  DEFAULT_CARD_HEIGHT / 2 +
+  56 +
+  36 +
+  DEFAULT_DIE_SIZE / 2 +
+  DEFAULT_DIE_SIZE / 2 +
+  160;
+
+export type ViewportMetrics = {
+  scale: number;
+  layoutW: number;
+  layoutH: number;
+};
+
+export function computeViewportMetrics(screenW: number, screenH: number): ViewportMetrics {
+  const widthScale = screenW / VIEWPORT_DESIGN_WIDTH;
+  const heightScale = screenH / VIEWPORT_DESIGN_HEIGHT;
+  const scale = Math.min(1, widthScale, heightScale);
+
+  if (scale >= 1) {
+    return { scale: 1, layoutW: screenW, layoutH: screenH };
+  }
+
+  return { scale, layoutW: VIEWPORT_DESIGN_WIDTH, layoutH: VIEWPORT_DESIGN_HEIGHT };
+}
+
 export type GameLayout = {
   cards: ReorderableRowLayout;
   dice: ReorderableRowLayout;

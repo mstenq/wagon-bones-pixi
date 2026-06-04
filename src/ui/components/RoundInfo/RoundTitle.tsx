@@ -16,11 +16,11 @@ export function RoundTitle({ title, className }: RoundTitleProps) {
         fullWidth
         className="h-full"
         faceTone="primary"
-        faceClassName="flex h-full min-h-0 items-center justify-center px-4 py-3 text-white md:px-5 md:py-3.5"
+        faceClassName="flex h-full min-h-0 items-center justify-center px-2 py-1.5 text-white xl:px-5 xl:py-3.5"
       >
         <WaveBounceChars
           text={title}
-          className="text-center text-2xl font-header leading-none tracking-wide md:text-3xl"
+          className="text-center text-lg font-header leading-none tracking-wide xl:text-3xl"
           renderChar={({ displayChar }) => <span className="inline-block">{displayChar}</span>}
         />
       </NeoSurface>

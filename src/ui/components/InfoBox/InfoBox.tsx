@@ -9,17 +9,17 @@ export type InfoBoxProps = {
 };
 
 const labelClass =
-  "p-1 text-center text-base leading-none font-body text-black md:text-xl";
+  "p-0.5 text-center text-xs leading-none font-body text-black xl:p-1 xl:text-xl";
 
 const bodyClass =
-  "mx-2 mb-1.5 flex min-h-9 flex-1 items-center justify-center md:mb-2 md:min-h-12";
+  "mx-1 mb-1 flex min-h-6 flex-1 items-center justify-center xl:mx-2 xl:mb-2 xl:min-h-12";
 
 export function InfoBox({ label, children, className }: InfoBoxProps) {
   return (
     <NeoSurface
       fullWidth
       className={["min-w-0 flex-1", className].filter(Boolean).join(" ")}
-      faceClassName="flex h-full min-h-0 flex-col py-2"
+      faceClassName="flex h-full min-h-0 flex-col py-1 xl:py-2"
     >
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <span className={labelClass}>{label}</span>
@@ -29,7 +29,7 @@ export function InfoBox({ label, children, className }: InfoBoxProps) {
   );
 }
 
-const valueTextClass = "text-4xl leading-none tabular-nums md:text-5xl";
+const valueTextClass = "text-2xl leading-none tabular-nums xl:text-5xl";
 
 export type InfoBoxRockValueProps = {
   value: number | string;
@@ -64,7 +64,7 @@ export function InfoBoxAnteValue({ current, total }: InfoBoxAnteValueProps) {
       <span className={[valueTextClass, "font-header text-amber-500"].join(" ")}>
         {current}
       </span>
-      <span className="hidden text-2xl font-body text-black/70 tabular-nums md:inline">
+      <span className="hidden text-lg font-body text-black/70 tabular-nums xl:inline xl:text-2xl">
         / {total}
       </span>
     </div>

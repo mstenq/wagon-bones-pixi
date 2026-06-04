@@ -152,7 +152,7 @@
 
 .score-flame {
   --flame-inset-x: -0.5rem;
-  --flame-overlap-y: 31px;
+  --flame-overlap-y: 20px;
   --flame-height: calc(4px + var(--flame-i, 0) * 80px);
   z-index: 0;
   top: 0;
@@ -161,6 +161,12 @@
   width: auto;
   height: var(--flame-height);
   transform: translateY(calc(-100% + var(--flame-overlap-y)));
+}
+
+@media (min-width: 80rem) {
+  .score-flame {
+    --flame-overlap-y: 31px;
+  }
 }
 
 .score-box__face {

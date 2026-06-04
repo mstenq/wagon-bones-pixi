@@ -64,8 +64,8 @@ export function RoundScore({ score, compact = false, className }: RoundScoreProp
   }, [targetScore]);
 
   const facePadding = compact
-    ? "flex items-stretch gap-1.5 p-3 md:gap-2 md:p-3.5"
-    : "flex items-stretch gap-1.5 p-4 md:gap-2 md:p-5";
+    ? "flex items-stretch gap-1 p-2 xl:gap-2 xl:p-3.5"
+    : "flex items-stretch gap-1 p-2.5 xl:gap-2 xl:p-5";
 
   const faceLayout = compact
     ? `${facePadding} h-full min-h-0`
@@ -82,13 +82,13 @@ export function RoundScore({ score, compact = false, className }: RoundScoreProp
         aria-label={`Round score ${formatRoundScoreDisplay(displayScore)}`}
         aria-live="polite"
       >
-        <div className="flex w-12 shrink-0 flex-col justify-center gap-0.5 px-1 font-body text-black md:w-16">
-          <span className="text-lg leading-none md:text-xl">Round</span>
-          <span className="text-lg leading-none md:text-xl">score</span>
+        <div className="flex w-10 shrink-0 flex-col justify-center gap-0.5 px-0.5 font-body text-black xl:w-16 xl:px-1">
+          <span className="text-sm leading-none xl:text-xl">Round</span>
+          <span className="text-sm leading-none xl:text-xl">score</span>
         </div>
 
-        <div className="flex min-w-0 flex-1 items-center justify-end px-2 py-1 md:px-3 md:py-2">
-          <span className="max-w-full truncate text-right font-header text-3xl leading-none text-primary tabular-nums md:text-4xl">
+        <div className="flex min-w-0 flex-1 items-center justify-end px-1 py-0.5 xl:px-3 xl:py-2">
+          <span className="max-w-full truncate text-right font-header text-xl leading-none text-primary tabular-nums xl:text-4xl">
             {formatRoundScoreDisplay(displayScore)}
           </span>
         </div>

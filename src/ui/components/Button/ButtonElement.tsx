@@ -22,8 +22,8 @@ export function ButtonElement({
 
   const faceClassName = [
     "neo-surface-face neo-surface-face--interactive",
-    "font-body cursor-pointer text-[1.4rem] leading-none text-black",
-    "flex min-h-10 w-full min-w-0 items-center justify-center px-3 py-2 md:min-h-12 md:px-4 md:py-2.5",
+    "font-body cursor-pointer leading-none text-black",
+    "flex min-h-7 w-full min-w-0 items-center justify-center px-2 py-1 text-sm xl:min-h-12 xl:px-4 xl:py-2.5 xl:text-[1.4rem]",
     "disabled:cursor-not-allowed disabled:bg-ui-disabled",
     variantFaceClass[variant],
   ].join(" ");

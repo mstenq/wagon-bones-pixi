@@ -22,6 +22,9 @@ function faceToneClass(tone: NeoSurfaceFaceTone): string {
   return "";
 }
 
+/** Panel surfaces — shadow hidden below xl where layouts pack tightly. */
+const panelShadowClass = "neo-surface-shadow hidden xl:block";
+
 export function NeoSurface({
   children,
   className,
@@ -51,7 +54,7 @@ export function NeoSurface({
   return (
     <div className={shellClassName}>
       <div className={neoRootClassName}>
-        <span className="neo-surface-shadow" aria-hidden="true" />
+        <span className={panelShadowClass} aria-hidden="true" />
         <div className={faceClasses}>{children}</div>
       </div>
     </div>
@@ -103,7 +106,7 @@ export function NeoSurfacePrimaryHeader({
   return (
     <div className={shellClassName}>
       <div className={neoRootClassName}>
-        <span className="neo-surface-shadow" aria-hidden="true" />
+        <span className={panelShadowClass} aria-hidden="true" />
         <div className="neo-surface-face flex min-h-0 w-full flex-col overflow-hidden bg-primary-50">
           <div className={headerClasses}>{header}</div>
           <div className={bodyClasses}>{children}</div>

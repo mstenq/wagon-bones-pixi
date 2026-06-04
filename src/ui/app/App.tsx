@@ -39,7 +39,7 @@ export function App() {
 
   return (
     <UiPrimaryProvider className="flex h-screen w-full flex-col xl:flex-row">
-      <aside className="w-full shrink-0 overflow-y-auto bg-background xl:w-96">
+      <aside className="w-full shrink-0 overflow-y-auto bg-background max-h-[22dvh] xl:max-h-none xl:w-96">
         <GameInfo
           displayMode={isXlUp ? "portrait" : "landscape"}
           roundInfo={{

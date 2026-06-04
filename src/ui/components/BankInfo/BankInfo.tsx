@@ -26,7 +26,7 @@ export function BankInfo({
       ]
         .filter(Boolean)
         .join(" ")}
-      faceClassName="flex h-full min-h-0 w-full min-w-0 p-1.5 md:p-3"
+      faceClassName="flex h-full min-h-0 w-full min-w-0 p-1 xl:p-3"
     >
       <ScoreBox variant="bank" value={balance} fill={fill} className="w-full" />
     </NeoSurface>
