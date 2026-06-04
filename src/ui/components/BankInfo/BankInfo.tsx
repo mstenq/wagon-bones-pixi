@@ -7,6 +7,7 @@ export type BankInfoProps = {
   fill?: boolean;
   /** Extra flex grow in a horizontal stats row (landscape). */
   growInRow?: boolean;
+  compact?: boolean;
   className?: string;
 };
 
@@ -14,8 +15,11 @@ export function BankInfo({
   balance,
   fill = false,
   growInRow = false,
+  compact = false,
   className,
 }: BankInfoProps) {
+  const facePadding = compact ? "p-0.5" : "p-1 lg:p-1.5 xl:p-3";
+
   return (
     <NeoSurface
       fullWidth
@@ -26,9 +30,9 @@ export function BankInfo({
       ]
         .filter(Boolean)
         .join(" ")}
-      faceClassName="flex h-full min-h-0 w-full min-w-0 p-1 xl:p-3"
+      faceClassName={["flex h-full min-h-0 w-full min-w-0", facePadding].join(" ")}
     >
-      <ScoreBox variant="bank" value={balance} fill={fill} className="w-full" />
+      <ScoreBox variant="bank" value={balance} fill={fill} compact={compact} className="w-full" />
     </NeoSurface>
   );
 }

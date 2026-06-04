@@ -1,6 +1,6 @@
 import {
   InfoBox,
-  InfoBoxAnteValue,
+  InfoBoxLegValue,
   InfoBoxRockValue,
 } from "@/ui/components/InfoBox/InfoBox";
 import type { StoryDefinition } from "@/ui/types/storyTypes";
@@ -20,7 +20,7 @@ function InfoBoxStory() {
 
       <div className="flex w-full max-w-xl gap-3">
         <InfoBox label="Ante">
-          <InfoBoxAnteValue current={1} total={8} />
+          <InfoBoxLegValue current={1} total={8} />
         </InfoBox>
         <InfoBox label="Round">
           <InfoBoxRockValue value={1} />

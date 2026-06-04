@@ -33,13 +33,18 @@ type ActiveRoll = {
 function dieShadowFloorLineY(
   itemId: number,
   homeY: number,
+  count: number,
   meta: RowLayoutMeta,
   slotHomeY: (slotIndex: number) => number,
 ): number | null {
   if (meta.dragSession?.itemId === itemId) {
-    return slotHomeY(meta.dragSession.fromSlot);
+    const fromSlot = meta.dragSession.fromSlot;
+    const y = slotHomeY(fromSlot);
+    // Drag container is flat (no arc); pin shadow to this slot's arced rest Y.
+    return y + rowArcPose(fromSlot, count, 1).yOffset;
   }
   if (meta.dropSettlingItemId === itemId) {
+    // Settling applies arc on the container; flat home.y + visual.y pin is correct.
     return homeY;
   }
   return null;
@@ -92,6 +97,7 @@ export function DiceRow({ layout }: DiceRowProps) {
       const shadowFloorY = dieShadowFloorLineY(
         itemId,
         home.y,
+        layout.count,
         meta,
         (fromSlot) => slotHome(fromSlot).y,
       );

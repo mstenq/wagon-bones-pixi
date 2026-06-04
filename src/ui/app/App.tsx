@@ -35,17 +35,18 @@ function DiceEnhancementSelect() {
 }
 
 export function App() {
-  const isXlUp = useMediaQuery("(min-width: 80rem)");
+  /** Viewport wider than tall — sidebar + portrait GameInfo content layout. */
+  const isLandscapeViewport = useMediaQuery("(orientation: landscape)");
 
   return (
-    <UiPrimaryProvider className="flex h-screen w-full flex-col xl:flex-row">
-      <aside className="w-full shrink-0 overflow-y-auto bg-background max-h-[22dvh] xl:max-h-none xl:w-96">
+    <UiPrimaryProvider className="flex h-dvh w-full flex-col landscape:flex-row">
+      <aside className="w-full bg-background  shrink-0 overflow-y-auto bg-background max-h-[22dvh] landscape:max-h-none landscape:min-w-0 landscape:w-[clamp(11.5rem,20vw,15rem)] lg:landscape:w-[clamp(16rem,22vw,18rem)] xl:landscape:w-96">
         <GameInfo
-          displayMode={isXlUp ? "portrait" : "landscape"}
+          displayMode={isLandscapeViewport ? "portrait" : "landscape"}
           roundInfo={{
             title: "Round 1",
             subtitle: "",
-            iconSrc: "https://via.placeholder.com/150",
+            iconSrc: "",
             difficultyColor: "red",
             targetScore: 100,
             payoutAmount: 10,
@@ -53,13 +54,13 @@ export function App() {
           roundScore={100}
           handInfo={{ handName: "Hand 1", level: 1, chips: 100, mult: 2 }}
           stats={{
-            hands: 10,
+            hands: 5,
             rerolls: 5,
-            anteCurrent: 10,
-            anteTotal: 100,
+            legCurrent: 2,
+            legTotal: 8,
             round: 1,
           }}
-          balance={1000}
+          balance={69}
         />
       </aside>
       <main className="relative min-h-0 min-w-0 flex-1">

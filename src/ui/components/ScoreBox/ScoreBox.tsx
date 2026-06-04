@@ -14,17 +14,23 @@ export type ScoreBoxProps = {
   flameIntensity?: number;
   /** Grow to fill a flex parent (e.g. HandInfo score row). */
   fill?: boolean;
+  /** Smaller type and padding for narrow sidebar cells. */
+  compact?: boolean;
   className?: string;
 };
 
 const chipFaceClass =
-  "min-h-5 items-center px-1.5 pt-0.5 pb-0.5 font-header text-2xl leading-none tabular-nums select-none xl:min-h-8 xl:px-2.5 xl:pt-1.5 xl:pb-1 xl:text-5xl";
+  "min-h-5 items-center px-1.5 pt-0.5 pb-0.5 font-header text-2xl leading-none tabular-nums select-none lg:min-h-6 lg:text-3xl xl:min-h-8 xl:px-2.5 xl:pt-1.5 xl:pb-1 xl:text-5xl";
+const chipFaceCompactClass =
+  "min-h-5 items-center px-1.5 py-0.5 font-header text-base leading-none tabular-nums select-none";
 const bankFaceClass =
-  "min-h-5 items-center px-1.5 py-1 font-header text-2xl leading-none tabular-nums select-none xl:min-h-8 xl:px-3 xl:py-2 xl:text-5xl";
+  "min-h-5 items-center px-1.5 py-1 font-header text-2xl leading-none tabular-nums select-none lg:min-h-6 lg:text-3xl xl:min-h-8 xl:px-3 xl:py-2 xl:text-5xl";
+const bankFaceCompactClass =
+  "min-h-4 items-center px-1 py-0.5 font-header text-base leading-none tabular-nums select-none";
 const shrinkClass = "inline-flex min-w-14";
 const fillClass = "flex w-full min-w-0 flex-1";
 
-function variantFaceClass(variant: ScoreBoxVariant): string {
+function variantFaceClass(variant: ScoreBoxVariant, compact: boolean): string {
   const theme = scoreBoxVariantTheme[variant];
   const justify =
     variant === "points"
@@ -32,17 +38,25 @@ function variantFaceClass(variant: ScoreBoxVariant): string {
       : variant === "mult"
         ? "justify-start"
         : "justify-center";
+  const chipFace = compact ? chipFaceCompactClass : chipFaceClass;
+  const bankFace = compact ? bankFaceCompactClass : bankFaceClass;
   const face =
     variant === "bank"
-      ? [bankFaceClass, justify, theme.borderClass, theme.surfaceClass]
-      : [chipFaceClass, justify, theme.borderClass, theme.surfaceClass];
+      ? [bankFace, justify, theme.borderClass, theme.surfaceClass]
+      : [chipFace, justify, theme.borderClass, theme.surfaceClass];
   return ["score-box__face", ...face].join(" ");
 }
 
 const variantDigitsClass: Record<ScoreBoxVariant, string> = {
-  points: "pt-3 inline-flex items-baseline justify-end gap-[0.04em]",
-  mult: "pt-3 inline-flex items-baseline justify-start gap-[0.04em]",
-  bank: "pt-3 inline-flex items-baseline justify-center gap-[0.04em]",
+  points: "pt-2 pb-1  xl:pt-3 inline-flex items-baseline justify-end gap-[0.04em]",
+  mult: "pt-2 pb-1  xl:pt-3 inline-flex items-baseline justify-start gap-[0.04em]",
+  bank: "pt-2 pb-1 xl:pt-3 inline-flex items-baseline justify-center gap-[0.04em]",
+};
+
+const variantDigitsCompactClass: Record<ScoreBoxVariant, string> = {
+  points: "pt-1.5 pb-1 inline-flex items-baseline justify-end gap-[0.04em]",
+  mult: "pt-1.5 pb-1 inline-flex items-baseline justify-start gap-[0.04em]",
+  bank: "pt-1.5 pb-1 inline-flex items-baseline justify-center gap-[0.04em]",
 };
 
 function formatScoreValue(value: number): number {
@@ -75,6 +89,7 @@ export function ScoreBox({
   value,
   flameIntensity = 0,
   fill = false,
+  compact = false,
   className,
 }: ScoreBoxProps) {
   const displayValue = formatScoreValue(value);
@@ -98,14 +113,15 @@ export function ScoreBox({
 
   const faceClassName = [
     fill ? fillClass : shrinkClass,
-    variantFaceClass(variant),
+    variantFaceClass(variant, compact),
     className,
   ]
     .filter(Boolean)
     .join(" ");
 
   const rootClassName = [
-    "relative min-h-5 min-w-0 overflow-visible xl:min-h-8",
+    "relative min-w-0 overflow-visible",
+    compact ? "min-h-5" : "min-h-5 lg:min-h-6 xl:min-h-8",
     fill ? "flex flex-1" : "inline-flex",
   ]
     .filter(Boolean)
@@ -120,7 +136,7 @@ export function ScoreBox({
       <div className={faceClassName}>
         <WaveBounceChars
           text={waveText}
-          className={variantDigitsClass[variant]}
+          className={compact ? variantDigitsCompactClass[variant] : variantDigitsClass[variant]}
           getCharKey={({ char, index }) => `${index}-${char}-${bumpGeneration}`}
           renderChar={({ displayChar, index }) => {
             const changed = changeMask[index] ?? true;

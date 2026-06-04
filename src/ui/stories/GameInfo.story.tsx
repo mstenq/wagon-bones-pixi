@@ -190,8 +190,8 @@ function GameInfoStoryPreview() {
           stats={{
             hands: 3,
             rerolls: 0,
-            anteCurrent: 1,
-            anteTotal: 8,
+            legCurrent: 1,
+            legTotal: 8,
             round: 2,
           }}
           balance={20}

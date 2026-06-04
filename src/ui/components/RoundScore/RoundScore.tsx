@@ -64,8 +64,8 @@ export function RoundScore({ score, compact = false, className }: RoundScoreProp
   }, [targetScore]);
 
   const facePadding = compact
-    ? "flex items-stretch gap-1 p-2 xl:gap-2 xl:p-3.5"
-    : "flex items-stretch gap-1 p-2.5 xl:gap-2 xl:p-5";
+    ? "flex min-h-10 items-stretch gap-1 p-2"
+    : "flex items-stretch gap-1 p-2 lg:p-2.5 xl:gap-2 xl:p-5";
 
   const faceLayout = compact
     ? `${facePadding} h-full min-h-0`
@@ -82,13 +82,39 @@ export function RoundScore({ score, compact = false, className }: RoundScoreProp
         aria-label={`Round score ${formatRoundScoreDisplay(displayScore)}`}
         aria-live="polite"
       >
-        <div className="flex w-10 shrink-0 flex-col justify-center gap-0.5 px-0.5 font-body text-black xl:w-16 xl:px-1">
-          <span className="text-sm leading-none xl:text-xl">Round</span>
-          <span className="text-sm leading-none xl:text-xl">score</span>
+        <div
+          className={[
+            "flex shrink-0 flex-col justify-center gap-0 font-body text-black xl:w-16 xl:gap-0.5 xl:px-1",
+            compact ? "w-8 gap-0.5 px-0.5" : "w-10 gap-0.5 px-0.5 lg:w-12",
+          ].join(" ")}
+        >
+          <span
+            className={
+              compact
+                ? "text-[11px] leading-none"
+                : "text-sm leading-none lg:text-base xl:text-xl"
+            }
+          >
+            Round
+          </span>
+          <span
+            className={
+              compact
+                ? "text-[11px] leading-none"
+                : "text-sm leading-none lg:text-base xl:text-xl"
+            }
+          >
+            score
+          </span>
         </div>
 
-        <div className="flex min-w-0 flex-1 items-center justify-end px-1 py-0.5 xl:px-3 xl:py-2">
-          <span className="max-w-full truncate text-right font-header text-xl leading-none text-primary tabular-nums xl:text-4xl">
+        <div className="flex min-w-0 flex-1 items-center justify-end px-1 py-0.5 lg:px-1 xl:px-3 xl:py-2">
+          <span
+            className={[
+              "max-w-full truncate text-right font-header leading-none text-primary tabular-nums lg:text-2xl xl:text-4xl",
+              compact ? "text-lg" : "text-xl",
+            ].join(" ")}
+          >
             {formatRoundScoreDisplay(displayScore)}
           </span>
         </div>
