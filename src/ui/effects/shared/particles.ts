@@ -1,5 +1,3 @@
-import { Graphics } from "pixi.js";
-
 export type Particle = {
   x: number;
   y: number;
@@ -45,17 +43,5 @@ export function stepParticles(pool: Particle[], dt: number): void {
     p.life -= dt;
     p.x += p.vx * dt;
     p.y += p.vy * dt;
-  }
-}
-
-export function drawParticles(g: Graphics, pool: Particle[]): void {
-  g.clear();
-  for (const p of pool) {
-    if (p.life <= 0) {
-      continue;
-    }
-    const t = p.life / p.maxLife;
-    g.circle(p.x, p.y, p.size * t);
-    g.fill({ color: p.color, alpha: p.alpha * t });
   }
 }

@@ -15,17 +15,11 @@ Prefer **not** to use `useEffect`. Handle behavior through:
 
 If `useEffect` is unavoidable (e.g. subscribing to an external system with no event/callback API), add a **comment directly above it** explaining why other approaches do not work.
 
-## ISF filter effects
+## Card/die aura effects
 
-Card/die visuals live in `src/ui/effects/`. To add a **new effect from an ISF shader** (e.g. from [ISF Editor](https://editor.isf.video) or [interactiveshaderformat.com](https://interactiveshaderformat.com)):
+Auras live in `src/ui/effects/`. Shipped ids: `none`, `holy`, `fire`, `arcane`, `ghost` (`EFFECT_IDS` in `types.ts`, wired in `registry.ts`). Reference implementations: `definitions/holy.ts`, `fire.ts`, `arcane.ts`, `ghost.ts` — Pixi `Graphics`, sprites, `ColorMatrixFilter`, and built-in filters via `applyArtFilters` on card/die art.
 
-1. Put ISF source in `src/ui/effects/shaders/` (`.isf.ts` export or `.fs?raw` import)
-2. Wire with `createPixiFilterFromIsf` in `src/ui/effects/definitions/` — see `glitch.ts` / `retroDither.ts`
-3. Register: add id to `EFFECT_IDS` in `types.ts`, import in `registry.ts`
-
-**Read the project skill** `.cursor/skills/isf-effects/SKILL.md` for the full checklist, API (`setValue`, `setImage`, `tick`, padding), tunable uniform/image setup lines in `step`, ISF→Pixi transforms, limits, and troubleshooting.
-
-Constraints: single-pass **filter** shaders with `inputImage` (plus optional extra `image` inputs supported via `setImage(...)`); WebGL renderer (`PIXI_RENDERER_PREFERENCE` in `appDefaults.ts`). Do not declare `uInputSize` in the fragment shader.
+To add an aura: create `definitions/myEffect.ts` (`EffectDefinition`), register in `registry.ts`, add the id to `EFFECT_IDS`. Use shared helpers under `shared/` (`glow`, `particles`, `surfaceProjection`, `dieOutline`, etc.). Preload textures in `src/assets/effects/images.ts` when needed; hosts must `use(effectsTexturesReady)` before mounting effects.
 
 ## Perspective-aware effects
 

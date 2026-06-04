@@ -631,11 +631,12 @@ export const itemTextAnim = {
       text: `+$${n}`,
       color: "#facc15",
       duration: TEXT_EFFECT_MONEY_PAYOUT_DURATION,
+      shake: { amount: 1 },
     },
   }),
   moneyTrigger: (n: number): ItemAnimationConfig => ({
     type: "textEffect",
-    textEffect: { text: `+$${n}`, color: "#facc15" },
+    textEffect: { text: `+$${n}`, color: "#facc15", shake: { amount: 1 } },
   }),
 };
 

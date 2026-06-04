@@ -36,7 +36,7 @@ import {
 } from "@/ui/components/Dice/dieGroundShadow";
 import { EffectMount } from "@/ui/effects/EffectMount";
 import { createDefaultEffectFrame } from "@/ui/effects/context";
-import type { EffectFrameContext, EffectId } from "@/ui/effects/types";
+import type { EffectArtRef, EffectFrameContext, EffectId } from "@/ui/effects/types";
 import {
   createScalarSpring,
   setScalarTarget,
@@ -107,17 +107,13 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
   const effectFrameRef = useRef<EffectFrameContext>(
     createDefaultEffectFrame("die", size, size, phase),
   );
-  const effectArtRef = useRef<{
-    applyFilters: (filters: Filter[] | null) => void;
-    setJitter: (dx: number, dy: number) => void;
-  }>({
+  const effectArtRef = useRef<EffectArtRef>({
     applyFilters(filters) {
       const sprite = spriteRef.current;
       if (sprite) {
         sprite.filters = filters;
       }
     },
-    setJitter() {},
   });
   const externalSquishRef = useRef({ scaleX: 1, scaleY: 1 });
   const shadowDragRef = useRef<DieShadowDragState>({

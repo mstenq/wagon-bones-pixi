@@ -4,24 +4,8 @@ export const EFFECT_IDS = [
   "none",
   "holy",
   "fire",
-  "icy",
-  "ghost",
-  "hologram",
-  "polychrome",
-  "foil",
-  "negative",
-  "storm",
-  "crystal",
-  "shadow",
-  "cosmic",
-  "glitch",
-  "circuit",
-  "retroDither",
-  "dragon",
-  "void",
   "arcane",
-  "water",
-  "squigglePen",
+  "ghost",
 ] as const;
 
 export type EffectId = (typeof EFFECT_IDS)[number];
@@ -64,10 +48,11 @@ export type EffectLayers = {
   front: import("pixi.js").Container;
 };
 
-export type EffectArtTarget = {
+export type EffectArtRef = {
   applyFilters: (filters: Filter[] | null) => void;
-  setJitter: (dx: number, dy: number) => void;
 };
+
+export type EffectArtTarget = EffectArtRef;
 
 export type EffectRuntime = {
   id: EffectId;

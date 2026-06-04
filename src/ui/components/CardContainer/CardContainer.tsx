@@ -185,7 +185,7 @@ export function CardContainer({ layout }: CardContainerProps) {
             <Card
               ref={(node) => bindCardRef(cardId, node)}
               texture={getCardTexture(cardId)}
-              effect="none"
+              effect="ghost"
               phase={cardId * 1.35}
               hovered={hoveredCardId === cardId}
               dragging={draggingCardId === cardId}

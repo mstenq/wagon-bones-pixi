@@ -1,84 +1,47 @@
-import { ColorMatrixFilter, Sprite } from "pixi.js";
-
-import { getEffectTexture } from "@/assets/effects/textures";
-import {
-  addGlowLayer,
-  addSpriteLayer,
-  applyArtFilters,
-  makeRuntime,
-  noopDestroy,
-} from "@/ui/effects/effectHelpers";
-import { drawCardFrameStroke } from "@/ui/effects/shared/borderFrame";
-import { applyBlurredGlow } from "@/ui/effects/shared/glow";
-import { boundsFromCtx } from "@/ui/effects/effectHelpers";
-import { orbitPosition } from "@/ui/effects/shared/orbit";
+import { applyArtFilters, makeRuntime, noopDestroy } from "@/ui/effects/effectHelpers";
+import { createPixiFilterFromIsf } from "@/ui/effects/isf";
 import { burstTimer } from "@/ui/effects/shared/pseudoRandom";
-import { drawSoftGlow } from "@/ui/effects/shared/glow";
+import { GHOST_AURA_ISF } from "@/ui/effects/shaders/ghost.isf";
 import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
+
+/** ISF `color` inputs are `[r, g, b, a]` in 0–1 (hex channel ÷ 255). */
+const GHOST_TINT_COLOR: [number, number, number, number] = [
+  8 / 255,
+  199 / 255,
+  184 / 255,
+  1,
+]; // #08c7b8
 
 export const ghostEffect: EffectDefinition = {
   id: "ghost",
   label: "Ghost",
-  create(layers, mount, art) {
-    const bounds = boundsFromCtx(mount);
-    const glow = addGlowLayer(layers.back, 0);
-    applyBlurredGlow(glow, mount.width, mount.height, mount.padding, 14);
-    const border = addGlowLayer(layers.front, 0);
-    const wispTex = getEffectTexture("wisp");
-    const faceTex = getEffectTexture("ghostFace");
-    const wisps: Sprite[] = [];
-    for (let i = 0; i < 4; i++) {
-      const s = addSpriteLayer(layers.front, wispTex, 1 + i);
-      if (s) wisps.push(s);
-    }
-    const face = addSpriteLayer(layers.front, faceTex, 5);
-    const desat = new ColorMatrixFilter();
-    desat.desaturate();
-    applyArtFilters(art, [desat]);
+  create(_layers, _mount, art) {
+    const aura = createPixiFilterFromIsf(GHOST_AURA_ISF, 2);
+    applyArtFilters(art, [aura.filter]);
 
-    let artAlpha = 1;
+    let elapsed = 0;
+    const timeOffset = Math.random() * 137.0;
 
     const step = (frame: EffectFrameContext) => {
-      const t = frame.time;
-      const phase = (Math.sin(t * 1.5) + 1) * 0.5;
-      artAlpha = 0.88 + phase * 0.12;
-      art.applyFilters([desat]);
+      elapsed = (elapsed + frame.dt) % 240;
+      const t = (elapsed + timeOffset) % 240;
+      const burst = burstTimer(t, 1.2, 0.9, 0.1);
+      const pulse = (Math.sin(t * 1.35) + 1) * 0.5;
 
-      drawSoftGlow(glow, bounds.halfW, bounds.halfH, 0x608888, 0.15, 4, mount.hostKind);
-      border.clear();
-      drawCardFrameStroke(border, bounds, mount.hostKind, 2, 0x88bbbb, 0.25);
-
-      wisps.forEach((w, i) => {
-        const pos = orbitPosition(t, bounds.halfW * 0.95, bounds.halfH * 0.75, 0.6 + i * 0.1, i);
-        w.position.set(pos.x, pos.y);
-        w.rotation = t + i;
-        w.alpha = 0.35 + Math.sin(t * 2 + i) * 0.2;
-        w.scale.set(0.5, 0.7);
+      aura.setValue("invert_amount", 1.0); // default 1.0
+      aura.setValue("tint_amount", 0.72); // default 0.72
+      aura.setValue("saturation", 0.35); // default 0.35
+      aura.setValue("brightness", 1.02 + burst * 0.06); // default 1.02
+      aura.setValue("pulse", pulse); // default 0.0
+      aura.setValue("tint_color", GHOST_TINT_COLOR); // default #08c7b8
+      aura.tick({
+        time: t,
+        dt: frame.dt,
+        width: frame.width,
+        height: frame.height,
       });
-
-      if (face) {
-        const flash = burstTimer(t, 7, 4.5, 0.2);
-        face.alpha = flash * 0.5;
-        face.scale.set(0.6);
-        face.y = Math.sin(t * 0.4) * bounds.halfH * 0.2;
-      }
     };
 
-    return makeRuntime(
-      "ghost",
-      (frame) => {
-        step(frame);
-        art.setJitter(0, 0);
-      },
-      noopDestroy(
-        () => applyArtFilters(art, null),
-        () => {
-          glow.destroy();
-          border.destroy();
-          wisps.forEach((w) => w.destroy());
-          face?.destroy();
-        },
-      ),
-    );
+    return makeRuntime("ghost", step, noopDestroy(() => applyArtFilters(art, null)));
   },
 };

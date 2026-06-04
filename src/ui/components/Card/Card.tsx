@@ -82,7 +82,7 @@ import {
 } from "@/ui/animation/useItemAnimations";
 import { EffectMount } from "@/ui/effects/EffectMount";
 import { createDefaultEffectFrame } from "@/ui/effects/context";
-import type { EffectFrameContext, EffectId } from "@/ui/effects/types";
+import type { EffectArtRef, EffectFrameContext, EffectId } from "@/ui/effects/types";
 
 export type CardAnimationConfig = ItemAnimationConfig;
 
@@ -193,12 +193,8 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     }
   }, []);
 
-  const effectArtRef = useRef<{
-    applyFilters: (filters: Filter[] | null) => void;
-    setJitter: (dx: number, dy: number) => void;
-  }>({
-    applyFilters: () => { },
-    setJitter() { },
+  const effectArtRef = useRef<EffectArtRef>({
+    applyFilters: () => {},
   });
   effectArtRef.current.applyFilters = applyArtFilters;
   const actionTabRef = useRef<Container | null>(null);
@@ -697,15 +693,16 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
 
     const surfaceCorners = frame.surfaceCorners;
     if (mesh) {
+      // outPoints are logical card space (0…width); mesh offset/scale already map texture → display.
       const [tl, tr, br, bl] = corners.outPoints;
-      surfaceCorners[0].x = -width / 2 + tl!.x * artScaleX;
-      surfaceCorners[0].y = -height / 2 + tl!.y * artScaleY;
-      surfaceCorners[1].x = -width / 2 + tr!.x * artScaleX;
-      surfaceCorners[1].y = -height / 2 + tr!.y * artScaleY;
-      surfaceCorners[2].x = -width / 2 + br!.x * artScaleX;
-      surfaceCorners[2].y = -height / 2 + br!.y * artScaleY;
-      surfaceCorners[3].x = -width / 2 + bl!.x * artScaleX;
-      surfaceCorners[3].y = -height / 2 + bl!.y * artScaleY;
+      surfaceCorners[0].x = -width / 2 + tl!.x;
+      surfaceCorners[0].y = -height / 2 + tl!.y;
+      surfaceCorners[1].x = -width / 2 + tr!.x;
+      surfaceCorners[1].y = -height / 2 + tr!.y;
+      surfaceCorners[2].x = -width / 2 + br!.x;
+      surfaceCorners[2].y = -height / 2 + br!.y;
+      surfaceCorners[3].x = -width / 2 + bl!.x;
+      surfaceCorners[3].y = -height / 2 + bl!.y;
     } else {
       surfaceCorners[0].x = -width / 2;
       surfaceCorners[0].y = -height / 2;

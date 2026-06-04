@@ -14,6 +14,7 @@ import {
   stepEffect,
 } from "@/ui/effects/runtime";
 import type {
+  EffectArtRef,
   EffectArtTarget,
   EffectFrameContext,
   EffectHostKind,
@@ -29,10 +30,7 @@ export type EffectMountProps = {
   padding?: number;
   hideHalo?: boolean;
   frameRef: MutableRefObject<EffectFrameContext>;
-  artRef: MutableRefObject<{
-    applyFilters: (filters: Filter[] | null) => void;
-    setJitter: (dx: number, dy: number) => void;
-  } | null>;
+  artRef: MutableRefObject<EffectArtRef | null>;
   children: ReactNode;
 };
 
@@ -51,13 +49,8 @@ export function EffectMount({
   const { app } = useApplication();
   const backRef = useRef<Container | null>(null);
   const frontRef = useRef<Container | null>(null);
-  const artJitterRef = useRef<Container | null>(null);
   const runtimeRef = useRef<EffectRuntime | null>(null);
   const prevEffectRef = useRef<EffectId>("none");
-
-  const bindArtJitter = useCallback((node: Container | null) => {
-    artJitterRef.current = node;
-  }, []);
 
   const tryAttachRuntime = useCallback(() => {
     const back = backRef.current;
@@ -71,7 +64,6 @@ export function EffectMount({
         runtimeRef.current = null;
       }
       artRef.current?.applyFilters(null);
-      artRef.current?.setJitter(0, 0);
       return;
     }
     if (runtimeRef.current?.id === effect) {
@@ -83,11 +75,6 @@ export function EffectMount({
     }
     const art: EffectArtTarget = {
       applyFilters: (filters) => artRef.current?.applyFilters(filters ?? null),
-      setJitter: (dx, dy) => {
-        if (artJitterRef.current) {
-          artJitterRef.current.position.set(dx, dy);
-        }
-      },
     };
     runtimeRef.current = createEffectRuntime(
       effect,
@@ -95,7 +82,7 @@ export function EffectMount({
       { hostKind, width, height, padding: resolvedPadding, hideHalo },
       art,
     );
-  }, [artRef, effect, frontRef, height, hideHalo, hostKind, resolvedPadding, width]);
+  }, [artRef, effect, height, hideHalo, hostKind, resolvedPadding, width]);
 
   const bindBack = useCallback(
     (node: Container | null) => {
@@ -121,7 +108,6 @@ export function EffectMount({
     }
     if (effect === "none") {
       artRef.current?.applyFilters(null);
-      artRef.current?.setJitter(0, 0);
     } else {
       tryAttachRuntime();
     }
@@ -145,7 +131,7 @@ export function EffectMount({
   return (
     <pixiContainer sortableChildren eventMode="none">
       <pixiContainer ref={bindBack} zIndex={0} sortableChildren eventMode="none" />
-      <pixiContainer ref={bindArtJitter} zIndex={1} sortableChildren eventMode="none">
+      <pixiContainer zIndex={1} sortableChildren eventMode="none">
         {children}
       </pixiContainer>
       <pixiContainer ref={bindFront} zIndex={3} sortableChildren eventMode="none" />

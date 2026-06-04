@@ -27,16 +27,3 @@ export function stepFireArtMatrix(filter: ColorMatrixFilter, burst: number): voi
   filter.brightness(1.04 + burst * 0.18, false);
   filter.saturate(0.2 + burst * 0.12, false);
 }
-
-/** Cool frost tint on artwork. */
-export function createIcyArtMatrix(): ColorMatrixFilter {
-  const filter = new ColorMatrixFilter();
-  filter.brightness(1.05, false);
-  filter.saturate(-0.06, true);
-  filter.colorTone(0.12, 0.2, 0xe8f8ff, 0x224466, false);
-  return filter;
-}
-
-export function stepIcyArtMatrix(filter: ColorMatrixFilter, pulse: number): void {
-  filter.brightness(1.03 + pulse * 0.06, false);
-}
