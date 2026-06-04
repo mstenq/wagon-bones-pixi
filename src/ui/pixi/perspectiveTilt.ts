@@ -9,10 +9,16 @@ export type PerspectiveTiltConfig = {
   maxDegrees?: number;
 };
 
+/** Maps tilt corners from logical size (e.g. on-screen card) into mesh/texture space. */
+export type PerspectiveCornerSpace = {
+  scaleX: number;
+  scaleY: number;
+};
+
 const DEFAULT_CONFIG: Required<PerspectiveTiltConfig> = {
-  sensitivity: 35,
+  sensitivity: 10,
   perspective: 300,
-  maxDegrees: 10,
+  maxDegrees: 8,
 };
 
 type Point2 = { x: number; y: number };
@@ -24,11 +30,20 @@ export type PerspectiveCorners = {
 
 /** Unit-square corners (top-left → clockwise). */
 export function createUnitCorners(): PerspectiveCorners {
+  return createInsetUnitCorners(0);
+}
+
+/**
+ * Inset unit-square corners to keep perspective skew from sampling
+ * adjacent sprites in a tightly packed atlas.
+ */
+export function createInsetUnitCorners(inset: number): PerspectiveCorners {
+  const i = clamp(inset, 0, 0.49);
   const points = [
-    { x: 0, y: 0 },
-    { x: 1, y: 0 },
-    { x: 1, y: 1 },
-    { x: 0, y: 1 },
+    { x: i, y: i },
+    { x: 1 - i, y: i },
+    { x: 1 - i, y: 1 - i },
+    { x: i, y: 1 - i },
   ];
   return { points, outPoints: points.map((p) => ({ ...p })) };
 }
@@ -94,6 +109,7 @@ export function applyTiltToMesh(
   width: number,
   height: number,
   config: PerspectiveTiltConfig = {},
+  cornerSpace?: PerspectiveCornerSpace,
 ): void {
   if (!mesh) {
     return;
@@ -102,8 +118,19 @@ export function applyTiltToMesh(
   const { perspective } = { ...DEFAULT_CONFIG, ...config };
   rotate3D(corners.points, corners.outPoints, angleX, angleY, width, height, perspective);
 
+  const scaleX = cornerSpace?.scaleX ?? 1;
+  const scaleY = cornerSpace?.scaleY ?? 1;
   const [tl, tr, br, bl] = corners.outPoints;
-  mesh.setCorners(tl!.x, tl!.y, tr!.x, tr!.y, br!.x, br!.y, bl!.x, bl!.y);
+  mesh.setCorners(
+    tl!.x * scaleX,
+    tl!.y * scaleY,
+    tr!.x * scaleX,
+    tr!.y * scaleY,
+    br!.x * scaleX,
+    br!.y * scaleY,
+    bl!.x * scaleX,
+    bl!.y * scaleY,
+  );
 }
 
 export function resetMeshCorners(
@@ -111,6 +138,7 @@ export function resetMeshCorners(
   corners: PerspectiveCorners,
   width: number,
   height: number,
+  cornerSpace?: PerspectiveCornerSpace,
 ): void {
-  applyTiltToMesh(mesh, corners, 0, 0, width, height);
+  applyTiltToMesh(mesh, corners, 0, 0, width, height, {}, cornerSpace);
 }

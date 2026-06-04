@@ -6,13 +6,17 @@ import {
   type DraggableItemHandle,
 } from "@/ui/components/DraggableItem/DraggableItem";
 import { Die, DEFAULT_DIE_SIZE, type DieHandle } from "@/ui/components/Dice/Die";
+import { dieShadowDragStateFromFloor } from "@/ui/components/Dice/dieGroundShadow";
+import { DICE_DRAG_Z_INDEX } from "@/ui/components/Dice/config";
 import { texturesReady } from "@/assets/dice/textures";
 import { DICE_COUNT } from "@/data/dice";
 import { gameFacade } from "@/game/facade";
 import { rollSpinFrame, useRunStore } from "@/game/store/runStore";
+import { rowArcPose } from "@/ui/interaction/rowArcPose";
 import {
   useReorderableRow,
   type ReorderableRowLayout,
+  type RowLayoutMeta,
 } from "@/ui/interaction/useReorderableRow";
 
 const ROLL_MS = 1400;
@@ -25,6 +29,21 @@ type ActiveRoll = {
   targets: number[];
   startedAt: number;
 };
+
+function dieShadowFloorLineY(
+  itemId: number,
+  homeY: number,
+  meta: RowLayoutMeta,
+  slotHomeY: (slotIndex: number) => number,
+): number | null {
+  if (meta.dragSession?.itemId === itemId) {
+    return slotHomeY(meta.dragSession.fromSlot);
+  }
+  if (meta.dropSettlingItemId === itemId) {
+    return homeY;
+  }
+  return null;
+}
 
 export function DiceRow({ layout }: DiceRowProps) {
   use(texturesReady);
@@ -40,7 +59,8 @@ export function DiceRow({ layout }: DiceRowProps) {
   const dieRefs = useRef<(DieHandle | null)[]>([]);
   const rollRef = useRef<ActiveRoll | null>(null);
 
-  const { onPointerDown, tickLayout, slotHome } = useReorderableRow({
+  const { onPointerDown, tickLayout, slotHome, draggingSlot, pressingItemId } =
+    useReorderableRow({
     layout,
     order,
     onOrderChange: setDiceOrder,
@@ -49,15 +69,35 @@ export function DiceRow({ layout }: DiceRowProps) {
     dragSnapLerp: 0.42,
   });
 
+  const draggingDieId = draggingSlot !== null ? pressingItemId : null;
+
   const onTick = useCallback(() => {
-    tickLayout((slotIndex, itemId, visual) => {
+    tickLayout((slotIndex, itemId, visual, meta) => {
+      const isDragging = draggingDieId === itemId;
+      const pose = rowArcPose(slotIndex, layout.count, isDragging ? 0 : 1);
+      const containerY = visual.y + pose.yOffset;
+      const home = slotHome(slotIndex);
+
       dragRefs.current[itemId]?.setTransform(
         visual.x,
-        visual.y,
+        containerY,
         visual.rotation,
         visual.zIndex,
       );
-      dieRefs.current[itemId]?.setSquishScale(visual.scaleX, visual.scaleY);
+      dieRefs.current[itemId]?.setSquishScale(
+        visual.scaleX * pose.scale,
+        visual.scaleY * pose.scale,
+      );
+
+      const shadowFloorY = dieShadowFloorLineY(
+        itemId,
+        home.y,
+        meta,
+        (fromSlot) => slotHome(fromSlot).y,
+      );
+      dieRefs.current[itemId]?.setShadowDragState(
+        dieShadowDragStateFromFloor(shadowFloorY, visual.y),
+      );
     });
 
     if (isRolling && rollTargets && !rollRef.current) {
@@ -92,12 +132,17 @@ export function DiceRow({ layout }: DiceRowProps) {
 
     rollRef.current = null;
     gameFacade.dice.completeRoll(active.targets);
-  }, [isRolling, rollTargets, tickLayout]);
+  }, [draggingDieId, isRolling, layout.count, rollTargets, slotHome, tickLayout]);
 
   useTick(onTick);
 
   return (
-    <pixiContainer sortableChildren eventMode="passive">
+    <pixiContainer
+      sortableChildren
+      eventMode="passive"
+      // Elevate the whole row so dragged dice paint above CardContainer (cards use per-item zIndex).
+      zIndex={draggingDieId !== null ? DICE_DRAG_Z_INDEX : 0}
+    >
       {order.map((itemId, slotIndex) => {
         const home = slotHome(slotIndex);
         return (

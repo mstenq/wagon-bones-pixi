@@ -31,8 +31,55 @@ import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
 type Point = { x: number; y: number };
 
 const TAU = Math.PI * 2;
-const GOLD = 0xffe9b0;
-const GOLD_BRIGHT = 0xfff8e8;
+const GOLD = 0x6ff9f6;
+const GOLD_BRIGHT = 0x6ff9f6;
+/** Hue cycles per second along halo / edge lights. */
+const RAINBOW_SPEED = 0.22;
+/** Rainbow saturation for halo / edge strokes: 0 = white, 1 = full RGB. */
+const RGB_INTENSITY = 0.5;
+
+function fract01(n: number): number {
+  return n - Math.floor(n);
+}
+
+/** Full-saturation RGB from hue in [0, 1). */
+function rainbowColor(hue: number): number {
+  const h = fract01(hue) * 6;
+  const i = Math.floor(h);
+  const f = h - i;
+  const q = 1 - f;
+  let r = 0;
+  let g = 0;
+  let b = 0;
+  switch (i % 6) {
+    case 0:
+      r = 1;
+      g = f;
+      break;
+    case 1:
+      r = q;
+      g = 1;
+      break;
+    case 2:
+      g = 1;
+      b = f;
+      break;
+    case 3:
+      g = q;
+      b = 1;
+      break;
+    case 4:
+      r = f;
+      b = 1;
+      break;
+    default:
+      r = 1;
+      b = q;
+      break;
+  }
+  const mix = (c: number) => c * RGB_INTENSITY + (1 - RGB_INTENSITY);
+  return (Math.round(mix(r) * 255) << 16) | (Math.round(mix(g) * 255) << 8) | Math.round(mix(b) * 255);
+}
 
 const HOLY_TUNE = {
   sampleCount: { die: 72, card: 100 },
@@ -106,11 +153,12 @@ function drawEdgeLightLane(
   ringNormals: Point[],
   frame: EffectFrameContext,
   time: number,
+  huePhase: number,
   lane: number,
   alpha: number,
   width: number,
 ): void {
-  let started = false;
+  let prev: Point | null = null;
   for (let i = 0; i <= ringPoints.length; i++) {
     const idx = i % ringPoints.length;
     const p = ringPoints[idx]!;
@@ -123,7 +171,7 @@ function drawEdgeLightLane(
     const flicker = hash(Math.floor(time * (8 + lane * 2)) + idx * 19.31 + lane * 71.7);
     const lit = wave * 0.7 + flicker * 0.3 > HOLY_TUNE.edgeLight.thresholdBase + lane * HOLY_TUNE.edgeLight.thresholdStep;
     if (!lit) {
-      started = false;
+      prev = null;
       continue;
     }
 
@@ -132,14 +180,32 @@ function drawEdgeLightLane(
       x: p.x + n.x * (lane * 1.8 + shimmer),
       y: p.y + n.y * (lane * 1.8 + shimmer),
     }, frame);
-    if (!started) {
-      gfx.moveTo(projected.x, projected.y);
-      started = true;
-    } else {
+    if (prev) {
+      const hue = huePhase + idx / ringPoints.length + lane * 0.07;
+      gfx.moveTo(prev.x, prev.y);
       gfx.lineTo(projected.x, projected.y);
+      gfx.stroke({ width, color: rainbowColor(hue), alpha, cap: "round", join: "round" });
     }
+    prev = projected;
   }
-  gfx.stroke({ width, color: lane === 0 ? GOLD_BRIGHT : GOLD, alpha, cap: "round", join: "round" });
+}
+
+function haloEllipsePoint(
+  cx: number,
+  cy: number,
+  rx: number,
+  ry: number,
+  angle: number,
+  rotation: number,
+): Point {
+  const localX = Math.cos(angle) * rx;
+  const localY = Math.sin(angle) * ry;
+  const cr = Math.cos(rotation);
+  const sr = Math.sin(rotation);
+  return {
+    x: cx + localX * cr - localY * sr,
+    y: cy + localX * sr + localY * cr,
+  };
 }
 
 function drawHaloArc(
@@ -151,27 +217,23 @@ function drawHaloArc(
   startAngle: number,
   endAngle: number,
   width: number,
-  color: number,
+  huePhase: number,
   alpha: number,
   rotation = 0,
 ): void {
   const samples = 28;
-  const cr = Math.cos(rotation);
-  const sr = Math.sin(rotation);
-  for (let i = 0; i <= samples; i++) {
-    const t = i / samples;
-    const a = startAngle + (endAngle - startAngle) * t;
-    const localX = Math.cos(a) * rx;
-    const localY = Math.sin(a) * ry;
-    const x = cx + localX * cr - localY * sr;
-    const y = cy + localX * sr + localY * cr;
-    if (i === 0) {
-      gfx.moveTo(x, y);
-    } else {
-      gfx.lineTo(x, y);
-    }
+  for (let i = 0; i < samples; i++) {
+    const t0 = i / samples;
+    const t1 = (i + 1) / samples;
+    const a0 = startAngle + (endAngle - startAngle) * t0;
+    const a1 = startAngle + (endAngle - startAngle) * t1;
+    const p0 = haloEllipsePoint(cx, cy, rx, ry, a0, rotation);
+    const p1 = haloEllipsePoint(cx, cy, rx, ry, a1, rotation);
+    const hue = huePhase + ((a0 + a1) * 0.5) / TAU;
+    gfx.moveTo(p0.x, p0.y);
+    gfx.lineTo(p1.x, p1.y);
+    gfx.stroke({ width, color: rainbowColor(hue), alpha, cap: "round", join: "round" });
   }
-  gfx.stroke({ width, color, alpha, cap: "round", join: "round" });
 }
 
 function drawHalo(
@@ -181,11 +243,11 @@ function drawHalo(
   rx: number,
   ry: number,
   width: number,
-  color: number,
+  huePhase: number,
   alpha: number,
   rotation = 0,
 ): void {
-  drawHaloArc(gfx, cx, cy, rx, ry, 0, TAU, width, color, alpha, rotation);
+  drawHaloArc(gfx, cx, cy, rx, ry, 0, TAU, width, huePhase, alpha, rotation);
 }
 
 function haloPoint(cx: number, cy: number, rx: number, ry: number, angle: number, rotation = 0): Point {
@@ -286,6 +348,7 @@ export const holyEffect: EffectDefinition = {
 
       const hoverBoost = frame.hovered ? 1.25 : 1;
       const activeBoost = frame.activated ? 1.2 : 1;
+      const rainbowPhase = t * RAINBOW_SPEED + frame.phase * 0.04;
       for (let lane = 0; lane < HOLY_TUNE.edgeLight.lanes; lane++) {
         drawEdgeLightLane(
           edgeGlow,
@@ -293,6 +356,7 @@ export const holyEffect: EffectDefinition = {
           ringNormals,
           frame,
           t + frame.phase * 0.07,
+          rainbowPhase,
           lane,
           (0.1 + pulse * 0.04) * hoverBoost,
           isDie ? 4 + lane : 7 + lane * 1.5,
@@ -303,6 +367,7 @@ export const holyEffect: EffectDefinition = {
           ringNormals,
           frame,
           t + frame.phase * 0.07 + 0.33,
+          rainbowPhase + 0.18,
           lane,
           (0.22 + pulse * 0.08) * hoverBoost,
           isDie ? 1.2 : 1.8,
@@ -324,18 +389,54 @@ export const holyEffect: EffectDefinition = {
       const orbitAngle = t * HOLY_TUNE.halo.orbitSpeed * TAU + frame.phase;
       if (showHalo) {
         const haloAlpha = (0.42 + pulse * 0.12) * hoverBoost * activeBoost;
-        drawHalo(haloGlow, haloX, haloY, haloAnimatedRx, haloAnimatedRy, isDie ? 8 : 10, GOLD, 0.12 * hoverBoost, haloRotation);
-        drawHalo(haloGlow, haloX, haloY, haloAnimatedRx * 0.96, haloAnimatedRy * 0.86, isDie ? 4 : 5, GOLD_BRIGHT, 0.16 * hoverBoost, haloRotation);
-        drawHaloArc(haloCore, haloX, haloY, haloAnimatedRx, haloAnimatedRy, Math.PI, TAU, isDie ? 1.2 : 1.5, GOLD, haloAlpha * 0.42, haloRotation);
-        drawHaloArc(haloCore, haloX, haloY, haloAnimatedRx, haloAnimatedRy, 0, Math.PI, isDie ? 1.6 : 2.1, GOLD_BRIGHT, haloAlpha, haloRotation);
+        const haloHue = rainbowPhase + orbitAngle / TAU;
+        drawHalo(haloGlow, haloX, haloY, haloAnimatedRx, haloAnimatedRy, isDie ? 8 : 10, haloHue, 0.12 * hoverBoost, haloRotation);
+        drawHalo(
+          haloGlow,
+          haloX,
+          haloY,
+          haloAnimatedRx * 0.96,
+          haloAnimatedRy * 0.86,
+          isDie ? 4 : 5,
+          haloHue + 0.12,
+          0.16 * hoverBoost,
+          haloRotation,
+        );
+        drawHaloArc(
+          haloCore,
+          haloX,
+          haloY,
+          haloAnimatedRx,
+          haloAnimatedRy,
+          Math.PI,
+          TAU,
+          isDie ? 1.2 : 1.5,
+          haloHue + 0.25,
+          haloAlpha * 0.42,
+          haloRotation,
+        );
+        drawHaloArc(
+          haloCore,
+          haloX,
+          haloY,
+          haloAnimatedRx,
+          haloAnimatedRy,
+          0,
+          Math.PI,
+          isDie ? 1.6 : 2.1,
+          haloHue,
+          haloAlpha,
+          haloRotation,
+        );
 
         const light = haloPoint(haloX, haloY, haloAnimatedRx, haloAnimatedRy, orbitAngle, haloRotation);
         const trail = haloPoint(haloX, haloY, haloAnimatedRx, haloAnimatedRy, orbitAngle - 0.36, haloRotation);
+        const lightColor = rainbowColor(haloHue + 0.5);
         haloLight.moveTo(trail.x, trail.y);
         haloLight.lineTo(light.x, light.y);
-        haloLight.stroke({ width: isDie ? 4 : 6, color: GOLD_BRIGHT, alpha: 0.36 * hoverBoost, cap: "round" });
+        haloLight.stroke({ width: isDie ? 4 : 6, color: lightColor, alpha: 0.36 * hoverBoost, cap: "round" });
         haloLight.circle(light.x, light.y, isDie ? 3.2 : 4.6);
-        haloLight.fill({ color: GOLD_BRIGHT, alpha: 0.72 * hoverBoost * activeBoost });
+        haloLight.fill({ color: lightColor, alpha: 0.72 * hoverBoost * activeBoost });
       }
 
       stepParticles(particles, frame.dt);

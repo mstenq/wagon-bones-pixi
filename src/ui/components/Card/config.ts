@@ -3,8 +3,10 @@ export type CardDisplayMode = "shop" | "pack" | "owned";
 export const CARD_LIFT_PX = 28;
 export const CARD_HOVER_SCALE = 1.03;
 export const CARD_OWNED_ENLARGED_SCALE = 1.14;
-/** Renders above row siblings when a card is selected (drag uses 1000). */
+/** Renders above row siblings when a card is selected. */
 export const CARD_SELECTED_Z_INDEX = 500;
+/** Dragged card within the row, and CardContainer vs sibling rows (e.g. DiceRow). */
+export const CARD_DRAG_Z_INDEX = 1000;
 export const SELL_TAB_ATTACH_OVERLAP = 8;
 export const SELL_TAB_WIDTH = 92;
 /** Keeps label off the flat edge that tucks under the card. */

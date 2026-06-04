@@ -43,6 +43,16 @@ export type ItemVisual = {
   scaleY: number;
 };
 
+export type RowDragSession = {
+  itemId: number;
+  fromSlot: number;
+};
+
+export type RowLayoutMeta = {
+  dragSession: RowDragSession | null;
+  dropSettlingItemId: number | null;
+};
+
 type DragSession = {
   pointerId: number;
   itemId: number;
@@ -66,6 +76,9 @@ type DragSession = {
 };
 
 const DEFAULT_DRAG_THRESHOLD = 8;
+/** Safety cap for post-drop lerp; settling ends when position is within epsilon. */
+const DROP_SETTLE_MAX_MS = 600;
+const DROP_SETTLE_POSITION_EPS = 1.5;
 
 export type UseReorderableRowOptions = {
   layout: ReorderableRowLayout;
@@ -106,6 +119,7 @@ export function useReorderableRow({
   // After drop, we keep lerping for a short moment so the dragged die
   // doesn't teleport to its final slot instantly.
   const dropSettlingUntilRef = useRef<number>(0);
+  const dropSettlingItemIdRef = useRef<number | null>(null);
   /** Layout order — updated on drop before React; do not overwrite from stale `order` prop. */
   const orderRef = useRef(order);
 
@@ -145,7 +159,8 @@ export function useReorderableRow({
       const orderChanged = session.fromSlot !== session.previewSlot;
 
       orderRef.current = newOrder;
-      dropSettlingUntilRef.current = performance.now() + 180;
+      dropSettlingUntilRef.current = performance.now() + DROP_SETTLE_MAX_MS;
+      dropSettlingItemIdRef.current = session.itemId;
 
       coastRef.current.set(session.itemId, session.swing);
       const squish = squishRef.current.get(session.itemId);
@@ -345,20 +360,59 @@ export function useReorderableRow({
   );
 
   const tickLayout = useCallback(
-    (apply: (slotIndex: number, itemId: number, visual: ItemVisual) => void) => {
+    (
+      apply: (
+        slotIndex: number,
+        itemId: number,
+        visual: ItemVisual,
+        meta: RowLayoutMeta,
+      ) => void,
+    ) => {
       const session = dragRef.current?.activated ? dragRef.current : null;
       const activeOrder = session
         ? getPreviewOrder(session.fromSlot, session.previewSlot)
         : orderRef.current;
-      const settling = !session && performance.now() < dropSettlingUntilRef.current;
-      const lerp = session || settling ? dragSnapLerp : snapLerp;
-      const isSettled = !session && !settling;
+      const timeSettling =
+        !session && performance.now() < dropSettlingUntilRef.current;
+
+      let dropPositionSettling = false;
+      const settlingItemId = dropSettlingItemIdRef.current;
+      if (!session && settlingItemId !== null) {
+        const settlingSlot = activeOrder.indexOf(settlingItemId);
+        if (settlingSlot < 0) {
+          dropSettlingItemIdRef.current = null;
+        } else {
+          const settleHome = slotHome(settlingSlot);
+          const settlePos = getPosition(settlingItemId, settleHome);
+          const settleDist = Math.hypot(
+            settlePos.x - settleHome.x,
+            settlePos.y - settleHome.y,
+          );
+          if (settleDist < DROP_SETTLE_POSITION_EPS) {
+            dropSettlingItemIdRef.current = null;
+            positionsRef.current.set(settlingItemId, settleHome);
+          } else {
+            dropPositionSettling = true;
+          }
+        }
+      }
+
+      const settling = session !== null || timeSettling || dropPositionSettling;
+      const lerp = settling ? dragSnapLerp : snapLerp;
+      const isSettled = !settling;
       const dt = 1 / 60;
 
       if (session) {
         session.swing = stepSwing(session.swing, session.targetSwing, swing);
         session.rotation = session.swing;
       }
+
+      const layoutMeta: RowLayoutMeta = {
+        dragSession: session
+          ? { itemId: session.itemId, fromSlot: session.fromSlot }
+          : null,
+        dropSettlingItemId: dropSettlingItemIdRef.current,
+      };
 
       for (let slotIndex = 0; slotIndex < layout.count; slotIndex++) {
         const itemId = activeOrder[slotIndex]!;
@@ -381,14 +435,19 @@ export function useReorderableRow({
         const scaleY = squish?.scaleY ?? 1;
 
         if (session?.itemId === itemId) {
-          apply(slotIndex, itemId, {
-            x: session.x,
-            y: session.y,
-            rotation: session.rotation,
-            zIndex: 1000,
-            scaleX,
-            scaleY,
-          });
+          apply(
+            slotIndex,
+            itemId,
+            {
+              x: session.x,
+              y: session.y,
+              rotation: session.rotation,
+              zIndex: 1000,
+              scaleX,
+              scaleY,
+            },
+            layoutMeta,
+          );
           continue;
         }
 
@@ -416,14 +475,19 @@ export function useReorderableRow({
           positionsRef.current.set(itemId, home);
         }
 
-        apply(slotIndex, itemId, {
-          x,
-          y,
-          rotation,
-          zIndex: slotIndex,
-          scaleX,
-          scaleY,
-        });
+        apply(
+          slotIndex,
+          itemId,
+          {
+            x,
+            y,
+            rotation,
+            zIndex: slotIndex,
+            scaleX,
+            scaleY,
+          },
+          layoutMeta,
+        );
       }
     },
     [

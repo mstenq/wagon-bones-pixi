@@ -453,17 +453,27 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     ],
   );
 
+  const texWidth = texture?.width ?? width;
+  const texHeight = texture?.height ?? height;
+  const artScaleX = width / texWidth;
+  const artScaleY = height / texHeight;
+  /** Tilt in display space; corners are mapped to texture pixels for PerspectiveMesh. */
+  const meshCornerSpace = useMemo(
+    () => ({ scaleX: texWidth / width, scaleY: texHeight / height }),
+    [texWidth, texHeight, width, height],
+  );
+
   const bindMesh = useCallback(
     (node: PerspectiveMesh | null) => {
       meshRef.current = node;
       if (node && texture) {
-        resetMeshCorners(node, corners, texture.width, texture.height);
+        resetMeshCorners(node, corners, width, height, meshCornerSpace);
       }
       if (node && pendingArtFiltersRef.current) {
         node.filters = pendingArtFiltersRef.current;
       }
     },
-    [corners, texture],
+    [corners, texture, width, height, meshCornerSpace],
   );
 
   const bindRoot = useCallback(
@@ -574,11 +584,6 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     [triggerSell],
   );
 
-  const texWidth = texture?.width ?? width;
-  const texHeight = texture?.height ?? height;
-  const artScaleX = width / texWidth;
-  const artScaleY = height / texHeight;
-
   const useFlatArt = displayMode === "shop";
   const tiltEnabled = !useFlatArt;
   const idleEnabled =
@@ -676,16 +681,17 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     }
 
     if (isSelectedNow || !tiltEnabled) {
-      resetMeshCorners(mesh, corners, texWidth, texHeight);
+      resetMeshCorners(mesh, corners, width, height, meshCornerSpace);
     } else {
       applyTiltToMesh(
         mesh,
         corners,
         angleXRef.current,
         angleYRef.current,
-        texWidth,
-        texHeight,
+        width,
+        height,
         tiltConfig,
+        meshCornerSpace,
       );
     }
 

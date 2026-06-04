@@ -13,7 +13,10 @@ import {
   type CardHandle,
 } from "@/ui/components/Card/Card";
 import { getCardTexture, itemTexturesReady } from "@/assets/items/textures";
-import { CARD_SELECTED_Z_INDEX } from "@/ui/components/Card/config";
+import {
+  CARD_DRAG_Z_INDEX,
+  CARD_SELECTED_Z_INDEX,
+} from "@/ui/components/Card/config";
 import { cardContainerHitArea } from "@/ui/components/Card/containerHitArea";
 import { gameFacade } from "@/game/facade";
 import { useRunStore } from "@/game/store/runStore";
@@ -26,6 +29,21 @@ import { SQUISH_DRAG_CARD, SQUISH_GRAB_CARD } from "@/ui/interaction/spring";
 export type CardContainerProps = {
   layout: ReorderableRowLayout;
 };
+
+function cardRowZIndex(
+  cardId: number,
+  draggingCardId: number | null,
+  selectedCardId: number | null,
+  visualZIndex: number,
+): number {
+  if (draggingCardId === cardId) {
+    return CARD_DRAG_Z_INDEX;
+  }
+  if (selectedCardId === cardId) {
+    return CARD_SELECTED_Z_INDEX;
+  }
+  return visualZIndex;
+}
 
 export function CardContainer({ layout }: CardContainerProps) {
   use(itemTexturesReady);
@@ -64,7 +82,7 @@ export function CardContainer({ layout }: CardContainerProps) {
     node.animate({ type: "appear" });
   }, []);
 
-  const { onPointerDown, tickLayout, slotHome, draggingSlot } = useReorderableRow({
+  const { onPointerDown, tickLayout, slotHome, draggingSlot, pressingItemId } = useReorderableRow({
     layout,
     order,
     onOrderChange: setCardOrder,
@@ -85,7 +103,7 @@ export function CardContainer({ layout }: CardContainerProps) {
     },
   });
 
-  const draggingCardId = draggingSlot !== null ? order[draggingSlot] : null;
+  const draggingCardId = draggingSlot !== null ? pressingItemId : null;
 
   const onCardPointerMove = useCallback((cardId: number, event: FederatedPointerEvent) => {
     if (draggingCardId !== null) {
@@ -108,8 +126,13 @@ export function CardContainer({ layout }: CardContainerProps) {
   }, []);
 
   const onTick = useCallback(() => {
-    tickLayout((slotIndex, cardId, visual) => {
-      const zIndex = selectedCardId === cardId ? CARD_SELECTED_Z_INDEX : visual.zIndex;
+    tickLayout((slotIndex, cardId, visual, _meta) => {
+      const zIndex = cardRowZIndex(
+        cardId,
+        draggingCardId,
+        selectedCardId,
+        visual.zIndex,
+      );
       dragRefs.current[cardId]?.setTransform(
         visual.x,
         visual.y,
@@ -118,7 +141,7 @@ export function CardContainer({ layout }: CardContainerProps) {
       );
       cardRefs.current[cardId]?.setSquishScale(visual.scaleX, visual.scaleY);
     });
-  }, [selectedCardId, tickLayout]);
+  }, [draggingCardId, selectedCardId, tickLayout]);
 
   const onCardSelectedChange = useCallback((cardId: number, selected: boolean) => {
     if (selected) {
@@ -137,7 +160,11 @@ export function CardContainer({ layout }: CardContainerProps) {
   useTick(onTick);
 
   return (
-    <pixiContainer sortableChildren eventMode="passive">
+    <pixiContainer
+      sortableChildren
+      eventMode="passive"
+      zIndex={draggingCardId !== null ? CARD_DRAG_Z_INDEX : 0}
+    >
       {order.map((cardId, slotIndex) => {
         const home = slotHome(slotIndex);
         return (

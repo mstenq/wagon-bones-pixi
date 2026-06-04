@@ -1,7 +1,15 @@
 import { useApplication } from "@pixi/react";
 import { useTick } from "@pixi/react";
-import { Sprite, TextStyle, type Container, type Filter } from "pixi.js";
-import { forwardRef, use, useImperativeHandle, useMemo, useRef, useState } from "react";
+import { BlurFilter, Sprite, TextStyle, type Container, type Filter, type Graphics, Rectangle } from "pixi.js";
+import {
+  forwardRef,
+  use,
+  useCallback,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { getDiceFaceTexture, texturesReady } from "@/assets/dice/textures";
 import type { DiceType } from "@/data/dice";
@@ -18,6 +26,14 @@ import {
   dieModeAlpha,
   type DieMode,
 } from "@/ui/components/Dice/config";
+import {
+  DIE_SHADOW_BLUR_BASE,
+  DIE_SHADOW_BLUR_QUALITY,
+  dieShadowGroundY,
+  dieShadowLocalPose,
+  syncDieGroundShadow,
+  type DieShadowDragState,
+} from "@/ui/components/Dice/dieGroundShadow";
 import { EffectMount } from "@/ui/effects/EffectMount";
 import { createDefaultEffectFrame } from "@/ui/effects/context";
 import type { EffectFrameContext, EffectId } from "@/ui/effects/types";
@@ -47,10 +63,13 @@ export type DieFrame = {
 
 export type DieAnimationConfig = ItemAnimationConfig;
 
+export type { DieShadowDragState } from "@/ui/components/Dice/dieGroundShadow";
+
 export type DieHandle = {
   setFrame: (frame: DieFrame) => void;
   reset: () => void;
   setSquishScale: (scaleX: number, scaleY: number) => void;
+  setShadowDragState: (state: DieShadowDragState) => void;
   animate: (config: ItemAnimationConfig, onComplete?: ActionEffectComplete) => boolean;
   isPlayingAnimation: () => boolean;
 };
@@ -74,6 +93,11 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
   const faceTexture = getDiceFaceTexture(diceType, value);
 
   const rootRef = useRef<Container | null>(null);
+  const shadowRef = useRef<Graphics | null>(null);
+  const shadowFilterAreaRef = useRef(new Rectangle());
+  const shadowBlurRef = useRef<BlurFilter>(
+    new BlurFilter({ strength: DIE_SHADOW_BLUR_BASE, quality: DIE_SHADOW_BLUR_QUALITY }),
+  );
   const animOverlayRef = useRef<Container | null>(null);
   const liftRef = useRef<Container | null>(null);
   const squishRef = useRef<Container | null>(null);
@@ -96,6 +120,11 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
     setJitter() {},
   });
   const externalSquishRef = useRef({ scaleX: 1, scaleY: 1 });
+  const shadowDragRef = useRef<DieShadowDragState>({
+    floorOffsetY: 0,
+    extraLiftPx: 0,
+    visibility: 1,
+  });
 
   const [prevMode, setPrevMode] = useState(mode);
   if (mode !== prevMode) {
@@ -145,6 +174,37 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
 
   const artAlpha = dieModeAlpha(mode);
 
+  const applyShadowVisual = useCallback(() => {
+    const shadow = shadowRef.current;
+    if (!shadow) {
+      return;
+    }
+    const { floorOffsetY, extraLiftPx, visibility } = shadowDragRef.current;
+    const dragRotation = rootRef.current?.parent?.rotation ?? 0;
+    const liftPx = liftSpringRef.current.value;
+    const totalLiftPx = liftPx + extraLiftPx;
+    const shadowPose = dieShadowLocalPose(
+      dieShadowGroundY(size),
+      floorOffsetY,
+      dragRotation,
+    );
+    shadow.position.set(shadowPose.x, shadowPose.y);
+    shadow.rotation = shadowPose.rotation;
+    if (visibility > 0.01) {
+      syncDieGroundShadow(
+        shadow,
+        shadowBlurRef.current,
+        shadowFilterAreaRef.current,
+        size,
+        totalLiftPx,
+        DIE_SELECTED_LIFT_PX,
+      );
+      shadow.alpha = artAlpha * visibility;
+    } else {
+      shadow.alpha = 0;
+    }
+  }, [artAlpha, size]);
+
   useTick(() => {
     const dt = app.ticker.deltaMS / 1000;
     const { destroyBlocksTick, growPopMul, shakeX } = stepAnimations(dt);
@@ -161,10 +221,13 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
     );
 
     stepScalarSpring(liftSpringRef.current, dt);
+    const liftPx = liftSpringRef.current.value;
     const lift = liftRef.current;
     if (lift) {
-      lift.y = -liftSpringRef.current.value;
+      lift.y = -liftPx;
     }
+
+    applyShadowVisual();
 
     const frame = effectFrameRef.current;
     frame.dt = dt;
@@ -199,14 +262,24 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
       setSquishScale(scaleX, scaleY) {
         externalSquishRef.current = { scaleX, scaleY };
       },
+      setShadowDragState(state) {
+        shadowDragRef.current = state;
+        applyShadowVisual();
+      },
       animate: runAnimate,
       isPlayingAnimation,
     }),
-    [diceType, isPlayingAnimation, runAnimate],
+    [applyShadowVisual, diceType, isPlayingAnimation, runAnimate],
   );
 
   return (
     <pixiContainer ref={rootRef} sortableChildren eventMode="none">
+      <pixiGraphics
+        ref={shadowRef}
+        zIndex={0}
+        eventMode="none"
+        draw={() => {}}
+      />
       <pixiContainer ref={animOverlayRef} zIndex={10} eventMode="none" />
       <pixiContainer ref={liftRef} zIndex={2} eventMode="none">
         <pixiContainer ref={squishRef} alpha={artAlpha} eventMode="none">
