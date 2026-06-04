@@ -9,14 +9,15 @@ import { useCallback, useMemo, useRef, useState } from "react";
 
 import {
   BUTTON_PRESS_TRANSITION_MS,
-  BUTTON_VARIANT_THEME,
   buttonFaceOffset,
   buttonLabelTextStyle,
   DEFAULT_BUTTON_HEIGHT,
   DEFAULT_BUTTON_WIDTH,
+  getButtonVariantTheme,
   type ButtonProps,
 } from "@/ui/components/Button/buttonTheme";
 import { drawButtonFace, drawButtonShadow } from "@/ui/components/Button/buttonVisuals";
+import { useUiPrimary } from "@/ui/theme/UiPrimaryProvider";
 
 export type { ButtonProps, ButtonVariant } from "@/ui/components/Button/buttonTheme";
 export { BUTTON_VARIANTS } from "@/ui/components/Button/buttonTheme";
@@ -225,7 +226,7 @@ export function Button({
   disabled = false,
   onClick,
 }: ButtonProps) {
-  const theme = BUTTON_VARIANT_THEME[variant];
+  useUiPrimary();
   const reducedMotion = prefersReducedMotion();
 
   const interaction = useButtonInteraction(
@@ -241,6 +242,7 @@ export function Button({
 
   useTick(() => {
     interaction.stepOffsetAnim();
+    const theme = getButtonVariantTheme(variant);
     if (interaction.shadowRef.current) {
       drawButtonShadow(interaction.shadowRef.current, width, height);
     }

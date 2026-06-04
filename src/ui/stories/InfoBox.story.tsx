@@ -4,16 +4,17 @@ import {
   InfoBoxRockValue,
 } from "@/ui/components/InfoBox/InfoBox";
 import type { StoryDefinition } from "@/ui/types/storyTypes";
+import { UiPrimaryProvider } from "@/ui/theme/UiPrimaryProvider";
 
 function InfoBoxStory() {
   return (
-    <div className="flex flex-col items-center gap-8">
+    <UiPrimaryProvider className="flex flex-col items-center gap-8 bg-background p-6">
       <div className="flex w-full max-w-xl gap-3">
         <InfoBox label="Hands">
-          <InfoBoxRockValue tone="blue" value={4} />
+          <InfoBoxRockValue value={4} />
         </InfoBox>
         <InfoBox label="Discards">
-          <InfoBoxRockValue tone="red" value={2} />
+          <InfoBoxRockValue value={2} />
         </InfoBox>
       </div>
 
@@ -22,10 +23,10 @@ function InfoBoxStory() {
           <InfoBoxAnteValue current={1} total={8} />
         </InfoBox>
         <InfoBox label="Round">
-          <InfoBoxRockValue tone="amber" value={1} />
+          <InfoBoxRockValue value={1} />
         </InfoBox>
       </div>
-    </div>
+    </UiPrimaryProvider>
   );
 }
 

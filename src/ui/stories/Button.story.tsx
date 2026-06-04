@@ -6,22 +6,18 @@ import { useQueryParam } from "@/ui/hooks/useQueryParam";
 import { PIXI_RENDERER_PREFERENCE } from "@/ui/pixi/appDefaults";
 import type { StoryDefinition } from "@/ui/types/storyTypes";
 import { panelButtonClass, panelLabelClass, panelSelectClass } from "@/ui/styles/panelControls";
+import { UiPrimaryProvider, useUiPrimary } from "@/ui/theme/UiPrimaryProvider";
+import { UI_PRIMARY_COLORS, type UiPrimaryColor } from "@/ui/theme/uiTokens";
 import { UI_BACKGROUND_COLOR } from "../uiConstants";
 
 const DOM_LABELS: Record<ButtonVariant, string> = {
   primary: "Play",
-  secondary: "Skip",
-  success: "Confirm",
-  danger: "Fold",
-  warning: "Options",
+  neutral: "Cancel",
 };
 
 const PIXI_GRID: { variant: ButtonVariant; label: string; x: number; y: number }[] = [
-  { variant: "primary", label: "Play", x: 120, y: 120 },
-  { variant: "secondary", label: "Skip", x: 320, y: 120 },
-  { variant: "success", label: "Confirm", x: 520, y: 120 },
-  { variant: "danger", label: "Fold", x: 220, y: 260 },
-  { variant: "warning", label: "Options", x: 420, y: 260 },
+  { variant: "primary", label: "Play", x: 180, y: 160 },
+  { variant: "neutral", label: "Cancel", x: 380, y: 160 },
 ];
 
 function parseVariant(raw: string): ButtonVariant | undefined {
@@ -38,7 +34,11 @@ function parseDisabled(raw: string): boolean | undefined {
   return undefined;
 }
 
-function ButtonStory() {
+function isUiPrimaryColor(value: string): value is UiPrimaryColor {
+  return (UI_PRIMARY_COLORS as readonly string[]).includes(value);
+}
+
+function ButtonStoryControls() {
   const [focusVariant, setFocusVariant] = useQueryParam<ButtonVariant>("variant", {
     default: "primary",
     parse: parseVariant,
@@ -52,10 +52,30 @@ function ButtonStory() {
     parse: parseDisabled,
     serialize: (value) => (value ? "1" : "0"),
   });
+  const { primaryColor, setPrimaryColor } = useUiPrimary();
 
   return (
     <div className="flex flex-col items-center gap-6">
       <div className="flex flex-wrap justify-center gap-4">
+        <label className={panelLabelClass}>
+          Primary color
+          <select
+            className={panelSelectClass}
+            value={primaryColor}
+            onChange={(event) => {
+              const next = event.target.value;
+              if (isUiPrimaryColor(next)) {
+                setPrimaryColor(next);
+              }
+            }}
+          >
+            {UI_PRIMARY_COLORS.map((color) => (
+              <option key={color} value={color}>
+                {color}
+              </option>
+            ))}
+          </select>
+        </label>
         <label className={panelLabelClass}>
           Focus variant
           <select
@@ -126,6 +146,14 @@ function ButtonStory() {
         </pixiContainer>
       </Application>
     </div>
+  );
+}
+
+function ButtonStory() {
+  return (
+    <UiPrimaryProvider className="flex w-full flex-col items-center">
+      <ButtonStoryControls />
+    </UiPrimaryProvider>
   );
 }
 

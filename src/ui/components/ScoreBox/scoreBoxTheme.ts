@@ -2,7 +2,6 @@ import type { ScoreBoxVariant } from "@/ui/components/ScoreBox/scoreBoxTypes";
 
 type Rgb = readonly [number, number, number];
 
-/** Shared with Tailwind surface classes on ScoreBox (`bg-blue-400`, `bg-red-500`). */
 export type ScoreBoxVariantTheme = {
   surfaceClass: string;
   borderClass: string;
@@ -14,15 +13,15 @@ export type ScoreBoxVariantTheme = {
 
 export const scoreBoxVariantTheme: Record<ScoreBoxVariant, ScoreBoxVariantTheme> = {
   points: {
-    surfaceClass: "water-color-blue text-blue-700",
+    surfaceClass: "bg-blue-500 text-blue-50 rounded-lg",
     borderClass: "",
-    surfaceColor: "var(--color-blue-400)",
-    surfaceRgb: [96, 165, 250],
+    surfaceColor: "var(--color-blue-500)",
+    surfaceRgb: [59, 130, 246],
     flameMidColor: "var(--color-blue-600)",
     flameFrontColor: "var(--color-blue-300)",
   },
   mult: {
-    surfaceClass: "water-color-red text-red-700",
+    surfaceClass: "bg-red-500 text-red-50 rounded-lg",
     borderClass: "",
     surfaceColor: "var(--color-red-500)",
     surfaceRgb: [239, 68, 68],
@@ -30,11 +29,11 @@ export const scoreBoxVariantTheme: Record<ScoreBoxVariant, ScoreBoxVariantTheme>
     flameFrontColor: "var(--color-red-300)",
   },
   bank: {
-    surfaceClass: "",
+    surfaceClass: "bg-transparent text-yellow-500",
     borderClass: "",
-    surfaceColor: "var(--color-ui-panel-inset)",
-    surfaceRgb: [42, 48, 51],
-    flameMidColor: "var(--color-amber-600)",
-    flameFrontColor: "var(--color-amber-300)",
+    surfaceColor: "var(--color-primary-50)",
+    surfaceRgb: [239, 246, 255],
+    flameMidColor: "var(--color-primary)",
+    flameFrontColor: "var(--color-primary)",
   },
 };

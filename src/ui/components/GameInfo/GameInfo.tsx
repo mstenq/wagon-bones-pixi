@@ -1,24 +1,16 @@
 import { ButtonElement } from "@/ui/components/Button/ButtonElement";
 import { BankInfo } from "@/ui/components/BankInfo/BankInfo";
 import { HandInfo, type HandInfoProps } from "@/ui/components/HandInfo/HandInfo";
-import {
-  InfoBox,
-  InfoBoxAnteValue,
-  InfoBoxRockValue,
-} from "@/ui/components/InfoBox/InfoBox";
+import { InfoBox, InfoBoxAnteValue, InfoBoxRockValue } from "@/ui/components/InfoBox/InfoBox";
 import { RoundInfo, type RoundInfoProps } from "@/ui/components/RoundInfo/RoundInfo";
+import { RoundTitle, type RoundTitleProps } from "@/ui/components/RoundInfo/RoundTitle";
 import { RoundScore } from "@/ui/components/RoundScore/RoundScore";
 
 export type GameInfoDisplayMode = "portrait" | "landscape";
 
-const gameInfoBackgroundClass: Record<GameInfoDisplayMode, string> = {
-  portrait: "game-info-bg-portrait",
-  landscape: "game-info-bg-landscape",
-};
-
 export type GameInfoStats = {
   hands: number;
-  discards: number;
+  rerolls: number;
   anteCurrent: number;
   anteTotal: number;
   round: number;
@@ -26,7 +18,7 @@ export type GameInfoStats = {
 
 export type GameInfoProps = {
   displayMode: GameInfoDisplayMode;
-  roundInfo: Omit<RoundInfoProps, "className">;
+  roundInfo: Omit<RoundTitleProps & RoundInfoProps, "className">;
   roundScore: number;
   handInfo: Omit<HandInfoProps, "className">;
   stats: GameInfoStats;
@@ -50,8 +42,8 @@ function GameInfoActionButtons({
   direction = "column",
 }: GameInfoActionButtonsProps) {
   const rootClassName = [
-    "flex min-w-0 shrink-0 gap-1 md:gap-2",
-    direction === "row" ? "flex-row" : "flex-col",
+    "flex min-w-0 shrink-0 ",
+    direction === "row" ? "flex-row gap-2" : "flex-col gap-1",
     className,
   ]
     .filter(Boolean)
@@ -59,34 +51,30 @@ function GameInfoActionButtons({
 
   return (
     <div className={rootClassName}>
-      <ButtonElement variant="danger" label="Run Info" onClick={onRunInfoClick} fullWidth />
-      <ButtonElement variant="warning" label="Options" onClick={onOptionsClick} fullWidth />
+      <ButtonElement variant="primary" label="Run Info" onClick={onRunInfoClick} fullWidth />
+      <ButtonElement variant="neutral" label="Options" onClick={onOptionsClick} fullWidth />
     </div>
   );
 }
 
 function GameInfoPortraitStats({ stats, balance }: { stats: GameInfoStats; balance: number }) {
   return (
-    <div className="flex flex-col gap-1 md:gap-2">
-      <div className="flex gap-1 md:gap-2">
-        <InfoBox label="Hands">
-          <InfoBoxRockValue tone="blue" value={stats.hands} />
-        </InfoBox>
-        <InfoBox label="Discards">
-          <InfoBoxRockValue tone="red" value={stats.discards} />
-        </InfoBox>
-      </div>
+    <div className="grid w-full min-w-0 grid-cols-2 gap-1 md:gap-2">
+      <InfoBox label="Hands" className="text-blue-500">
+        <InfoBoxRockValue value={stats.hands} />
+      </InfoBox>
+      <InfoBox label="Rerolls" className="text-red-500">
+        <InfoBoxRockValue value={stats.rerolls} />
+      </InfoBox>
 
-      <BankInfo balance={balance} className="w-full" fill />
+      <BankInfo balance={balance} className="col-span-2" fill />
 
-      <div className="flex gap-1 md:gap-2">
-        <InfoBox label="Ante">
-          <InfoBoxAnteValue current={stats.anteCurrent} total={stats.anteTotal} />
-        </InfoBox>
-        <InfoBox label="Round">
-          <InfoBoxRockValue tone="amber" value={stats.round} />
-        </InfoBox>
-      </div>
+      <InfoBox label="Ante">
+        <InfoBoxAnteValue current={stats.anteCurrent} total={stats.anteTotal} />
+      </InfoBox>
+      <InfoBox label="Round" className="text-amber-500">
+        <InfoBoxRockValue value={stats.round} />
+      </InfoBox>
     </div>
   );
 }
@@ -120,24 +108,25 @@ function GameInfoBottomGrid({
   }
 
   return (
-    <div className="flex w-full min-w-0 gap-1 md:gap-2">
-      <InfoBox label="Hands">
-        <InfoBoxRockValue tone="blue" value={stats.hands} />
+    <div className="flex w-full min-w-0 items-stretch gap-1 md:gap-2">
+      <InfoBox label="Hands" className="h-full min-h-0 flex-1 text-blue-500">
+        <InfoBoxRockValue value={stats.hands} />
       </InfoBox>
-      <InfoBox label="Discards">
-        <InfoBoxRockValue tone="red" value={stats.discards} />
+      <InfoBox label="Rerolls" className="h-full min-h-0 flex-1 text-red-500">
+        <InfoBoxRockValue value={stats.rerolls} />
       </InfoBox>
 
-      <BankInfo balance={balance} className="min-w-0 flex-[1.6]" fill />
+      <BankInfo balance={balance} className="h-full min-h-0" fill growInRow />
 
-      <InfoBox label="Ante">
+      <InfoBox label="Ante" className="h-full min-h-0 flex-1">
         <InfoBoxAnteValue current={stats.anteCurrent} total={stats.anteTotal} />
       </InfoBox>
-      <InfoBox label="Round">
-        <InfoBoxRockValue tone="amber" value={stats.round} />
+      <InfoBox label="Round" className="h-full min-h-0 flex-1 text-amber-500">
+        <InfoBoxRockValue value={stats.round} />
       </InfoBox>
 
       <GameInfoActionButtons
+        className="h-full min-h-0 shrink-0 justify-end"
         onRunInfoClick={onRunInfoClick}
         onOptionsClick={onOptionsClick}
       />
@@ -156,9 +145,10 @@ export function GameInfo({
   onOptionsClick,
   className,
 }: GameInfoProps) {
+  const { title, ...roundBody } = roundInfo;
+
   const rootClassName = [
-    "font-score flex w-full min-w-0 select-none flex-col gap-1 p-5 md:gap-2",
-    gameInfoBackgroundClass[displayMode],
+    "font-body flex w-full min-w-0 select-none flex-col gap-1 bg-background p-5 md:gap-2",
     className,
   ]
     .filter(Boolean)
@@ -168,19 +158,17 @@ export function GameInfo({
     <section className={rootClassName} aria-label="Game information">
       {displayMode === "portrait" ? (
         <>
-          <RoundInfo {...roundInfo} />
+          <RoundTitle title={title} />
+          <RoundInfo {...roundBody} />
           <RoundScore score={roundScore} />
           <HandInfo {...handInfo} />
         </>
       ) : (
-        <div className="grid min-w-0 grid-cols-2 gap-1 md:gap-2">
-          <RoundInfo {...roundInfo} segment="header" className="min-h-0 min-w-0 w-full" />
-          <RoundScore score={roundScore} className="h-full min-h-0 min-w-0 w-full max-w-none" />
-          <RoundInfo {...roundInfo} segment="body" className="min-h-0 min-w-0 w-full" />
-          <HandInfo
-            {...handInfo}
-            className="flex h-full min-h-0 min-w-0 w-full max-w-none flex-col justify-between"
-          />
+        <div className="grid min-h-0 min-w-0 grid-cols-2 grid-rows-[auto_auto] items-stretch gap-1 md:gap-2">
+          <RoundTitle title={title} className="h-full min-h-0 min-w-0" />
+          <RoundScore score={roundScore} compact className="h-full min-h-0 min-w-0" />
+          <RoundInfo {...roundBody} className="h-full min-h-0" />
+          <HandInfo {...handInfo} className="h-full min-h-0" />
         </div>
       )}
 

@@ -21,7 +21,7 @@ export function drawButtonShadow(
 
   graphics.clear();
   graphics.roundRect(
-    -halfW - BUTTON_SHADOW_OFFSET_X,
+    -halfW + BUTTON_SHADOW_OFFSET_X,
     -halfH + BUTTON_SHADOW_OFFSET_Y,
     width,
     height,

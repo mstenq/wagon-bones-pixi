@@ -4,11 +4,8 @@ export type { ButtonElementProps, ButtonVariant } from "@/ui/components/Button/b
 export { BUTTON_VARIANTS } from "@/ui/components/Button/buttonTheme";
 
 const variantFaceClass: Record<ButtonVariant, string> = {
-  primary: "bg-btn-primary",
-  secondary: "bg-btn-secondary",
-  success: "bg-btn-success",
-  danger: "bg-btn-danger",
-  warning: "bg-btn-warning",
+  primary: "bg-primary text-black",
+  neutral: "bg-white text-black",
 };
 
 export function ButtonElement({
@@ -19,21 +16,21 @@ export function ButtonElement({
   className,
   fullWidth = false,
 }: ButtonElementProps) {
-  const rootClassName = ["btn-neo-root", fullWidth ? "w-full" : "", className]
+  const rootClassName = ["neo-surface-root", fullWidth ? "w-full" : "", className]
     .filter(Boolean)
     .join(" ");
 
   const faceClassName = [
-    "btn-neo-face",
-    "font-button cursor-pointer text-[1.4rem] leading-none font-normal text-black",
+    "neo-surface-face neo-surface-face--interactive",
+    "font-body cursor-pointer text-[1.4rem] leading-none text-black",
     "flex min-h-10 w-full min-w-0 items-center justify-center px-3 py-2 md:min-h-12 md:px-4 md:py-2.5",
-    "disabled:cursor-not-allowed disabled:bg-btn-disabled-face",
+    "disabled:cursor-not-allowed disabled:bg-ui-disabled",
     variantFaceClass[variant],
   ].join(" ");
 
   return (
     <span className={rootClassName}>
-      <span className="btn-neo-shadow" aria-hidden="true" />
+      <span className="neo-surface-shadow" aria-hidden="true" />
       <button type="button" className={faceClassName} disabled={disabled} onClick={onClick}>
         {label}
       </button>

@@ -28,10 +28,8 @@ precision highp float;
 uniform float uTime;
 uniform float uAmount;
 uniform float uSeed;
-uniform vec2 uResolution;
 uniform vec3 uPrimaryColor;
 uniform vec3 uAccentColor;
-uniform vec3 uSurfaceColor;
 
 varying vec2 vUv;
 
@@ -103,10 +101,6 @@ void main() {
     smoothstep(-0.5, -0.4, uv.y) *
     (1.0 - smoothstep(0.4, 0.5, uv.y));
   alpha *= edgeMask * verticalMask;
-
-  float baseBand = 1.0 - step(2.0 / max(1.0, uResolution.y), vUv.y);
-  color = mix(color, uSurfaceColor, baseBand);
-  alpha = mix(alpha, 1.0, baseBand);
 
   if (alpha <= 0.001) {
     gl_FragColor = vec4(0.0);
@@ -192,6 +186,9 @@ export function ScoreFlame({ variant, intensity }: ScoreFlameProps) {
       return;
     }
 
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
     const positionBuffer = gl.createBuffer();
     if (!positionBuffer) {
       return;
@@ -204,20 +201,16 @@ export function ScoreFlame({ variant, intensity }: ScoreFlameProps) {
     const timeLocation = gl.getUniformLocation(program, "uTime");
     const amountLocation = gl.getUniformLocation(program, "uAmount");
     const seedLocation = gl.getUniformLocation(program, "uSeed");
-    const resolutionLocation = gl.getUniformLocation(program, "uResolution");
     const primaryLocation = gl.getUniformLocation(program, "uPrimaryColor");
     const accentLocation = gl.getUniformLocation(program, "uAccentColor");
-    const surfaceLocation = gl.getUniformLocation(program, "uSurfaceColor");
 
     if (
       positionLocation < 0 ||
       !timeLocation ||
       !amountLocation ||
       !seedLocation ||
-      !resolutionLocation ||
       !primaryLocation ||
-      !accentLocation ||
-      !surfaceLocation
+      !accentLocation
     ) {
       return;
     }
@@ -250,10 +243,8 @@ export function ScoreFlame({ variant, intensity }: ScoreFlameProps) {
       gl.uniform1f(timeLocation, elapsedSeconds);
       gl.uniform1f(amountLocation, amount);
       gl.uniform1f(seedLocation, id);
-      gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
       gl.uniform3f(primaryLocation, primary[0], primary[1], primary[2]);
       gl.uniform3f(accentLocation, accent[0], accent[1], accent[2]);
-      gl.uniform3f(surfaceLocation, primary[0], primary[1], primary[2]);
 
       gl.clearColor(0, 0, 0, 0);
       gl.clear(gl.COLOR_BUFFER_BIT);
@@ -299,7 +290,7 @@ export function ScoreFlame({ variant, intensity }: ScoreFlameProps) {
   return (
     <div
       ref={hostRef}
-      className="score-flame pointer-events-none absolute overflow-hidden"
+      className="score-flame pointer-events-none absolute overflow-visible"
       style={flameStyle}
       aria-hidden
     >

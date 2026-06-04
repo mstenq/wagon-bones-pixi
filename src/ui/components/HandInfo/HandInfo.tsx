@@ -1,3 +1,4 @@
+import { NeoSurface } from "@/ui/components/NeoSurface/NeoSurface";
 import { ScoreBox } from "@/ui/components/ScoreBox/ScoreBox";
 import { WaveBounceChars } from "@/ui/components/WaveBounce/WaveBounceChars";
 
@@ -30,44 +31,43 @@ export function HandInfo({
 }: HandInfoProps) {
   const displayLevel = formatLevel(level);
 
-  const rootClassName = [
-    "water-color-600x150 font-score flex w-full min-w-0 max-w-full flex-col gap-2 rounded-xl p-4 select-none md:gap-3 md:p-5",
-    className,
-  ]
-    .filter(Boolean)
-    .join(" ");
-
   return (
-    <article
-      className={rootClassName}
-      aria-label={`${handName} level ${displayLevel}, ${chips} by ${mult}`}
+    <NeoSurface
+      fullWidth
+      className={className}
+      faceClassName="flex h-full min-h-0 flex-col justify-between gap-2 overflow-visible p-4 md:gap-3 md:p-5"
     >
-      <div className="flex items-baseline justify-center gap-2">
-        <WaveBounceChars
-          text={handName}
-          className="min-w-0 text-xl leading-none font-bold font-body tracking-wide text-taupe-800 md:text-2xl"
-          renderChar={({ displayChar }) => <span className="inline-block">{displayChar}</span>}
-        />
-        <span className="shrink-0 text-base leading-none text-taupe-800 md:text-lg">
-          lvl.{displayLevel}
-        </span>
-      </div>
+      <article
+        className="flex min-h-0 flex-1 flex-col justify-between gap-2 md:gap-3"
+        aria-label={`${handName} level ${displayLevel}, ${chips} by ${mult}`}
+      >
+        <div className="flex shrink-0 items-baseline justify-center gap-2">
+          <WaveBounceChars
+            text={handName}
+            className="min-w-0 text-xl leading-none font-header tracking-wide text-black md:text-2xl"
+            renderChar={({ displayChar }) => <span className="inline-block">{displayChar}</span>}
+          />
+          <span className="shrink-0 text-base leading-none font-body text-black md:text-lg">
+            lvl.{displayLevel}
+          </span>
+        </div>
 
-      <div className="flex w-full items-center gap-2 md:gap-2.5">
-        <ScoreBox
-          fill
-          variant="points"
-          value={chips}
-          flameIntensity={flameIntensity}
-        />
-        <span
-          className="shrink-0 text-xl leading-none font-bold text-red-500 md:text-2xl"
-          aria-hidden
-        >
-          x
-        </span>
-        <ScoreBox fill variant="mult" value={mult} flameIntensity={flameIntensity} />
-      </div>
-    </article>
+        <div className="flex w-full min-h-0 shrink-0 items-center gap-2 overflow-visible md:gap-2.5">
+          <ScoreBox
+            fill
+            variant="points"
+            value={chips}
+            flameIntensity={flameIntensity}
+          />
+          <span
+            className="shrink-0 text-xl leading-none font-header text-black md:text-2xl"
+            aria-hidden
+          >
+            x
+          </span>
+          <ScoreBox fill variant="mult" value={mult} flameIntensity={flameIntensity} />
+        </div>
+      </article>
+    </NeoSurface>
   );
 }

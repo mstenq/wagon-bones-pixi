@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
+import { NeoSurface } from "@/ui/components/NeoSurface/NeoSurface";
 import {
   buildRoundScoreAnimationFrames,
   formatRoundScore,
@@ -8,6 +9,8 @@ import {
 
 export type RoundScoreProps = {
   score: number;
+  /** Shorter padding for landscape top-row grid cell. */
+  compact?: boolean;
   className?: string;
 };
 
@@ -15,7 +18,7 @@ function formatRoundScoreDisplay(value: number): string {
   return formatRoundScore(value).toLocaleString("en-US");
 }
 
-export function RoundScore({ score, className }: RoundScoreProps) {
+export function RoundScore({ score, compact = false, className }: RoundScoreProps) {
   const targetScore = formatRoundScore(score);
   const [displayScore, setDisplayScore] = useState(targetScore);
   const displayScoreRef = useRef(targetScore);
@@ -60,29 +63,36 @@ export function RoundScore({ score, className }: RoundScoreProps) {
     };
   }, [targetScore]);
 
-  const rootClassName = [
-    "water-color-600x150 font-score flex w-full min-w-0 max-w-full items-stretch gap-1.5 overflow-hidden rounded-xl p-4 select-none md:gap-2 md:p-5",
-    className,
-  ]
-    .filter(Boolean)
-    .join(" ");
+  const facePadding = compact
+    ? "flex items-stretch gap-1.5 p-3 md:gap-2 md:p-3.5"
+    : "flex items-stretch gap-1.5 p-4 md:gap-2 md:p-5";
+
+  const faceLayout = compact
+    ? `${facePadding} h-full min-h-0`
+    : facePadding;
 
   return (
-    <div
-      className={rootClassName}
-      aria-label={`Round score ${formatRoundScoreDisplay(displayScore)}`}
-      aria-live="polite"
+    <NeoSurface
+      fullWidth
+      className={["min-w-0 max-w-full", className].filter(Boolean).join(" ")}
+      faceClassName={faceLayout}
     >
-      <div className="flex w-12 shrink-0 flex-col font-body justify-center gap-0.5 px-1 text-taupe-900 md:w-16">
-        <span className="text-lg leading-none md:text-xl">Round</span>
-        <span className="text-lg leading-none md:text-xl">score</span>
-      </div>
+      <div
+        className="flex h-full min-h-0 w-full min-w-0 items-stretch"
+        aria-label={`Round score ${formatRoundScoreDisplay(displayScore)}`}
+        aria-live="polite"
+      >
+        <div className="flex w-12 shrink-0 flex-col justify-center gap-0.5 px-1 font-body text-black md:w-16">
+          <span className="text-lg leading-none md:text-xl">Round</span>
+          <span className="text-lg leading-none md:text-xl">score</span>
+        </div>
 
-      <div className="flex min-w-0 flex-1 items-center justify-end rounded-lg px-2 py-1 md:px-3 md:py-2">
-        <span className="max-w-full truncate text-right text-3xl leading-none font-bold text-taupe-700 tabular-nums md:text-4xl">
-          {formatRoundScoreDisplay(displayScore)}
-        </span>
+        <div className="flex min-w-0 flex-1 items-center justify-end px-2 py-1 md:px-3 md:py-2">
+          <span className="max-w-full truncate text-right font-header text-3xl leading-none text-primary tabular-nums md:text-4xl">
+            {formatRoundScoreDisplay(displayScore)}
+          </span>
+        </div>
       </div>
-    </div>
+    </NeoSurface>
   );
 }

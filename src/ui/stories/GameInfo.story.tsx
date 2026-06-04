@@ -8,6 +8,8 @@ import {
   panelLabelClass,
   panelSelectClass,
 } from "@/ui/styles/panelControls";
+import { UiPrimaryProvider, useUiPrimary } from "@/ui/theme/UiPrimaryProvider";
+import { UI_PRIMARY_COLORS, type UiPrimaryColor } from "@/ui/theme/uiTokens";
 
 const DISPLAY_MODES: GameInfoDisplayMode[] = ["portrait", "landscape"];
 
@@ -32,8 +34,8 @@ const STORY_FONTS = [
 
 type StoryFont = (typeof STORY_FONTS)[number];
 
-const DEFAULT_FONT_BODY: StoryFont = "Special Elite";
-const DEFAULT_FONT_SCORE: StoryFont = "Bree Serif";
+const DEFAULT_FONT_HEADER: StoryFont = "Angkor";
+const DEFAULT_FONT_BODY: StoryFont = "Bree Serif";
 
 function parseDisplayMode(raw: string): GameInfoDisplayMode | undefined {
   return DISPLAY_MODES.includes(raw as GameInfoDisplayMode)
@@ -45,6 +47,10 @@ function isStoryFont(value: string): value is StoryFont {
   return (STORY_FONTS as readonly string[]).includes(value);
 }
 
+function isUiPrimaryColor(value: string): value is UiPrimaryColor {
+  return (UI_PRIMARY_COLORS as readonly string[]).includes(value);
+}
+
 function fontFamilyCss(name: StoryFont): string {
   const fallback = name.includes("Sans") ? "sans-serif" : "serif";
   return `"${name}", ${fallback}`;
@@ -52,41 +58,65 @@ function fontFamilyCss(name: StoryFont): string {
 
 function pickRandomFont(): StoryFont {
   const index = Math.floor(Math.random() * STORY_FONTS.length);
-  return STORY_FONTS[index] ?? DEFAULT_FONT_BODY;
+  return STORY_FONTS[index] ?? DEFAULT_FONT_HEADER;
 }
 
-function storyFontVars(body: StoryFont, score: StoryFont): CSSProperties {
+function storyPreviewStyle(
+  fontHeader: StoryFont,
+  fontBody: StoryFont,
+): CSSProperties {
   return {
-    ["--font-body" as string]: fontFamilyCss(body),
-    ["--font-score" as string]: fontFamilyCss(score),
+    ["--font-header" as string]: fontFamilyCss(fontHeader),
+    ["--font-body" as string]: fontFamilyCss(fontBody),
   };
 }
 
-function GameInfoStory() {
+function GameInfoStoryPreview() {
   const [displayMode, setDisplayMode] = useQueryParam<GameInfoDisplayMode>("mode", {
     default: "portrait",
     parse: parseDisplayMode,
   });
+  const [fontHeader, setFontHeader] = useState<StoryFont>(DEFAULT_FONT_HEADER);
   const [fontBody, setFontBody] = useState<StoryFont>(DEFAULT_FONT_BODY);
-  const [fontScore, setFontScore] = useState<StoryFont>(DEFAULT_FONT_SCORE);
+  const { primaryColor, setPrimaryColor } = useUiPrimary();
 
   const randomizeFonts = useCallback(() => {
+    setFontHeader(pickRandomFont());
     setFontBody(pickRandomFont());
-    setFontScore(pickRandomFont());
   }, []);
 
   return (
     <div className="flex w-full flex-col items-center gap-4">
       <div className="flex w-full max-w-sm flex-wrap items-end justify-center gap-4">
         <label className={panelLabelClass}>
-          font-body
+          Primary color
           <select
             className={panelSelectClass}
-            value={fontBody}
+            value={primaryColor}
+            onChange={(event) => {
+              const next = event.target.value;
+              if (isUiPrimaryColor(next)) {
+                setPrimaryColor(next);
+              }
+            }}
+          >
+            {UI_PRIMARY_COLORS.map((color) => (
+              <option key={color} value={color}>
+                {color}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className={panelLabelClass}>
+          font-header
+          <select
+            className={panelSelectClass}
+            value={fontHeader}
             onChange={(event) => {
               const next = event.target.value;
               if (isStoryFont(next)) {
-                setFontBody(next);
+                setFontHeader(next);
               }
             }}
           >
@@ -99,14 +129,14 @@ function GameInfoStory() {
         </label>
 
         <label className={panelLabelClass}>
-          font-score
+          font-body
           <select
             className={panelSelectClass}
-            value={fontScore}
+            value={fontBody}
             onChange={(event) => {
               const next = event.target.value;
               if (isStoryFont(next)) {
-                setFontScore(next);
+                setFontBody(next);
               }
             }}
           >
@@ -140,7 +170,7 @@ function GameInfoStory() {
 
       <div
         className={`w-full ${displayMode === "portrait" ? "max-w-sm" : ""}`}
-        style={storyFontVars(fontBody, fontScore)}
+        style={storyPreviewStyle(fontHeader, fontBody)}
       >
         <GameInfo
           displayMode={displayMode}
@@ -159,7 +189,7 @@ function GameInfoStory() {
           }}
           stats={{
             hands: 3,
-            discards: 0,
+            rerolls: 0,
             anteCurrent: 1,
             anteTotal: 8,
             round: 2,
@@ -170,6 +200,14 @@ function GameInfoStory() {
         />
       </div>
     </div>
+  );
+}
+
+function GameInfoStory() {
+  return (
+    <UiPrimaryProvider className="flex w-full flex-col items-center">
+      <GameInfoStoryPreview />
+    </UiPrimaryProvider>
   );
 }
 

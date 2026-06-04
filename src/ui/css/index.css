@@ -1,23 +1,34 @@
 @import "tailwindcss";
 
+/* Gameplay score boxes — keep full class names so Tailwind emits palette vars. */
+@source inline("bg-blue-500 bg-red-500 text-blue-950 text-red-950 bg-primary-50 bg-primary bg-white");
+
 @theme {
 
-  --font-body: "Rye", serif;
-  --font-score: "Arbutus", serif;
-  --font-button: "Bree Serif", serif;
+  --font-header: "Angkor", serif;
+  --font-body: "Bree Serif", serif;
+  --font-weight-header: 700;
+  --font-weight-body: 500;
 
-  --btn-shadow-x: 5px;
-  --btn-shadow-y: 5px;
-  --btn-border-width: 3px;
-  --btn-radius: 10px;
+  --radius-ui: 10px;
+  --shadow-x: -5px;
+  --shadow-y: 5px;
+  --border-width-ui: 3px;
 
-  /* Sync with buttonVariantColors.ts */
-  --color-btn-primary: #4a90e2;
-  --color-btn-secondary: #71717a;
-  --color-btn-success: #22c55e;
-  --color-btn-danger: #dc2626;
-  --color-btn-warning: #f97316;
-  --color-btn-disabled-face: #9ca3af;
+  /* Default scale (blue) — runtime overrides via UiPrimaryProvider; sync with DEFAULT_UI_PRIMARY_THEME_CSS */
+  --color-primary: oklch(62.3% 0.214 259.815);
+  --color-primary-50: oklch(97% 0.014 254.604);
+  --color-primary-100: oklch(93.2% 0.032 255.585);
+  --color-primary-200: oklch(88.2% 0.059 254.128);
+  --color-primary-300: oklch(80.9% 0.105 251.813);
+  --color-primary-400: oklch(70.7% 0.165 254.624);
+  --color-primary-500: oklch(62.3% 0.214 259.815);
+  --color-primary-600: oklch(54.6% 0.245 262.881);
+  --color-primary-700: oklch(48.8% 0.243 264.376);
+  --color-primary-800: oklch(42.4% 0.199 265.638);
+  --color-primary-900: oklch(37.9% 0.146 265.522);
+  --color-primary-950: oklch(28.2% 0.091 267.935);
+  --color-ui-disabled: #9ca3af;
 
   --animate-score-bump: score-box-digit-bump 110ms cubic-bezier(0.34, 1.45, 0.64, 1) both;
   /* Duration matches WAVE_IDLE_PERIOD_S in waveBounce.ts */
@@ -25,61 +36,28 @@
   --animate-info-rock: info-box-rock 2.8s ease-in-out infinite;
 
   --color-background: #f8f3eb;
-  /* Round / panel UI surfaces — do not use arbitrary hex in class names */
-  --color-ui-panel: #1a1f21;
-  --color-ui-panel-inset: #2a3033;
-  --color-ui-panel-well: #1e2325;
 
-}
-
-@utility game-info-bg-portrait {
-  background-image: url("../../assets/general/water-color-sidebar.png");
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-}
-
-@utility game-info-bg-landscape {
-  background-image: url("../../assets/general/water-color-sidebar-landscape.png");
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-}
-
-@utility water-color-600x150 {
-  background-image: url("../../assets/general/water-color-600x150.png");
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-}
-
-/* Optional inner padding when a wash asset has no built-in inset. */
-@utility water-color-pad {
-  padding: 0.375rem;
-}
-
-@utility water-color-pad-lg {
-  padding: 0.75rem;
-}
-
-@utility water-color-blue {
-  background-image: url("../../assets/general/water-color-blue.png");
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-}
-
-@utility water-color-red {
-  background-image: url("../../assets/general/water-color-red.png");
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
 }
 
 @layer components {
-  .btn-neo-root {
-    display: inline-grid;
+  .font-header {
+    font-family: var(--font-header);
+    font-weight: var(--font-weight-header);
+  }
+
+  .font-body {
+    font-family: var(--font-body);
+    font-weight: var(--font-weight-body);
+  }
+
+  .neo-surface-root {
+    display: grid;
     overflow: visible;
     vertical-align: middle;
   }
 
-  .btn-neo-shadow,
-  .btn-neo-face {
+  .neo-surface-shadow,
+  .neo-surface-face {
     grid-area: 1 / 1;
     min-height: 0;
     min-width: 0;
@@ -87,35 +65,38 @@
     height: 100%;
   }
 
-  .btn-neo-shadow {
+  .neo-surface-shadow {
     z-index: 0;
     pointer-events: none;
-    border-radius: var(--btn-radius);
+    border-radius: var(--radius-ui);
     background-color: black;
-    transform: translate(calc(-1 * var(--btn-shadow-x)), var(--btn-shadow-y));
+    transform: translate(var(--shadow-x), var(--shadow-y));
   }
 
-  .btn-neo-face {
+  .neo-surface-face {
     box-sizing: border-box;
     z-index: 1;
     border: none;
-    border-radius: var(--btn-radius);
-    box-shadow: inset 0 0 0 var(--btn-border-width) black;
-    transition: transform 100ms ease;
+    border-radius: var(--radius-ui);
+    box-shadow: inset 0 0 0 var(--border-width-ui) black;
     user-select: none;
   }
 
-  .btn-neo-face:hover:not(:disabled):not(:active) {
-    transform: translate(calc(-0.5 * var(--btn-shadow-x)), calc(0.5 * var(--btn-shadow-y)));
+  .neo-surface-face--interactive {
+    transition: transform 100ms ease;
   }
 
-  .btn-neo-face:active:not(:disabled) {
-    transform: translate(calc(-1 * var(--btn-shadow-x)), var(--btn-shadow-y));
+  .neo-surface-face--interactive:hover:not(:disabled):not(:active) {
+    transform: translate(calc(var(--shadow-x) * 0.5), calc(var(--shadow-y) * 0.5));
+  }
+
+  .neo-surface-face--interactive:active:not(:disabled) {
+    transform: translate(var(--shadow-x), var(--shadow-y));
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .btn-neo-face {
+  .neo-surface-face--interactive {
     transition: none;
   }
 }
@@ -170,8 +151,7 @@
 }
 
 .score-flame {
-  /* Match ScoreBox rounded-lg (0.5rem) so flames clear the corner arcs. */
-  --flame-inset-x: 0rem;
+  --flame-inset-x: -0.5rem;
   --flame-overlap-y: 31px;
   --flame-height: calc(4px + var(--flame-i, 0) * 80px);
   z-index: 0;
