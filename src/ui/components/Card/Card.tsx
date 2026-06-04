@@ -194,7 +194,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   }, []);
 
   const effectArtRef = useRef<EffectArtRef>({
-    applyFilters: () => {},
+    applyFilters: () => { },
   });
   effectArtRef.current.applyFilters = applyArtFilters;
   const actionTabRef = useRef<Container | null>(null);
