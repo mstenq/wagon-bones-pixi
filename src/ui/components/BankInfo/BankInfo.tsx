@@ -9,7 +9,7 @@ export type BankInfoProps = {
 
 export function BankInfo({ balance, fill = false, className }: BankInfoProps) {
   const rootClassName = [
-    "font-score rounded-xl bg-ui-panel p-1.5 select-none md:p-2",
+    "water-color-600x150 font-score rounded-xl p-1.5 select-none md:p-2",
     fill ? "flex w-full min-w-0" : "inline-flex",
     className,
   ]

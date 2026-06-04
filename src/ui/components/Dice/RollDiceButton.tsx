@@ -9,7 +9,7 @@ export function RollDiceButton() {
   return (
     <button
       type="button"
-      className={`${panelButtonClass} fixed bottom-8 left-1/2 z-10 -translate-x-1/2 px-5 py-2.5`}
+      className={`${panelButtonClass} absolute bottom-8 left-1/2 z-10 -translate-x-1/2 px-5 py-2.5`}
       onClick={() => gameFacade.dice.roll()}
       disabled={isRolling}
       aria-busy={isRolling}

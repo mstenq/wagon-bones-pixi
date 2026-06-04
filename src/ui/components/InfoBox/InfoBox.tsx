@@ -7,12 +7,12 @@ export type InfoBoxProps = {
 };
 
 const rootClass =
-  "font-score flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-ui-panel select-none";
+  "water-color-600x150 font-score flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl py-2 select-none";
 
-const labelClass = "p-1 text-center text-base leading-none text-white md:text-xl";
+const labelClass = "p-1 text-center text-base leading-none  font-body text-taupe-800 md:text-xl";
 
 const bodyClass =
-  "mx-2 mb-1.5 flex min-h-9 flex-1 items-center justify-center rounded-lg bg-ui-panel-inset md:mb-2 md:min-h-12";
+  "mx-2 mb-1.5 flex min-h-9 flex-1 items-center justify-center md:mb-2 md:min-h-12";
 
 export function InfoBox({ label, children, className }: InfoBoxProps) {
   const rootClassName = [rootClass, className].filter(Boolean).join(" ");
@@ -28,12 +28,12 @@ export function InfoBox({ label, children, className }: InfoBoxProps) {
 export type InfoBoxRockTone = "blue" | "red" | "amber";
 
 const valueTextClass =
-  "text-4xl leading-none tabular-nums text-shadow-[1px_5px_2px_black] md:text-5xl";
+  "text-4xl leading-none tabular-nums md:text-5xl";
 
 const rockToneClass: Record<InfoBoxRockTone, string> = {
   blue: "text-blue-400",
   red: "text-red-500",
-  amber: "text-amber-400",
+  amber: "text-amber-500",
 };
 
 export type InfoBoxRockValueProps = {
@@ -46,7 +46,7 @@ export function InfoBoxRockValue({ value, tone }: InfoBoxRockValueProps) {
   return (
     <span
       className={[
-        "inline-block origin-center animate-info-rock",
+        "inline-block origin-center animate-info-rock font-bold",
         valueTextClass,
         rockToneClass[tone],
       ].join(" ")}
@@ -56,7 +56,7 @@ export function InfoBoxRockValue({ value, tone }: InfoBoxRockValueProps) {
   );
 }
 
-const staticAmberClass = [valueTextClass, "text-amber-400"].join(" ");
+const staticAmberClass = [valueTextClass, "text-amber-500 font-bold"].join(" ");
 
 export type InfoBoxAnteValueProps = {
   current: number;
@@ -71,7 +71,7 @@ export function InfoBoxAnteValue({ current, total }: InfoBoxAnteValueProps) {
       aria-label={`Ante ${current} of ${total}`}
     >
       <span className={staticAmberClass}>{current}</span>
-      <span className="hidden text-2xl text-white tabular-nums md:inline">/ {total}</span>
+      <span className="hidden text-2xl text-taupe-800 tabular-nums md:inline">/ {total}</span>
     </div>
   );
 }

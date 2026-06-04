@@ -1,9 +1,14 @@
 import { TextStyle } from "pixi.js";
-import type { SquishTargets } from "@/ui/interaction/spring";
 
-export const BUTTON_VARIANTS = ["primary", "secondary", "success", "danger"] as const;
+import {
+  BUTTON_DISABLED_FACE_HEX,
+  BUTTON_VARIANT_COLORS,
+  BUTTON_VARIANTS,
+  type ButtonVariant,
+} from "@/ui/components/Button/buttonVariantColors";
+import { hexToPixiColor } from "@/ui/pixi/color";
 
-export type ButtonVariant = (typeof BUTTON_VARIANTS)[number];
+export { BUTTON_VARIANTS, type ButtonVariant };
 
 export type ButtonProps = {
   variant: ButtonVariant;
@@ -16,90 +21,79 @@ export type ButtonProps = {
   onClick?: () => void;
 };
 
-export type ButtonVariantTheme = {
-  face: number;
-  faceHover: number;
-  text: number;
-  textShadow: number;
-  shadow: number;
-  disabledFace: number;
-  disabledText: number;
+export type ButtonElementProps = {
+  variant: ButtonVariant;
+  label: string;
+  disabled?: boolean;
+  onClick?: () => void;
+  className?: string;
+  fullWidth?: boolean;
 };
 
-export const buttonVariantTheme: Record<ButtonVariant, ButtonVariantTheme> = {
+export type ButtonVariantTheme = {
+  face: number;
+  disabledFace: number;
+};
+
+const disabledFace = hexToPixiColor(BUTTON_DISABLED_FACE_HEX);
+
+export const BUTTON_VARIANT_THEME: Record<ButtonVariant, ButtonVariantTheme> = {
   primary: {
-    face: 0x3b82f6,
-    faceHover: 0x60a5fa,
-    text: 0xffffff,
-    textShadow: 0x1e3a8a,
-    shadow: 0x0f172a,
-    disabledFace: 0x334155,
-    disabledText: 0x94a3b8,
+    face: hexToPixiColor(BUTTON_VARIANT_COLORS.primary),
+    disabledFace,
   },
   secondary: {
-    face: 0x52525b,
-    faceHover: 0x71717a,
-    text: 0xffffff,
-    textShadow: 0x27272a,
-    shadow: 0x0f172a,
-    disabledFace: 0x3f3f46,
-    disabledText: 0x94a3b8,
+    face: hexToPixiColor(BUTTON_VARIANT_COLORS.secondary),
+    disabledFace,
   },
   success: {
-    face: 0x22c55e,
-    faceHover: 0x4ade80,
-    text: 0xffffff,
-    textShadow: 0x14532d,
-    shadow: 0x052e16,
-    disabledFace: 0x3f3f46,
-    disabledText: 0x94a3b8,
+    face: hexToPixiColor(BUTTON_VARIANT_COLORS.success),
+    disabledFace,
   },
   danger: {
-    face: 0xef4444,
-    faceHover: 0xf87171,
-    text: 0xffffff,
-    textShadow: 0x7f1d1d,
-    shadow: 0x450a0a,
-    disabledFace: 0x3f3f46,
-    disabledText: 0x94a3b8,
+    face: hexToPixiColor(BUTTON_VARIANT_COLORS.danger),
+    disabledFace,
+  },
+  warning: {
+    face: hexToPixiColor(BUTTON_VARIANT_COLORS.warning),
+    disabledFace,
   },
 };
 
 export const DEFAULT_BUTTON_WIDTH = 168;
 export const DEFAULT_BUTTON_HEIGHT = 52;
 export const BUTTON_CORNER_RADIUS = 10;
-export const BUTTON_SHADOW_OFFSET_Y = 4;
-export const BUTTON_SHADOW_ALPHA = 0.35;
+export const BUTTON_BORDER_WIDTH = 3;
+export const BUTTON_BORDER_COLOR = 0x000000;
+export const BUTTON_SHADOW_OFFSET_X = 5;
+export const BUTTON_SHADOW_OFFSET_Y = 5;
+export const BUTTON_HOVER_OFFSET_X = BUTTON_SHADOW_OFFSET_X / 2;
+export const BUTTON_HOVER_OFFSET_Y = BUTTON_SHADOW_OFFSET_Y / 2;
+/** Matches `.btn-neo-face` transform transition in index.css */
+export const BUTTON_PRESS_TRANSITION_MS = 70;
 
-export const BUTTON_HOVER_SCALE = 1.08;
-export const BUTTON_CLICK_SQUISH_MS = 160;
-export const BUTTON_REDUCED_MOTION_HOVER_SCALE = 1.02;
-
-export const BUTTON_GRAB_SQUISH: SquishTargets = { scaleX: 1.04, scaleY: 0.88 };
-export const BUTTON_POP_SQUISH: SquishTargets = { scaleX: 1.1, scaleY: 1.1 };
-export const BUTTON_PINCH_SQUISH: SquishTargets = { scaleX: 0.92, scaleY: 0.94 };
-
-export const BUTTON_LABEL_FONT_SIZE = 28;
-export const BUTTON_LABEL_CHAR_GAP_PX = 2;
-export const BUTTON_LABEL_CLICK_RIPPLE_MS = 420;
-export const BUTTON_LABEL_CLICK_BUMP_PX = 6;
-
-export function buttonHoverSquish(scale: number): SquishTargets {
-  return { scaleX: scale, scaleY: scale };
+export function buttonFaceOffset(
+  hovered: boolean,
+  pressed: boolean,
+): { x: number; y: number } {
+  if (pressed) {
+    return { x: -BUTTON_SHADOW_OFFSET_X, y: BUTTON_SHADOW_OFFSET_Y };
+  }
+  if (hovered) {
+    return { x: -BUTTON_HOVER_OFFSET_X, y: BUTTON_HOVER_OFFSET_Y };
+  }
+  return { x: 0, y: 0 };
 }
+export const BUTTON_SHADOW_COLOR = 0x000000;
+export const BUTTON_TEXT_COLOR = 0x000000;
+export const BUTTON_LABEL_FONT_FAMILY = '"Bree Serif", serif';
+export const BUTTON_LABEL_FONT_SIZE = 22;
 
-export function buttonLabelTextStyleFor(fill: number, shadow: number): TextStyle {
+export function buttonLabelTextStyle(): TextStyle {
   return new TextStyle({
-    fontFamily: '"Jersey 10", sans-serif',
+    fontFamily: BUTTON_LABEL_FONT_FAMILY,
     fontSize: BUTTON_LABEL_FONT_SIZE,
-    fill,
+    fill: BUTTON_TEXT_COLOR,
     align: "center",
-    dropShadow: {
-      alpha: 0.55,
-      angle: Math.PI / 2,
-      blur: 0,
-      color: shadow,
-      distance: 2,
-    },
   });
 }

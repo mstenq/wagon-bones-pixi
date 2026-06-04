@@ -1,3 +1,4 @@
+import { ButtonElement } from "@/ui/components/Button/ButtonElement";
 import { BankInfo } from "@/ui/components/BankInfo/BankInfo";
 import { HandInfo, type HandInfoProps } from "@/ui/components/HandInfo/HandInfo";
 import {
@@ -9,6 +10,11 @@ import { RoundInfo, type RoundInfoProps } from "@/ui/components/RoundInfo/RoundI
 import { RoundScore } from "@/ui/components/RoundScore/RoundScore";
 
 export type GameInfoDisplayMode = "portrait" | "landscape";
+
+const gameInfoBackgroundClass: Record<GameInfoDisplayMode, string> = {
+  portrait: "game-info-bg-portrait",
+  landscape: "game-info-bg-landscape",
+};
 
 export type GameInfoStats = {
   hands: number;
@@ -29,39 +35,6 @@ export type GameInfoProps = {
   onOptionsClick?: () => void;
   className?: string;
 };
-
-type GameInfoActionButtonProps = {
-  label: string;
-  tone: "runInfo" | "options";
-  onClick?: () => void;
-  className?: string;
-};
-
-const actionToneClass: Record<GameInfoActionButtonProps["tone"], string> = {
-  runInfo: "bg-red-600 hover:bg-red-500",
-  options: "bg-orange-500 hover:bg-orange-400",
-};
-
-function GameInfoActionButton({
-  label,
-  tone,
-  onClick,
-  className,
-}: GameInfoActionButtonProps) {
-  const buttonClassName = [
-    "font-score flex min-h-10 w-full cursor-pointer items-center justify-center rounded-xl border-b-3 border-black/30 px-2 py-1.5 text-lg leading-none font-bold text-white select-none md:min-h-14 md:px-3 md:py-2 md:text-xl",
-    actionToneClass[tone],
-    className,
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  return (
-    <button type="button" className={buttonClassName} onClick={onClick}>
-      {label}
-    </button>
-  );
-}
 
 type GameInfoActionButtonsProps = {
   onRunInfoClick?: () => void;
@@ -86,8 +59,8 @@ function GameInfoActionButtons({
 
   return (
     <div className={rootClassName}>
-      <GameInfoActionButton label="Run Info" tone="runInfo" onClick={onRunInfoClick} />
-      <GameInfoActionButton label="Options" tone="options" onClick={onOptionsClick} />
+      <ButtonElement variant="danger" label="Run Info" onClick={onRunInfoClick} fullWidth />
+      <ButtonElement variant="warning" label="Options" onClick={onOptionsClick} fullWidth />
     </div>
   );
 }
@@ -184,40 +157,32 @@ export function GameInfo({
   className,
 }: GameInfoProps) {
   const rootClassName = [
-    "font-score flex w-full min-w-0 select-none flex-col gap-1 md:gap-2",
+    "font-score flex w-full min-w-0 select-none flex-col gap-1 p-5 md:gap-2",
+    gameInfoBackgroundClass[displayMode],
     className,
   ]
     .filter(Boolean)
     .join(" ");
 
-  if (displayMode === "portrait") {
-    return (
-      <section className={rootClassName} aria-label="Game information">
-        <RoundInfo {...roundInfo} />
-        <RoundScore score={roundScore} />
-        <HandInfo {...handInfo} />
-        <GameInfoBottomGrid
-          displayMode={displayMode}
-          stats={stats}
-          balance={balance}
-          onRunInfoClick={onRunInfoClick}
-          onOptionsClick={onOptionsClick}
-        />
-      </section>
-    );
-  }
-
   return (
     <section className={rootClassName} aria-label="Game information">
-      <div className="grid min-w-0 grid-cols-2 gap-1 md:gap-2">
-        <RoundInfo {...roundInfo} segment="header" className="min-h-0 min-w-0 w-full" />
-        <RoundScore score={roundScore} className="h-full min-h-0 min-w-0 w-full max-w-none" />
-        <RoundInfo {...roundInfo} segment="body" className="min-h-0 min-w-0 w-full" />
-        <HandInfo
-          {...handInfo}
-          className="flex h-full min-h-0 min-w-0 w-full max-w-none flex-col justify-between"
-        />
-      </div>
+      {displayMode === "portrait" ? (
+        <>
+          <RoundInfo {...roundInfo} />
+          <RoundScore score={roundScore} />
+          <HandInfo {...handInfo} />
+        </>
+      ) : (
+        <div className="grid min-w-0 grid-cols-2 gap-1 md:gap-2">
+          <RoundInfo {...roundInfo} segment="header" className="min-h-0 min-w-0 w-full" />
+          <RoundScore score={roundScore} className="h-full min-h-0 min-w-0 w-full max-w-none" />
+          <RoundInfo {...roundInfo} segment="body" className="min-h-0 min-w-0 w-full" />
+          <HandInfo
+            {...handInfo}
+            className="flex h-full min-h-0 min-w-0 w-full max-w-none flex-col justify-between"
+          />
+        </div>
+      )}
 
       <GameInfoBottomGrid
         displayMode={displayMode}

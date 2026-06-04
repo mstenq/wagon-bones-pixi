@@ -1,22 +1,19 @@
 # Notes
 
-Could add blacksmith, saddlemaker, teacher professions?
+Fonts I like:
 
-Should i add people? You plus 4 additional names you input?
+1: Sancreek, Abutus
 
-store:
-Max     Item          Price   Game Effects
-20      oxen          $20     each oxen you have is a multiplier on your score. 
-                              Each one adds 0.1x so 2x max if you have 20 oxen.
-99      ammo          $2      use 1 ammo per day, % chance to get food per day (higher chances based on profession)
-3       wagon wheels  $10     having extra available prevents trail event issues, sell for extra cash
-3       wagon axel    $10     having extra available prevents trail event issues, sell for extra cash
-3       wagon tongues $10     having extra available prevents trail event issues, sell for extra cash
-2000    lb of food    $0.20   use 2 lbs of food per person per day
-5       medicine      $5      allows you to bump dice value + or - and also helps prevent with trail events  
+2: Abutus, Sancreek
 
-start with $800 for blacksmith
+3: ultra, girassol
 
-when do you want to leave? march - august
+4: Rye, Sancreek
 
-Travel Log shows all events and history
+5: Sancreek, Abril Fatface
+
+6: Arbutus, Abril Fatface
+
+7: Bree Serif, Goblin One
+
+8: 

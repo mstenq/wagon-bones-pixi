@@ -8,40 +8,26 @@ import {
 import { useCallback, useMemo, useRef, useState } from "react";
 
 import {
-  BUTTON_CLICK_SQUISH_MS,
-  BUTTON_GRAB_SQUISH,
-  BUTTON_HOVER_SCALE,
-  BUTTON_LABEL_CHAR_GAP_PX,
-  BUTTON_LABEL_FONT_SIZE,
-  BUTTON_PINCH_SQUISH,
-  BUTTON_POP_SQUISH,
-  BUTTON_REDUCED_MOTION_HOVER_SCALE,
-  BUTTON_SHADOW_ALPHA,
-  BUTTON_SHADOW_OFFSET_Y,
-  buttonHoverSquish,
-  buttonLabelTextStyleFor,
-  buttonVariantTheme,
+  BUTTON_PRESS_TRANSITION_MS,
+  BUTTON_VARIANT_THEME,
+  buttonFaceOffset,
+  buttonLabelTextStyle,
   DEFAULT_BUTTON_HEIGHT,
   DEFAULT_BUTTON_WIDTH,
   type ButtonProps,
 } from "@/ui/components/Button/buttonTheme";
 import { drawButtonFace, drawButtonShadow } from "@/ui/components/Button/buttonVisuals";
-import { WaveBouncePixi } from "@/ui/components/WaveBounce/WaveBouncePixi";
-import {
-  createScalarSpring,
-  createSquishState,
-  setScalarTarget,
-  setSquishTarget,
-  snapSquish,
-  SQUISH_IDLE,
-  stepScalarSpring,
-  stepSquish,
-  type SquishState,
-  type SquishTargets,
-} from "@/ui/interaction/spring";
 
 export type { ButtonProps, ButtonVariant } from "@/ui/components/Button/buttonTheme";
 export { BUTTON_VARIANTS } from "@/ui/components/Button/buttonTheme";
+
+type OffsetAnim = {
+  fromX: number;
+  fromY: number;
+  toX: number;
+  toY: number;
+  startMs: number;
+};
 
 function prefersReducedMotion(): boolean {
   return (
@@ -50,48 +36,33 @@ function prefersReducedMotion(): boolean {
   );
 }
 
-function clickNormXFromLocal(localX: number, width: number): number {
-  return (localX + width / 2) / width;
-}
-
 function useButtonInteraction(
   disabled: boolean,
   width: number,
   height: number,
-  hoverSquish: SquishTargets,
+  reducedMotion: boolean,
   onClick: (() => void) | undefined,
   variant: ButtonProps["variant"],
 ) {
   const shadowRef = useRef<Graphics | null>(null);
   const faceRef = useRef<Graphics | null>(null);
   const contentRef = useRef<Container | null>(null);
-  const squishRef = useRef<SquishState>(createSquishState());
-  const highlightRef = useRef(createScalarSpring(0, 0));
+  const offsetAnimRef = useRef<OffsetAnim | null>(null);
   const hoveredRef = useRef(false);
   const pressedRef = useRef(false);
-  const popSquishUntilRef = useRef(0);
-  const wasPopActiveRef = useRef(false);
   const onClickRef = useRef(onClick);
   onClickRef.current = onClick;
 
-  const [hovered, setHovered] = useState(false);
-  const [clickRipple, setClickRipple] = useState<{ normX: number; startMs: number } | null>(
-    null,
-  );
   const [prevVariant, setPrevVariant] = useState(variant);
   const [prevDisabled, setPrevDisabled] = useState(disabled);
 
   if (variant !== prevVariant || disabled !== prevDisabled) {
     setPrevVariant(variant);
     setPrevDisabled(disabled);
-    setSquishTarget(squishRef.current, SQUISH_IDLE);
-    setScalarTarget(highlightRef.current, 0);
     hoveredRef.current = false;
     pressedRef.current = false;
-    popSquishUntilRef.current = 0;
-    wasPopActiveRef.current = false;
-    setHovered(false);
-    setClickRipple(null);
+    offsetAnimRef.current = null;
+    contentRef.current?.position.set(0, 0);
   }
 
   const hitArea = useMemo(
@@ -99,12 +70,62 @@ function useButtonInteraction(
     [height, width],
   );
 
-  const settleSquish = useCallback(() => {
-    setSquishTarget(
-      squishRef.current,
-      hoveredRef.current ? hoverSquish : SQUISH_IDLE,
+  const snapContentOffset = useCallback((x: number, y: number) => {
+    offsetAnimRef.current = null;
+    contentRef.current?.position.set(x, y);
+  }, []);
+
+  const animateContentOffset = useCallback(
+    (toX: number, toY: number) => {
+      const content = contentRef.current;
+      if (!content) {
+        return;
+      }
+
+      const fromX = content.position.x;
+      const fromY = content.position.y;
+
+      if (reducedMotion || (fromX === toX && fromY === toY)) {
+        snapContentOffset(toX, toY);
+        return;
+      }
+
+      offsetAnimRef.current = {
+        fromX,
+        fromY,
+        toX,
+        toY,
+        startMs: performance.now(),
+      };
+    },
+    [reducedMotion, snapContentOffset],
+  );
+
+  const applyFaceOffset = useCallback(() => {
+    const { x, y } = buttonFaceOffset(hoveredRef.current, pressedRef.current);
+    animateContentOffset(x, y);
+  }, [animateContentOffset]);
+
+  const stepOffsetAnim = useCallback(() => {
+    const anim = offsetAnimRef.current;
+    const content = contentRef.current;
+    if (!anim || !content) {
+      return;
+    }
+
+    const t = Math.min(
+      1,
+      (performance.now() - anim.startMs) / BUTTON_PRESS_TRANSITION_MS,
     );
-  }, [hoverSquish]);
+    content.position.set(
+      anim.fromX + (anim.toX - anim.fromX) * t,
+      anim.fromY + (anim.toY - anim.fromY) * t,
+    );
+
+    if (t >= 1) {
+      snapContentOffset(anim.toX, anim.toY);
+    }
+  }, [snapContentOffset]);
 
   const bindRoot = useCallback(
     (node: Container | null) => {
@@ -125,10 +146,9 @@ function useButtonInteraction(
       }
       event.stopPropagation();
       pressedRef.current = true;
-      snapSquish(squishRef.current, BUTTON_GRAB_SQUISH);
-      setSquishTarget(squishRef.current, BUTTON_PINCH_SQUISH);
+      applyFaceOffset();
     },
-    [disabled],
+    [applyFaceOffset, disabled],
   );
 
   const onPointerUp = useCallback(
@@ -148,15 +168,11 @@ function useButtonInteraction(
         local.y <= height / 2;
 
       if (wasPressed && inside) {
-        setClickRipple({ normX: clickNormXFromLocal(local.x, width), startMs: performance.now() });
-        setSquishTarget(squishRef.current, BUTTON_POP_SQUISH);
-        popSquishUntilRef.current = performance.now() + BUTTON_CLICK_SQUISH_MS;
         onClickRef.current?.();
-      } else {
-        settleSquish();
       }
+      applyFaceOffset();
     },
-    [disabled, height, settleSquish, width],
+    [applyFaceOffset, disabled, height, width],
   );
 
   const onPointerUpOutside = useCallback(() => {
@@ -164,56 +180,33 @@ function useButtonInteraction(
       return;
     }
     pressedRef.current = false;
-    settleSquish();
-  }, [disabled, settleSquish]);
+    applyFaceOffset();
+  }, [applyFaceOffset, disabled]);
 
   const onPointerOver = useCallback(() => {
     if (disabled) {
       return;
     }
     hoveredRef.current = true;
-    setHovered(true);
-    setScalarTarget(highlightRef.current, 1);
-    if (!pressedRef.current && performance.now() >= popSquishUntilRef.current) {
-      setSquishTarget(squishRef.current, hoverSquish);
-    }
-  }, [disabled, hoverSquish]);
+    applyFaceOffset();
+  }, [applyFaceOffset, disabled]);
 
   const onPointerOut = useCallback(() => {
     if (disabled) {
       return;
     }
     hoveredRef.current = false;
-    setHovered(false);
-    setScalarTarget(highlightRef.current, 0);
-    if (!pressedRef.current && performance.now() >= popSquishUntilRef.current) {
-      setSquishTarget(squishRef.current, SQUISH_IDLE);
+    if (!pressedRef.current) {
+      applyFaceOffset();
     }
-  }, [disabled]);
-
-  useTick((ticker) => {
-    const dt = ticker.deltaMS / 1000;
-    const now = performance.now();
-    const popActive = now < popSquishUntilRef.current;
-
-    if (wasPopActiveRef.current && !popActive && !pressedRef.current) {
-      settleSquish();
-    }
-    wasPopActiveRef.current = popActive;
-
-    stepSquish(squishRef.current, dt);
-    stepScalarSpring(highlightRef.current, dt);
-    contentRef.current?.scale.set(squishRef.current.scaleX, squishRef.current.scaleY);
-  });
+  }, [applyFaceOffset, disabled]);
 
   return {
     bindRoot,
     contentRef,
     shadowRef,
     faceRef,
-    highlightRef,
-    hovered,
-    clickRipple,
+    stepOffsetAnim,
     onPointerDown,
     onPointerUp,
     onPointerUpOutside,
@@ -232,49 +225,29 @@ export function Button({
   disabled = false,
   onClick,
 }: ButtonProps) {
-  const theme = buttonVariantTheme[variant];
+  const theme = BUTTON_VARIANT_THEME[variant];
   const reducedMotion = prefersReducedMotion();
-  const hoverScale = reducedMotion ? BUTTON_REDUCED_MOTION_HOVER_SCALE : BUTTON_HOVER_SCALE;
-  const hoverSquish = useMemo(() => buttonHoverSquish(hoverScale), [hoverScale]);
 
   const interaction = useButtonInteraction(
     disabled,
     width,
     height,
-    hoverSquish,
+    reducedMotion,
     onClick,
     variant,
   );
 
+  const labelStyle = useMemo(() => buttonLabelTextStyle(), []);
+
   useTick(() => {
-    const highlight = interaction.highlightRef.current.value;
+    interaction.stepOffsetAnim();
     if (interaction.shadowRef.current) {
-      drawButtonShadow(
-        interaction.shadowRef.current,
-        width,
-        height,
-        theme.shadow,
-        BUTTON_SHADOW_ALPHA,
-        BUTTON_SHADOW_OFFSET_Y,
-      );
+      drawButtonShadow(interaction.shadowRef.current, width, height);
     }
     if (interaction.faceRef.current) {
-      drawButtonFace(
-        interaction.faceRef.current,
-        width,
-        height,
-        theme,
-        highlight,
-        disabled,
-      );
+      drawButtonFace(interaction.faceRef.current, width, height, theme, disabled);
     }
   });
-
-  const textColor = disabled ? theme.disabledText : theme.text;
-  const labelStyle = useMemo(
-    () => buttonLabelTextStyleFor(textColor, theme.textShadow),
-    [textColor, theme.textShadow],
-  );
 
   return (
     <pixiContainer
@@ -296,15 +269,11 @@ export function Button({
       />
       <pixiContainer ref={interaction.contentRef} zIndex={1} sortableChildren eventMode="none">
         <pixiGraphics ref={interaction.faceRef} eventMode="none" draw={() => {}} />
-        <WaveBouncePixi
+        <pixiText
           text={label}
           style={labelStyle}
-          fontSizePx={BUTTON_LABEL_FONT_SIZE}
-          idleWavePaused={interaction.hovered}
-          reducedMotion={reducedMotion}
-          charGapPx={BUTTON_LABEL_CHAR_GAP_PX}
-          clickRipple={interaction.clickRipple}
-          y={-1}
+          anchor={0.5}
+          eventMode="none"
         />
       </pixiContainer>
     </pixiContainer>

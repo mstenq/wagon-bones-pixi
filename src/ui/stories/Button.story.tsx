@@ -1,17 +1,27 @@
 import { Application } from "@pixi/react";
 
 import { Button, BUTTON_VARIANTS, type ButtonVariant } from "@/ui/components/Button/Button";
+import { ButtonElement } from "@/ui/components/Button/ButtonElement";
 import { useQueryParam } from "@/ui/hooks/useQueryParam";
 import { PIXI_RENDERER_PREFERENCE } from "@/ui/pixi/appDefaults";
 import type { StoryDefinition } from "@/ui/types/storyTypes";
 import { panelButtonClass, panelLabelClass, panelSelectClass } from "@/ui/styles/panelControls";
 import { UI_BACKGROUND_COLOR } from "../uiConstants";
 
-const GRID: { variant: ButtonVariant; label: string; x: number; y: number }[] = [
-  { variant: "primary", label: "Play", x: 160, y: 120 },
-  { variant: "secondary", label: "Skip", x: 480, y: 120 },
-  { variant: "success", label: "Confirm", x: 160, y: 280 },
-  { variant: "danger", label: "Fold", x: 480, y: 280 },
+const DOM_LABELS: Record<ButtonVariant, string> = {
+  primary: "Play",
+  secondary: "Skip",
+  success: "Confirm",
+  danger: "Fold",
+  warning: "Options",
+};
+
+const PIXI_GRID: { variant: ButtonVariant; label: string; x: number; y: number }[] = [
+  { variant: "primary", label: "Play", x: 120, y: 120 },
+  { variant: "secondary", label: "Skip", x: 320, y: 120 },
+  { variant: "success", label: "Confirm", x: 520, y: 120 },
+  { variant: "danger", label: "Fold", x: 220, y: 260 },
+  { variant: "warning", label: "Options", x: 420, y: 260 },
 ];
 
 function parseVariant(raw: string): ButtonVariant | undefined {
@@ -44,7 +54,7 @@ function ButtonStory() {
   });
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-6">
       <div className="flex flex-wrap justify-center gap-4">
         <label className={panelLabelClass}>
           Focus variant
@@ -79,6 +89,18 @@ function ButtonStory() {
         </button>
       </div>
 
+      <div className="flex flex-wrap justify-center gap-4 p-4">
+        {BUTTON_VARIANTS.map((variant) => (
+          <ButtonElement
+            key={`dom-${variant}`}
+            variant={variant}
+            label={variant === focusVariant ? customLabel : DOM_LABELS[variant]}
+            disabled={disabled}
+            onClick={() => console.log(`clicked:dom:${variant}`)}
+          />
+        ))}
+      </div>
+
       <Application
         width={640}
         height={400}
@@ -90,7 +112,7 @@ function ButtonStory() {
         eventFeatures={{ move: true, globalMove: true, click: true }}
       >
         <pixiContainer sortableChildren eventMode="passive">
-          {GRID.map(({ variant, label, x, y }) => (
+          {PIXI_GRID.map(({ variant, label, x, y }) => (
             <Button
               key={variant}
               variant={variant}
@@ -98,7 +120,7 @@ function ButtonStory() {
               x={x}
               y={y}
               disabled={disabled}
-              onClick={() => console.log(`clicked:${variant}`)}
+              onClick={() => console.log(`clicked:pixi:${variant}`)}
             />
           ))}
         </pixiContainer>

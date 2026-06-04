@@ -3,8 +3,6 @@ import { WaveBounceChars } from "@/ui/components/WaveBounce/WaveBounceChars";
 export type RoundInfoProps = {
   title: string;
   subtitle?: string;
-  headerColor: string;
-  bodyColor: string;
   iconSrc?: string;
   difficultyColor: string;
   targetScore: number;
@@ -31,8 +29,6 @@ function formatPayout(value: number): string {
 export function RoundInfo({
   title,
   subtitle,
-  headerColor,
-  bodyColor,
   iconSrc,
   difficultyColor,
   targetScore,
@@ -44,25 +40,19 @@ export function RoundInfo({
   const formattedPayout = formatPayout(payoutAmount);
 
   const header = (
-    <header
-      className="flex h-full items-center justify-center rounded-xl border-b-3 border-black/50 px-2 py-1 md:px-3 md:py-2"
-      style={{ backgroundColor: headerColor }}
-    >
+    <header className="water-color-600x150 flex h-full items-center justify-center p-5 font-body">
       <WaveBounceChars
         text={title}
-        className="text-center text-2xl leading-none font-bold tracking-wide text-white md:text-3xl"
+        className="text-center text-2xl leading-none font-bold tracking-wide text-taupe-800 md:text-3xl"
         renderChar={({ displayChar }) => <span className="inline-block">{displayChar}</span>}
       />
     </header>
   );
 
   const body = (
-    <div
-      className="flex h-full flex-col rounded-xl border-b-3 border-black/30 px-2 pt-1.5 pb-2 md:px-3 md:pt-2 md:pb-3"
-      style={{ backgroundColor: bodyColor }}
-    >
+    <div className="water-color-600x150 flex h-full flex-col p-4">
       {subtitle ? (
-        <p className="mb-1.5 text-center text-lg leading-snug text-white md:mb-2 md:text-xl">
+        <p className="mb-1.5 text-center text-lg leading-snug text-taupe-800 md:mb-2 md:text-xl">
           {subtitle}
         </p>
       ) : null}
@@ -76,8 +66,8 @@ export function RoundInfo({
           </div>
         </div>
 
-        <div className="flex w-3/4 min-w-0 flex-col items-center justify-center gap-1 rounded-lg bg-ui-panel-well px-2 py-1.5 md:py-2.5">
-          <p className="text-center text-lg leading-none text-white md:text-xl">
+        <div className="flex w-3/4 min-w-0 flex-col items-center justify-center gap-1 px-2 py-1.5 md:py-2.5">
+          <p className="text-center font-body text-lg leading-none text-taupe-800 md:text-xl">
             Score at least
           </p>
 
@@ -87,14 +77,14 @@ export function RoundInfo({
               style={{ backgroundColor: difficultyColor }}
               aria-hidden
             />
-            <p className="text-2xl leading-none text-red-500 tabular-nums md:text-3xl">
+            <p className="text-2xl leading-none  font-bold text-red-500 tabular-nums md:text-3xl">
               {formattedScore}
             </p>
           </div>
 
           <p className="text-center text-lg leading-none md:text-xl">
-            <span className="text-white">payout </span>
-            <span className="text-yellow-400">{formattedPayout}</span>
+            <span className="text-taupe-800 font-body">payout </span>
+            <span className="text-amber-500 font-bold">{formattedPayout}</span>
           </p>
         </div>
       </div>
@@ -140,8 +130,10 @@ export function RoundInfo({
       className={rootClassName}
       aria-label={`${title}. Score at least ${formattedScore}. Payout ${formattedPayout}.`}
     >
-      <div className="mb-1 h-auto">{header}</div>
-      {body}
+      <div className="flex flex-col">
+        {header}
+        {body}
+      </div>
     </article>
   );
 }

@@ -18,9 +18,9 @@ export type ScoreBoxProps = {
 };
 
 const chipFaceClass =
-  "min-h-7 items-center rounded-lg border-b-4 px-2 pt-1 pb-1 font-score text-4xl leading-none text-white tabular-nums select-none md:min-h-8 md:px-2.5 md:pt-1.5 md:pb-1 md:text-5xl";
+  "min-h-7 items-center px-2 pt-1 pb-1 font-score text-4xl leading-none tabular-nums select-none md:min-h-8 md:px-2.5 md:pt-1.5 md:pb-1 md:text-5xl";
 const bankFaceClass =
-  "min-h-7 items-center rounded-lg border px-2 py-1.5 font-score text-4xl leading-none text-amber-400 tabular-nums select-none text-shadow-[2px_3px_0_black,-1px_-1px_0_black] md:min-h-8 md:px-3 md:py-2 md:text-5xl";
+  "min-h-7 items-center px-2 py-1.5 font-score text-4xl leading-none text-amber-500 tabular-nums select-none  md:min-h-8 md:px-3 md:py-2 md:text-5xl";
 const shrinkClass = "inline-flex min-w-14";
 const fillClass = "flex w-full min-w-0 flex-1";
 
@@ -40,9 +40,9 @@ function variantFaceClass(variant: ScoreBoxVariant): string {
 }
 
 const variantDigitsClass: Record<ScoreBoxVariant, string> = {
-  points: "inline-flex items-baseline justify-end gap-[0.04em]",
-  mult: "inline-flex items-baseline justify-start gap-[0.04em]",
-  bank: "inline-flex items-baseline justify-center gap-[0.04em]",
+  points: "pt-3 inline-flex items-baseline justify-end gap-[0.04em]",
+  mult: "pt-3 inline-flex items-baseline justify-start gap-[0.04em]",
+  bank: "pt-3 inline-flex items-baseline justify-center gap-[0.04em]",
 };
 
 function formatScoreValue(value: number): number {
