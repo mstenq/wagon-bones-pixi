@@ -1,8 +1,9 @@
 import { Application } from '@pixi/react';
 import { use, useCallback, useRef, useState } from 'react';
 
-import { effectsTexturesReady } from '@/assets/effects/textures';
-import { getCardTexture, itemTexturesReady } from '@/assets/items/textures';
+import { effectsTexturesReady } from '@/loaders/effects/textures';
+import { getItemTexture, itemTexturesReady } from '@/loaders/items/textures';
+import { CARD_STORY_DEF_ID } from '@/ui/stories/cardStoryCatalog';
 import type { CardDisplayMode } from '@/ui/components/Card/config';
 import { Card, type CardHandle } from '@/ui/components/Card/Card';
 import { itemShakeAnim, itemTextAnim } from '@/ui/animation/itemAnimations';
@@ -185,7 +186,7 @@ function CardStory() {
             <Card
               key={cardKey}
               ref={cardRef}
-              texture={getCardTexture(1)}
+              texture={getItemTexture(CARD_STORY_DEF_ID)}
               displayMode={displayMode}
               effect={effect}
               price={5}

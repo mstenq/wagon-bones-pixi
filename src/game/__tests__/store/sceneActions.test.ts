@@ -1,6 +1,7 @@
 import { describe, expect, test, beforeEach } from 'bun:test';
 import { sceneActions, sceneStore, createInitialSceneState } from '../../store/sceneStore';
 import { runActions, runStore } from '../../store/runStore';
+import { serializeSceneState } from '../../store/serialization';
 
 describe('scene lifecycle actions', () => {
   beforeEach(() => {
@@ -45,6 +46,26 @@ describe('scene lifecycle actions', () => {
       resolved: false,
       spyglassRevealed: true,
     });
+  });
+
+  test('serializeSceneState strips session-only trail resolve snapshot', () => {
+    sceneActions.enterTrailEvent({
+      eventId: 'wildflowers',
+      resolved: true,
+      spyglassRevealed: true,
+      resolveSnapshot: {
+        choiceId: 'continue',
+        outcomeIndex: 0,
+        effects: [],
+        enhancedDiceBeforeCount: 2,
+        equipmentBeforeResolve: [],
+        protectionText: null,
+      },
+    });
+
+    const serialized = serializeSceneState(sceneStore.getState());
+    expect(serialized.trailEvent?.resolveSnapshot).toBeUndefined();
+    expect(serialized.trailEvent?.eventId).toBe('wildflowers');
   });
 
   test('takePlayback removes only matching commands', () => {

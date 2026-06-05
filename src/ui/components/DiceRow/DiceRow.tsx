@@ -20,7 +20,7 @@ import { useDiceRowPhaseState } from '@/ui/components/DiceRow/useDiceRowPhaseSta
 import { useDiceRowHandRefill, type PouchLaunchPoint } from '@/ui/components/DiceRow/useDiceRowHandRefill';
 import { useDiceRowRollAnimation } from '@/ui/components/DiceRow/useDiceRowRollAnimation';
 import { useDiceRowRollTap } from '@/ui/components/DiceRow/useDiceRowRollTap';
-import { texturesReady } from '@/assets/dice/textures';
+import { texturesReady } from '@/loaders/dice/textures';
 import { gameFacade } from '@/game/facade';
 import { useGameRunStore, useGameRoundStore } from '@/game/store/reactHooks';
 import { getRunState } from '@/game/store/runStore';

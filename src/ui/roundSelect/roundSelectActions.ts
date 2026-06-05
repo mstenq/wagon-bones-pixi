@@ -11,10 +11,10 @@ import { enqueueHandUpgrades, enqueueTagEarned } from '@/game/store/playbackEnqu
 import {
   selectBossPermitRerollLimit,
   selectCanBossPermitReroll,
-  selectJourneyComplete,
   selectSkipPreviewTagForRound,
   selectTagDescriptionContextForRound,
 } from '@/game/store/selectors/runSelectors';
+import { navigateIfJourneyComplete } from '@/ui/runFlow/journeyNavigation';
 
 export function refreshRoundSelectScene(): void {
   prepareRoundSelectScene();
@@ -38,9 +38,7 @@ function finishSkipFlow(): void {
     gameFacade.meta.processJunkPileTag(tag);
   }
 
-  const run = getRunState();
-  if (selectJourneyComplete(run)) {
-    // TODO: navigate to GameOver when Pixi UI supports it.
+  if (navigateIfJourneyComplete()) {
     return;
   }
 

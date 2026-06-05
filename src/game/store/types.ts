@@ -1,8 +1,10 @@
 // ─── Zustand store types (No Phaser imports) ───
 // Plain data shapes that will replace PlayerState, GameState, and scene-local buffers.
 
+import type { TrailEventEffect } from '../../data/trail_events';
 import type { DiceSelectionConfig } from '../DiceSelectionSystem';
 import type { InstantEffect } from '../BoosterPackSystem';
+import type { EquipmentInstance } from '../ItemsSystem';
 import type { TrailEventModifiers, TrailRoundEffects } from '../trailEventDefaults';
 import {
   HandType,
@@ -274,12 +276,27 @@ export interface BoosterPackSceneState {
   usedCardIndices: number[];
 }
 
+/** Session-only resolve UI data — stripped from save snapshots. */
+export interface TrailEventResolveSnapshot {
+  choiceId: string;
+  outcomeIndex: number;
+  effects: TrailEventEffect[];
+  message?: string;
+  negatedNegativeEffects?: boolean;
+  negationSource?: 'omen_stone' | 'saint_elmos_shield' | 'trail_repair_kit';
+  protectionText?: string | null;
+  enhancedDiceBeforeCount: number;
+  equipmentBeforeResolve: EquipmentInstance[];
+}
+
 export interface TrailEventSceneState {
   eventId: string;
   resolved: boolean;
   spyglassRevealed: boolean;
   /** Choice picked before result animation completes (autosave during resolve). */
   selectedChoiceId?: string | null;
+  /** Present only for the current session after a choice resolves. */
+  resolveSnapshot?: TrailEventResolveSnapshot | null;
 }
 
 export interface PayoutPresentationState {

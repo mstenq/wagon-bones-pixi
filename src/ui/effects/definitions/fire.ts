@@ -1,6 +1,6 @@
 import { BlurFilter, DisplacementFilter, Sprite, type Graphics, type Texture } from 'pixi.js';
 
-import { getEffectTexture } from '@/assets/effects/textures';
+import { getEffectTexture } from '@/loaders/effects/textures';
 import {
   addGlowLayer,
   addSpriteLayer,

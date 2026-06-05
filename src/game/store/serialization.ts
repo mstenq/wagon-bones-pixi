@@ -49,7 +49,12 @@ export function deserializeRoundState(data: SerializedRoundRuntimeState | null):
 }
 
 export function serializeSceneState(state: SceneRuntimeState): SerializedSceneRuntimeState {
-  return cloneJson(state);
+  const cloned = cloneJson(state);
+  if (cloned.trailEvent?.resolveSnapshot) {
+    const { resolveSnapshot: _, ...trailEvent } = cloned.trailEvent;
+    cloned.trailEvent = trailEvent;
+  }
+  return cloned;
 }
 
 export function deserializeSceneState(data: SerializedSceneRuntimeState): SceneRuntimeState {

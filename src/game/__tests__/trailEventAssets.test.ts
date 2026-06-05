@@ -4,17 +4,16 @@ import { join } from 'path';
 import { getAllTrailEvents } from '../TrailEventsSystem';
 import { computeCoverScale, computeCoverCrop, trailEventImagePath, trailEventSpyImagePath } from '../trailEventAssets';
 
-const PUBLIC = join(import.meta.dir, '../../../public');
+const ASSETS_ROOT = join(import.meta.dir, '../../assets');
 
 describe('trail event assets', () => {
-  // PNGs under public/trail_events are not bundled in the Pixi migration pass yet.
-  test.skip('every trail event has primary and spy PNG assets', () => {
+  test('every trail event has primary and spy PNG assets', () => {
     const missingPrimary: string[] = [];
     const missingSpy: string[] = [];
 
     for (const event of getAllTrailEvents()) {
-      const primary = join(PUBLIC, trailEventImagePath(event.id));
-      const spy = join(PUBLIC, trailEventSpyImagePath(event.id));
+      const primary = join(ASSETS_ROOT, trailEventImagePath(event.id));
+      const spy = join(ASSETS_ROOT, trailEventSpyImagePath(event.id));
       if (!existsSync(primary)) missingPrimary.push(event.id);
       if (!existsSync(spy)) missingSpy.push(event.id);
     }

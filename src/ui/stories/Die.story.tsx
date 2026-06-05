@@ -1,8 +1,8 @@
 import { Application } from '@pixi/react';
 import { use, useCallback, useRef, useState } from 'react';
 
-import { effectsTexturesReady } from '@/assets/effects/textures';
-import { texturesReady } from '@/assets/dice/textures';
+import { effectsTexturesReady } from '@/loaders/effects/textures';
+import { texturesReady } from '@/loaders/dice/textures';
 import { DICE_TYPES, type DiceType } from '@/data/dice';
 import { Die, type DieHandle } from '@/ui/components/Dice/Die';
 import {

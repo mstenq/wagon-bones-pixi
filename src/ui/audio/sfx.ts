@@ -1,4 +1,4 @@
-import { SFX_URLS, type SfxId } from '@/assets/sounds/registry';
+import { SFX_URLS, type SfxId } from '@/loaders/sounds/registry';
 import { getAudioPreferences } from '@/game/AudioPreferences';
 
 export type PlaySfxOptions = {

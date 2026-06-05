@@ -1,7 +1,8 @@
 // ─── Trail event image paths and layout helpers (pure TS, no Phaser) ───
+// Binary PNGs live under src/assets/trail-events*; Vite resolves them in src/loaders/trailEvents/textures.ts.
 
-export const TRAIL_EVENT_IMAGE_DIR = 'assets/trail-events';
-export const TRAIL_EVENT_SPY_IMAGE_DIR = 'assets/trail-events-spy';
+export const TRAIL_EVENT_IMAGE_DIR = 'trail-events';
+export const TRAIL_EVENT_SPY_IMAGE_DIR = 'trail-events-spy';
 
 export function trailEventImagePath(id: string): string {
   return `${TRAIL_EVENT_IMAGE_DIR}/${id}.png`;

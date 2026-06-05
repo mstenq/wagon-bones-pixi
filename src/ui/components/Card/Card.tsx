@@ -64,7 +64,7 @@ import {
   resetMeshCorners,
   type PerspectiveTiltConfig,
 } from '@/ui/pixi/perspectiveTilt';
-import { effectsTexturesReady } from '@/assets/effects/textures';
+import { effectsTexturesReady } from '@/loaders/effects/textures';
 import type { ActionEffectComplete } from '@/ui/actionEffects/types';
 import type { ItemAnimationConfig } from '@/ui/animation/itemAnimations';
 import { applyItemAnimationSquish, useItemAnimations, type ItemAnimationRefs } from '@/ui/animation/useItemAnimations';

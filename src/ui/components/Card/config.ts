@@ -29,5 +29,3 @@ export const ACTION_TAB_TOP_PADDING = 28;
 export const ACTION_TAB_HEIGHT = ACTION_TAB_VISIBLE_HEIGHT + ACTION_TAB_TOP_PADDING;
 export const SELL_TAB_HEIGHT = TAB_HEIGHT + 4;
 export const PRICE_TAB_HEIGHT = 24;
-
-export { CARD_COUNT } from '@/assets/items/demoCatalog';

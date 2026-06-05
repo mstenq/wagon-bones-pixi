@@ -1,7 +1,7 @@
 import type { Container } from 'pixi.js';
 import { useCallback, useRef, type RefObject } from 'react';
 
-import { getEffectTexture } from '@/assets/effects/textures';
+import { getEffectTexture } from '@/loaders/effects/textures';
 import type { BurnDissolveFilter } from '@/ui/actionEffects/burnDissolveFilter';
 import type { ActionEffectComplete } from '@/ui/actionEffects/types';
 import type { SquishTargets } from '@/ui/interaction/spring';

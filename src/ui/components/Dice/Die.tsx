@@ -3,9 +3,9 @@ import { useTick } from '@pixi/react';
 import { BlurFilter, Sprite, TextStyle, type Container, type Filter, type Graphics, Rectangle } from 'pixi.js';
 import { forwardRef, use, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
 
-import { getDiceFaceTexture, texturesReady } from '@/assets/dice/textures';
+import { getDiceFaceTexture, texturesReady } from '@/loaders/dice/textures';
 import type { DiceType } from '@/data/dice';
-import { effectsTexturesReady } from '@/assets/effects/textures';
+import { effectsTexturesReady } from '@/loaders/effects/textures';
 import type { ActionEffectComplete } from '@/ui/actionEffects/types';
 import type { ItemAnimationConfig } from '@/ui/animation/itemAnimations';
 import { applyItemAnimationSquish, useItemAnimations, type ItemAnimationRefs } from '@/ui/animation/useItemAnimations';
