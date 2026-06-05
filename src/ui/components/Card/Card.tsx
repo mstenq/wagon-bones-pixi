@@ -19,15 +19,23 @@ import {
   CARD_LIFT_PX,
   CARD_OWNED_ENLARGED_SCALE,
   CARD_SELECTED_Z_INDEX,
+  SECONDARY_ACTION_TAB_HEIGHT,
+  SECONDARY_ACTION_TAB_WIDTH,
   SELL_TAB_HEIGHT,
   SELL_TAB_WIDTH,
   type CardDisplayMode,
 } from '@/ui/components/Card/config';
 import { CardShopTabs } from '@/ui/components/Card/CardShopTabs';
 import {
+  drawOwnedUseTab,
+  drawOwnedUseTabShadow,
   drawSellTab,
   drawSellTabShadow,
   formatSellLabel,
+  secondaryActionTabAnchorX,
+  secondaryActionTabAnchorY,
+  secondaryActionTabInnerX,
+  SECONDARY_ACTION_TAB_TEXT_X,
   sellTabAnchorX,
   sellTabInnerX,
   SELL_TAB_TEXT_X,
@@ -101,6 +109,8 @@ export type CardProps = {
   buyDisabled?: boolean;
   /** Optional second shop tab (e.g. BUY & USE). */
   secondaryAction?: CardSecondaryAction;
+  /** Optional USE tab when `displayMode="owned"` (consumable inventory). */
+  ownedUseAction?: CardSecondaryAction;
   /** Override primary action tab fill (e.g. permit purple). */
   primaryActionTabColor?: number;
   /** Parent handles pointer events (e.g. inside `DraggableItem`). */
@@ -121,6 +131,8 @@ export type CardHandle = {
   /** For embedded container: tap on sell tab while drag wrapper owns the pointer. */
   hitsSellTabAtGlobal: (globalX: number, globalY: number) => boolean;
   triggerSell: () => void;
+  hitsUseTabAtGlobal: (globalX: number, globalY: number) => boolean;
+  triggerUse: () => void;
   animate: (config: CardAnimationConfig, onComplete?: ActionEffectComplete) => boolean;
   isPlayingAnimation: () => boolean;
 };
@@ -143,6 +155,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     onSell,
     buyDisabled = false,
     secondaryAction,
+    ownedUseAction,
     primaryActionTabColor,
     embedded = false,
     selected,
@@ -192,6 +205,11 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   const sellTabShadowRef = useRef<Graphics | null>(null);
   const sellTabGfxRef = useRef<Graphics | null>(null);
   const sellTabTextRef = useRef<Text | null>(null);
+  const useTabRef = useRef<Container | null>(null);
+  const useTabInnerRef = useRef<Container | null>(null);
+  const useTabShadowRef = useRef<Graphics | null>(null);
+  const useTabGfxRef = useRef<Graphics | null>(null);
+  const useTabTextRef = useRef<Text | null>(null);
   const cardHitRef = useRef<Container | null>(null);
 
   const cornersRef = useRef(createUnitCorners());
@@ -212,6 +230,8 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   const sellTabSpringRef = useRef<ScalarSpringState>(createScalarSpring(0, 0));
   const onSellRef = useRef(onSell);
   onSellRef.current = onSell;
+  const ownedUseActionRef = useRef(ownedUseAction);
+  ownedUseActionRef.current = ownedUseAction;
 
   const [raised, setRaised] = useState(false);
   const [enlarged, setEnlarged] = useState(false);
@@ -271,7 +291,31 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     [displayMode, onSelectedChange],
   );
 
+  const syncOwnedTabPositions = useCallback(() => {
+    const ownedScale = ownedScaleSpringRef.current.value;
+    const reveal = sellTabSpringRef.current.value;
+    const sellTab = sellTabRef.current;
+    const sellInner = sellTabInnerRef.current;
+    const useTab = useTabRef.current;
+    const useInner = useTabInnerRef.current;
+
+    if (sellTab) {
+      sellTab.x = sellTabAnchorX(width, ownedScale);
+    }
+    if (sellInner) {
+      sellInner.x = sellTabInnerX(reveal);
+    }
+    if (useTab && ownedUseActionRef.current) {
+      useTab.x = secondaryActionTabAnchorX(width, ownedScale);
+      useTab.y = secondaryActionTabAnchorY(height, ownedScale);
+    }
+    if (useInner) {
+      useInner.x = secondaryActionTabInnerX(reveal);
+    }
+  }, [height, width]);
+
   const applyOwnedEnlargedTargets = useCallback((nextEnlarged: boolean) => {
+    enlargedRef.current = nextEnlarged;
     setScalarTarget(ownedScaleSpringRef.current, nextEnlarged ? CARD_OWNED_ENLARGED_SCALE : 1);
     setScalarTarget(sellTabSpringRef.current, nextEnlarged ? 1 : 0);
   }, []);
@@ -287,36 +331,66 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     clickSquishUntilRef.current = performance.now() + CLICK_SQUISH_MS;
   }, []);
 
-  const hitsSellTabAtGlobal = useCallback(
-    (globalX: number, globalY: number) => {
-      if (displayMode !== 'owned' || !enlargedRef.current) {
+  const isOwnedActionTabOpen = useCallback(() => {
+    if (displayMode !== 'owned' || !enlargedRef.current) {
+      return false;
+    }
+    const spring = sellTabSpringRef.current;
+    if (spring.value >= 0.15) {
+      return true;
+    }
+    return embedded && spring.target >= 0.99;
+  }, [displayMode, embedded]);
+
+  const hitsOwnedTabAtGlobal = useCallback(
+    (inner: Container | null, globalX: number, globalY: number) => {
+      if (!inner || !isOwnedActionTabOpen()) {
         return false;
       }
-      if (sellTabSpringRef.current.value < 0.15) {
-        return false;
-      }
-      const inner = sellTabInnerRef.current;
-      if (!inner) {
-        return false;
-      }
-      if (!embedded && inner.eventMode === 'none') {
-        return false;
-      }
+      syncOwnedTabPositions();
       const local = inner.toLocal({ x: globalX, y: globalY });
       const hit = inner.hitArea;
       return hit instanceof Rectangle && hit.contains(local.x, local.y);
     },
-    [displayMode, embedded],
+    [isOwnedActionTabOpen, syncOwnedTabPositions],
+  );
+
+  const hitsSellTabAtGlobal = useCallback(
+    (globalX: number, globalY: number) => {
+      return hitsOwnedTabAtGlobal(sellTabInnerRef.current, globalX, globalY);
+    },
+    [hitsOwnedTabAtGlobal],
+  );
+
+  const hitsUseTabAtGlobal = useCallback(
+    (globalX: number, globalY: number) => {
+      if (!ownedUseActionRef.current) {
+        return false;
+      }
+      return hitsOwnedTabAtGlobal(useTabInnerRef.current, globalX, globalY);
+    },
+    [hitsOwnedTabAtGlobal],
   );
 
   const triggerSell = useCallback(() => {
     onSellRef.current?.();
   }, []);
 
+  const triggerUse = useCallback(() => {
+    if (ownedUseActionRef.current?.disabled) {
+      return;
+    }
+    ownedUseActionRef.current?.onAction();
+  }, []);
+
   const hideCardChrome = useCallback(() => {
     const sellTab = sellTabRef.current;
     if (sellTab) {
       sellTab.alpha = 0;
+    }
+    const useTab = useTabRef.current;
+    if (useTab) {
+      useTab.alpha = 0;
     }
   }, []);
 
@@ -394,6 +468,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
           return;
         }
         const next = !enlargedRef.current;
+        enlargedRef.current = next;
         setEnlarged(next);
         applyOwnedEnlargedTargets(next);
         notifySelectedChange(next);
@@ -402,6 +477,8 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
       deselect,
       hitsSellTabAtGlobal,
       triggerSell,
+      hitsUseTabAtGlobal,
+      triggerUse,
       animate: runAnimate,
       isPlayingAnimation,
     }),
@@ -418,6 +495,8 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
       tiltConfig,
       triggerClickSquish,
       triggerSell,
+      hitsUseTabAtGlobal,
+      triggerUse,
     ],
   );
 
@@ -559,6 +638,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     const lift = liftRef.current;
     const squishNode = squishRef.current;
     const sellTab = sellTabRef.current;
+    const useTab = useTabRef.current;
     const isDragging = draggingRef.current;
     const isHovered = hoveredRef.current && !isDragging;
     const isSelectedNow = isSelectedRef.current;
@@ -683,15 +763,12 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
 
       if (sellTab) {
         const reveal = sellTabSpringRef.current.value;
-        sellTab.x = sellTabAnchorX(width, ownedScale);
+        syncOwnedTabPositions();
         const inner = sellTabInnerRef.current;
         const sellVisible = displayMode === 'owned' && reveal > 0;
         const sellFade = sellVisible ? reveal : 0;
-        if (inner) {
-          inner.x = sellTabInnerX(reveal);
-          if (!embedded) {
-            inner.eventMode = enlargedRef.current && displayMode === 'owned' && reveal > 0.15 ? 'static' : 'none';
-          }
+        if (inner && !embedded) {
+          inner.eventMode = enlargedRef.current && displayMode === 'owned' && reveal > 0.15 ? 'static' : 'none';
         }
         sellTab.alpha = 1;
         const sellShadow = sellTabShadowRef.current;
@@ -705,6 +782,32 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
         }
         if (sellText) {
           sellText.alpha = sellFade;
+        }
+      }
+
+      if (useTab && ownedUseActionRef.current) {
+        const reveal = sellTabSpringRef.current.value;
+        useTab.x = secondaryActionTabAnchorX(width, ownedScale);
+        useTab.y = secondaryActionTabAnchorY(height, ownedScale);
+        const inner = useTabInnerRef.current;
+        const useVisible = displayMode === 'owned' && reveal > 0;
+        const useFade = useVisible ? reveal : 0;
+        if (inner) {
+          inner.x = secondaryActionTabInnerX(reveal);
+        }
+        useTab.alpha = 1;
+        const useShadow = useTabShadowRef.current;
+        const useGfx = useTabGfxRef.current;
+        const useText = useTabTextRef.current;
+        if (useShadow) {
+          useShadow.alpha = useFade;
+        }
+        if (useGfx) {
+          useGfx.alpha = useFade;
+        }
+        if (useText) {
+          useText.alpha = useFade;
+          useText.text = ownedUseActionRef.current.label;
         }
       }
     }
@@ -728,6 +831,31 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
             secondaryAction={secondaryAction}
             primaryActionTabColor={primaryActionTabColor}
           />
+        ) : null}
+
+        {displayMode === 'owned' && ownedUseAction ? (
+          <pixiContainer ref={useTabRef} zIndex={0} eventMode="passive">
+            <pixiContainer
+              ref={useTabInnerRef}
+              x={-SECONDARY_ACTION_TAB_WIDTH}
+              eventMode="none"
+              cursor={ownedUseAction.disabled ? 'default' : 'pointer'}
+              hitArea={
+                new Rectangle(0, -SECONDARY_ACTION_TAB_HEIGHT / 2, SECONDARY_ACTION_TAB_WIDTH, SECONDARY_ACTION_TAB_HEIGHT)
+              }
+            >
+              <pixiGraphics ref={useTabShadowRef} draw={drawOwnedUseTabShadow} eventMode="none" />
+              <pixiGraphics ref={useTabGfxRef} draw={drawOwnedUseTab} eventMode="none" />
+              <pixiText
+                ref={useTabTextRef}
+                text={ownedUseAction.label}
+                x={SECONDARY_ACTION_TAB_TEXT_X}
+                anchor={0.5}
+                style={sellTabTextStyle}
+                eventMode="none"
+              />
+            </pixiContainer>
+          </pixiContainer>
         ) : null}
 
         {displayMode === 'owned' ? (

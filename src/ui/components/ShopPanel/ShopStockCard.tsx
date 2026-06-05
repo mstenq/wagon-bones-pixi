@@ -4,8 +4,7 @@ import { getConsumableDefById } from '@/game/ConsumablesSystem';
 import type { StoredShopItem } from '@/game/store/types';
 import { Card } from '@/ui/components/Card/Card';
 import { Die, DEFAULT_DIE_SIZE } from '@/ui/components/Dice/Die';
-import type { EffectId } from '@/ui/effects/types';
-import { EFFECT_IDS } from '@/ui/effects/types';
+import { auraIdToEffectId } from '@/ui/components/CardBar/auraEffectId';
 import {
   getCardTemplateTexture,
   getShopConsumableTexture,
@@ -24,13 +23,6 @@ export type ShopStockCardProps = {
   onSelectedChange: (selected: boolean) => void;
   onBuy: (stockIndex: number, mode: 'buy' | 'buy_and_use') => void;
 };
-
-function auraToEffect(auraId: string | undefined): EffectId {
-  if (auraId && (EFFECT_IDS as readonly string[]).includes(auraId)) {
-    return auraId as EffectId;
-  }
-  return 'none';
-}
 
 export function ShopStockCard({
   item,
@@ -56,7 +48,7 @@ export function ShopStockCard({
 
   if (item.type === 'dice') {
     const template = getCardTemplateTexture('white-text');
-    const dieEffect = auraToEffect(item.die.aura ?? undefined);
+    const dieEffect = auraIdToEffectId(item.die.aura ?? undefined);
     return (
       <pixiContainer eventMode="passive">
         <Card
@@ -84,16 +76,16 @@ export function ShopStockCard({
   }
 
   let texture = null;
-  let effect: EffectId = 'none';
+  let effect = auraIdToEffectId(undefined);
 
   if (item.type === 'equipment') {
     texture = getShopEquipmentTexture(item.defId);
-    effect = auraToEffect(item.preview.auraId ?? undefined);
+    effect = auraIdToEffectId(item.preview.auraId ?? undefined);
   } else if (item.type === 'consumable') {
     const def = getConsumableDefById(item.defId);
     if (def) {
       texture = getShopConsumableTexture(item.defId, def.category);
-      effect = auraToEffect(def.aura?.id ?? undefined);
+      effect = auraIdToEffectId(def.aura?.id ?? undefined);
     }
   }
 

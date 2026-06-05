@@ -1,17 +1,18 @@
 import { useApplication, useTick } from '@pixi/react';
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 
-import { DicePouch } from '@/ui/components/gameScene/DicePouch';
-import { DicePouchModal } from '@/ui/components/gameScene/DicePouchModal';
-import { InventoryBar } from '@/ui/components/gameScene/InventoryBar';
-import { FeltOverlay } from '@/ui/components/gameScene/FeltOverlay';
-import { TagStack } from '@/ui/components/gameScene/TagStack';
+import { canUseConsumableInShop, type ConsumableDef } from '@/game/ConsumablesSystem';
 import {
   selectConsumableBarSlotLabel,
   selectConsumableBarSnapshot,
   selectEquipmentBarSlotLabel,
   selectEquipmentBarSnapshot,
 } from '@/game/store/selectors/uiSelectors';
+import { DicePouch } from '@/ui/components/gameScene/DicePouch';
+import { DicePouchModal } from '@/ui/components/gameScene/DicePouchModal';
+import { InventoryBar } from '@/ui/components/gameScene/InventoryBar';
+import { FeltOverlay } from '@/ui/components/gameScene/FeltOverlay';
+import { TagStack } from '@/ui/components/gameScene/TagStack';
 import {
   computeGameScenePixiLayout,
   computeGameSceneViewportMetrics,
@@ -29,6 +30,7 @@ export type GameSceneChromeContext = {
 
 export type GameScenePixiLayoutProps = {
   children: (contentSize: GameSceneContentSize, chrome: GameSceneChromeContext) => ReactNode;
+  canUseConsumable?: (def: ConsumableDef) => boolean;
 };
 
 type ChromeLayerProps = {
@@ -38,6 +40,7 @@ type ChromeLayerProps = {
   pouchModalOpen: boolean;
   onOpenPouch: () => void;
   onClosePouch: () => void;
+  canUseConsumable: (def: ConsumableDef) => boolean;
   children: ReactNode;
 };
 
@@ -48,20 +51,24 @@ function ChromeLayer({
   pouchModalOpen,
   onOpenPouch,
   onClosePouch,
+  canUseConsumable,
   children,
 }: ChromeLayerProps) {
   return (
     <pixiContainer sortableChildren eventMode="passive">
       <FeltOverlay width={layoutW} height={layoutH} />
       <InventoryBar
+        variant="equipment"
         layout={metrics.equipBar}
         snapshotSelector={selectEquipmentBarSnapshot}
         labelSelector={selectEquipmentBarSlotLabel}
       />
       <InventoryBar
+        variant="consumable"
         layout={metrics.consumableBar}
         snapshotSelector={selectConsumableBarSnapshot}
         labelSelector={selectConsumableBarSlotLabel}
+        canUseConsumable={canUseConsumable}
       />
       <pixiContainer y={metrics.contentTop} sortableChildren eventMode="passive">
         {children}
@@ -75,7 +82,7 @@ function ChromeLayer({
   );
 }
 
-export function GameScenePixiLayout({ children }: GameScenePixiLayoutProps) {
+export function GameScenePixiLayout({ children, canUseConsumable = canUseConsumableInShop }: GameScenePixiLayoutProps) {
   const { app } = useApplication();
   const [screenSize, setScreenSize] = useState(() => ({
     w: app.screen.width,
@@ -120,6 +127,7 @@ export function GameScenePixiLayout({ children }: GameScenePixiLayoutProps) {
       pouchModalOpen={pouchModalOpen}
       onOpenPouch={() => setPouchModalOpen(true)}
       onClosePouch={() => setPouchModalOpen(false)}
+      canUseConsumable={canUseConsumable}
     >
       {sceneContent}
     </ChromeLayer>

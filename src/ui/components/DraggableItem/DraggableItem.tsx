@@ -19,6 +19,8 @@ export type DraggableItemProps = {
   disabled?: boolean;
   /** When true, interactive children (e.g. card sell tab) are hit-tested before this wrapper. */
   interactiveChildren?: boolean;
+  /** When true, position/rotation/zIndex come only from `setTransform` (drag row tick). */
+  drivePositionImperatively?: boolean;
   onPointerDown?: (event: FederatedPointerEvent) => void;
   onPointerMove?: (event: FederatedPointerEvent) => void;
   onPointerOver?: (event: FederatedPointerEvent) => void;
@@ -40,6 +42,7 @@ export const DraggableItem = forwardRef<DraggableItemHandle, DraggableItemProps>
     hitArea: hitAreaProp,
     disabled = false,
     interactiveChildren = false,
+    drivePositionImperatively = false,
     onPointerDown,
     onPointerMove,
     onPointerOver,
@@ -87,21 +90,34 @@ export const DraggableItem = forwardRef<DraggableItemHandle, DraggableItemProps>
       if (!node) {
         return;
       }
+      if (!node) {
+        return;
+      }
+      if (!drivePositionImperatively) {
+        node.position.set(x, y);
+        node.rotation = rotation;
+        node.zIndex = zIndex;
+      }
       node.hitArea = hitArea;
       node.interactiveChildren = interactiveChildren;
       node.eventMode = disabled ? 'none' : 'static';
       node.cursor = disabled ? 'default' : 'grab';
     },
-    [disabled, hitArea, interactiveChildren],
+    [disabled, drivePositionImperatively, hitArea, interactiveChildren, rotation, x, y, zIndex],
   );
+
+  const containerX = drivePositionImperatively ? 0 : x;
+  const containerY = drivePositionImperatively ? 0 : y;
+  const containerRotation = drivePositionImperatively ? 0 : rotation;
+  const containerZIndex = drivePositionImperatively ? 0 : zIndex;
 
   return (
     <pixiContainer
       ref={bindContainer}
-      x={x}
-      y={y}
-      rotation={rotation}
-      zIndex={zIndex}
+      x={containerX}
+      y={containerY}
+      rotation={containerRotation}
+      zIndex={containerZIndex}
       onPointerDown={disabled ? undefined : onPointerDown}
       onPointerMove={disabled ? undefined : onPointerMove}
       onPointerOver={disabled ? undefined : onPointerOver}

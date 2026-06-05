@@ -119,10 +119,20 @@ const FLYIN_START_SCALE = 0.2;
 const CARRYOVER_REPOSITION_MS = 250;
 const REPOSITION_EPS = 1.5;
 
+export type RowReorderMove<ItemId extends string | number = number> = {
+  itemId: ItemId;
+  fromSlot: number;
+  toSlot: number;
+  /** Item id that occupied the destination slot before the drag. */
+  targetId: ItemId;
+};
+
 export type UseReorderableRowOptions<ItemId extends string | number = number> = {
   layout: ReorderableRowLayout;
   order: ItemId[];
-  onOrderChange: (order: ItemId[]) => void;
+  onOrderChange: (order: ItemId[], move?: RowReorderMove<ItemId>) => void;
+  /** When this changes, cached drag positions reset (e.g. store revision after reorder). */
+  orderRevision?: string;
   disabled?: boolean;
   swing?: DragSwingConfig;
   snapLerp?: number;
@@ -137,6 +147,7 @@ export function useReorderableRow<ItemId extends string | number = number>({
   layout,
   order,
   onOrderChange,
+  orderRevision,
   disabled = false,
   swing,
   snapLerp = 0.22,
@@ -166,6 +177,14 @@ export function useReorderableRow<ItemId extends string | number = number>({
   const handRefillLayoutRef = useRef<ReorderableRowLayout | null>(null);
   const flyInSoundsPlayedRef = useRef<Set<ItemId>>(new Set());
   const skipOrderSyncClearRef = useRef(false);
+  const orderRevisionRef = useRef(orderRevision);
+
+  const clearDragCaches = useCallback(() => {
+    positionsRef.current.clear();
+    coastRef.current.clear();
+    dropSettlingItemIdRef.current = null;
+    dropSettlingUntilRef.current = 0;
+  }, []);
 
   const slotHome = useCallback(
     (slotIndex: number) => rowSlotCenter(slotIndex, layout.pitch, layout.originX, layout.rowY),
@@ -340,6 +359,19 @@ export function useReorderableRow<ItemId extends string | number = number>({
   );
 
   useEffect(() => {
+    if (orderRevision === undefined || orderRevisionRef.current === orderRevision) {
+      return;
+    }
+    orderRevisionRef.current = orderRevision;
+    if (dragRef.current) {
+      return;
+    }
+    orderKeyRef.current = order.join('|');
+    orderRef.current = order;
+    clearDragCaches();
+  }, [clearDragCaches, order, orderRevision]);
+
+  useEffect(() => {
     if (dragRef.current || skipOrderSyncClearRef.current) {
       skipOrderSyncClearRef.current = false;
       return;
@@ -352,11 +384,8 @@ export function useReorderableRow<ItemId extends string | number = number>({
 
     orderKeyRef.current = nextKey;
     orderRef.current = order;
-    positionsRef.current.clear();
-    coastRef.current.clear();
-    dropSettlingItemIdRef.current = null;
-    dropSettlingUntilRef.current = 0;
-  }, [order]);
+    clearDragCaches();
+  }, [clearDragCaches, order]);
 
   const getPreviewOrder = useCallback((fromSlot: number, hoverSlot: number) => {
     const base = orderRef.current;
@@ -378,6 +407,7 @@ export function useReorderableRow<ItemId extends string | number = number>({
 
   const endDrag = useCallback(
     (session: DragSession<ItemId>) => {
+      const oldOrder = orderRef.current;
       const newOrder = getPreviewOrder(session.fromSlot, session.previewSlot);
       const orderChanged = session.fromSlot !== session.previewSlot;
 
@@ -401,7 +431,13 @@ export function useReorderableRow<ItemId extends string | number = number>({
         setDraggingSlot(null);
         setPressingItemId(null);
         if (orderChanged) {
-          onOrderChange(newOrder);
+          const targetId = oldOrder[session.previewSlot]!;
+          onOrderChange(newOrder, {
+            itemId: session.itemId,
+            fromSlot: session.fromSlot,
+            toSlot: session.previewSlot,
+            targetId,
+          });
         }
       });
     },

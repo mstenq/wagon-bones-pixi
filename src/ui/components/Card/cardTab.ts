@@ -257,6 +257,32 @@ export const SELL_TAB_TEXT_X = SELL_TAB_LEFT_PADDING + (SELL_TAB_WIDTH - SELL_TA
 
 export const SECONDARY_ACTION_TAB_TEXT_X = SECONDARY_ACTION_TAB_WIDTH / 2;
 
+/** Consumable USE tab on owned inventory cards (Phaser blue). */
+export const OWNED_USE_TAB_COLOR = 0x2255aa;
+export const OWNED_USE_TAB_STROKE = 0x1a4488;
+
+export function drawOwnedUseTab(graphics: Graphics): void {
+  drawRightSlideTabShape(graphics, SECONDARY_ACTION_TAB_WIDTH, SECONDARY_ACTION_TAB_HEIGHT, 0, 0, {
+    fill: OWNED_USE_TAB_COLOR,
+    stroke: OWNED_USE_TAB_STROKE,
+  });
+}
+
+export function drawOwnedUseTabShadow(graphics: Graphics): void {
+  drawRightSlideTabShape(
+    graphics,
+    SECONDARY_ACTION_TAB_WIDTH,
+    SECONDARY_ACTION_TAB_HEIGHT,
+    TAB_SHADOW_OFFSET_X,
+    TAB_SHADOW_OFFSET_Y,
+    {
+      fill: 0x000000,
+      fillAlpha: TAB_SHADOW_ALPHA,
+      strokeWidth: 0,
+    },
+  );
+}
+
 /** Re-export for hit-area / layout math in Card. */
 export {
   ACTION_TAB_ATTACH_OVERLAP,
