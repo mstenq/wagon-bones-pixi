@@ -23,8 +23,12 @@ export type GameSceneContentSize = {
   h: number;
 };
 
+export type GameSceneChromeContext = {
+  pouchLaunch: { x: number; y: number };
+};
+
 export type GameScenePixiLayoutProps = {
-  children: (contentSize: GameSceneContentSize) => ReactNode;
+  children: (contentSize: GameSceneContentSize, chrome: GameSceneChromeContext) => ReactNode;
 };
 
 type ChromeLayerProps = {
@@ -102,7 +106,11 @@ export function GameScenePixiLayout({ children }: GameScenePixiLayoutProps) {
     [metrics.contentH, metrics.contentW],
   );
 
-  const sceneContent = children(contentSize);
+  const pouchLaunch = {
+    x: metrics.dicePouch.x + metrics.dicePouch.size / 2,
+    y: metrics.dicePouch.y + metrics.dicePouch.size / 2 - metrics.contentTop,
+  };
+  const sceneContent = children(contentSize, { pouchLaunch });
 
   const chrome = (
     <ChromeLayer

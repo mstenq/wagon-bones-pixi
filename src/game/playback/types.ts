@@ -27,7 +27,8 @@ export type PlaybackCommand =
   | { kind: 'equipment-destroyed'; sourceIdx: number; victimIdx: number }
   /** Consumable use: bar animations and optional equipment pop-in. */
   | { kind: 'consumable-playback'; events: ConsumableAnimEvent[]; equipmentCreatedCount?: number }
-  /** Full scored hand: runner plays result.animEvents and applies mutations. */
+  /** Full scored hand: runner plays result.animEvents and applies mutations.
+   *  Pixi follow-up after this command: endDay + hand refill fly-in on DiceRow. */
   | { kind: 'score'; result: ScoreResult }
   /** Standalone score animation events (e.g. round-end held dice). */
   | { kind: 'score-events'; events: ScoreAnimEvent[]; label?: 'round-end-held' }

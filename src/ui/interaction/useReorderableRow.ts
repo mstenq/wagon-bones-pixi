@@ -3,6 +3,8 @@ import type { Container, FederatedPointerEvent } from 'pixi.js';
 import { flushSync } from 'react-dom';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { playSfx } from '@/ui/audio/sfx';
+import { easeOutBack, easeOutQuad } from '@/ui/interaction/easing';
 import {
   createSquishState,
   isSquishSettled,
@@ -36,6 +38,7 @@ export type ItemVisual = {
   zIndex: number;
   scaleX: number;
   scaleY: number;
+  alpha: number;
 };
 
 export type RowDragSession<ItemId extends string | number = number> = {
@@ -46,6 +49,20 @@ export type RowDragSession<ItemId extends string | number = number> = {
 export type RowLayoutMeta<ItemId extends string | number = number> = {
   dragSession: RowDragSession<ItemId> | null;
   dropSettlingItemId: ItemId | null;
+};
+
+export type ApplyOrderOptions = {
+  animated?: boolean;
+  durationMs?: number;
+};
+
+export type HandFlyInOptions<ItemId extends string | number> = {
+  order: ItemId[];
+  newItemIds: ItemId[];
+  launchPoint: { x: number; y: number };
+  /** Row metrics for the full target hand — must match `order.length`. */
+  targetLayout: ReorderableRowLayout;
+  onComplete?: () => void;
 };
 
 type DragSession<ItemId extends string | number> = {
@@ -61,7 +78,6 @@ type DragSession<ItemId extends string | number> = {
   activated: boolean;
   lastGlobalX: number;
   smoothVx: number;
-  /** Swing target from pointer velocity — stepped toward each frame in `tickLayout`. */
   targetSwing: number;
   swing: number;
   x: number;
@@ -70,10 +86,38 @@ type DragSession<ItemId extends string | number> = {
   previewSlot: number;
 };
 
+type ProgrammaticMove<ItemId extends string | number> = {
+  startedAt: number;
+  durationMs: number;
+  starts: Map<ItemId, { x: number; y: number }>;
+  targets: Map<ItemId, { x: number; y: number }>;
+};
+
+type FlyInDie<ItemId extends string | number> = {
+  itemId: ItemId;
+  fromX: number;
+  fromY: number;
+  toX: number;
+  toY: number;
+  delayMs: number;
+  durationMs: number;
+};
+
+type FlyInSession<ItemId extends string | number> = {
+  startedAt: number;
+  items: FlyInDie<ItemId>[];
+  onComplete?: () => void;
+};
+
 const DEFAULT_DRAG_THRESHOLD = 8;
-/** Safety cap for post-drop lerp; settling ends when position is within epsilon. */
 const DROP_SETTLE_MAX_MS = 600;
 const DROP_SETTLE_POSITION_EPS = 1.5;
+const DEFAULT_SORT_DURATION_MS = 250;
+const FLYIN_DURATION_MS = 320;
+const FLYIN_STAGGER_MS = 90;
+const FLYIN_START_SCALE = 0.2;
+const CARRYOVER_REPOSITION_MS = 250;
+const REPOSITION_EPS = 1.5;
 
 export type UseReorderableRowOptions<ItemId extends string | number = number> = {
   layout: ReorderableRowLayout;
@@ -83,9 +127,7 @@ export type UseReorderableRowOptions<ItemId extends string | number = number> = 
   swing?: DragSwingConfig;
   snapLerp?: number;
   dragSnapLerp?: number;
-  /** Pixels before pointer movement counts as drag instead of tap. */
   dragThreshold?: number;
-  /** Fired on pointer up when movement stayed below `dragThreshold`. */
   onItemTap?: (slotIndex: number, itemId: ItemId, event: FederatedPointerEvent) => void;
   squishGrab?: SquishTargets;
   squishDrag?: SquishTargets;
@@ -107,36 +149,219 @@ export function useReorderableRow<ItemId extends string | number = number>({
   const { app } = useApplication();
   const [draggingSlot, setDraggingSlot] = useState<number | null>(null);
   const [pressingItemId, setPressingItemId] = useState<ItemId | null>(null);
+  const [isRepositioning, setIsRepositioning] = useState(false);
   const dragRef = useRef<DragSession<ItemId> | null>(null);
   const coastRef = useRef<Map<ItemId, number>>(new Map());
   const squishRef = useRef<Map<ItemId, SquishState>>(new Map());
   const positionsRef = useRef<Map<ItemId, { x: number; y: number }>>(new Map());
-  // After drop, we keep lerping for a short moment so the dragged die
-  // doesn't teleport to its final slot instantly.
+  const alphaRef = useRef<Map<ItemId, number>>(new Map());
+  const flyInScaleRef = useRef<Map<ItemId, number>>(new Map());
   const dropSettlingUntilRef = useRef<number>(0);
   const dropSettlingItemIdRef = useRef<ItemId | null>(null);
-  /** Layout order — updated on drop before React; do not overwrite from stale `order` prop. */
   const orderRef = useRef(order);
-
-  useEffect(() => {
-    if (!dragRef.current) {
-      orderRef.current = order;
-    }
-  }, [order]);
+  const orderKeyRef = useRef(order.join('|'));
+  const programmaticMoveRef = useRef<ProgrammaticMove<ItemId> | null>(null);
+  const flyInSessionRef = useRef<FlyInSession<ItemId> | null>(null);
+  const pendingFlyInRef = useRef<FlyInSession<ItemId> | null>(null);
+  const handRefillLayoutRef = useRef<ReorderableRowLayout | null>(null);
+  const flyInSoundsPlayedRef = useRef<Set<ItemId>>(new Set());
+  const skipOrderSyncClearRef = useRef(false);
 
   const slotHome = useCallback(
     (slotIndex: number) => rowSlotCenter(slotIndex, layout.pitch, layout.originX, layout.rowY),
     [layout.originX, layout.pitch, layout.rowY],
   );
 
+  const slotHomeForLayout = useCallback((slotIndex: number, rowLayout: ReorderableRowLayout) => {
+    return rowSlotCenter(slotIndex, rowLayout.pitch, rowLayout.originX, rowLayout.rowY);
+  }, []);
+
+  const activeRowLayout = useCallback((): ReorderableRowLayout => {
+    return handRefillLayoutRef.current ?? layout;
+  }, [layout]);
+
+  const updateRepositioningState = useCallback(() => {
+    const active =
+      programmaticMoveRef.current !== null ||
+      flyInSessionRef.current !== null ||
+      pendingFlyInRef.current !== null;
+    setIsRepositioning(active);
+  }, []);
+
+  const applyOrder = useCallback(
+    (nextOrder: ItemId[], options: ApplyOrderOptions = {}) => {
+      if (dragRef.current) {
+        return;
+      }
+
+      const nextKey = nextOrder.join('|');
+      if (nextKey === orderKeyRef.current) {
+        return;
+      }
+
+      const oldOrder = orderRef.current;
+      orderKeyRef.current = nextKey;
+      orderRef.current = nextOrder;
+      skipOrderSyncClearRef.current = true;
+      onOrderChange(nextOrder);
+
+      if (!options.animated) {
+        positionsRef.current.clear();
+        coastRef.current.clear();
+        dropSettlingItemIdRef.current = null;
+        dropSettlingUntilRef.current = 0;
+        return;
+      }
+
+      const durationMs = options.durationMs ?? DEFAULT_SORT_DURATION_MS;
+      const starts = new Map<ItemId, { x: number; y: number }>();
+      const targets = new Map<ItemId, { x: number; y: number }>();
+
+      for (let slotIndex = 0; slotIndex < nextOrder.length; slotIndex++) {
+        const itemId = nextOrder[slotIndex]!;
+        const target = slotHome(slotIndex);
+        targets.set(itemId, target);
+
+        const cached = positionsRef.current.get(itemId);
+        if (cached) {
+          starts.set(itemId, cached);
+        } else {
+          const oldSlot = oldOrder.indexOf(itemId);
+          const start = oldSlot >= 0 ? slotHome(oldSlot) : target;
+          starts.set(itemId, start);
+          positionsRef.current.set(itemId, start);
+        }
+      }
+
+      programmaticMoveRef.current = {
+        startedAt: performance.now(),
+        durationMs,
+        starts,
+        targets,
+      };
+      updateRepositioningState();
+    },
+    [onOrderChange, slotHome, updateRepositioningState],
+  );
+
+  /** Pouch fly-in for replacement dice — call from playback runner via `requestHandRefillFlyIn`. */
+  const beginHandFlyIn = useCallback(
+    ({ order: nextOrder, newItemIds, launchPoint, targetLayout, onComplete }: HandFlyInOptions<ItemId>) => {
+      if (dragRef.current) {
+        onComplete?.();
+        return;
+      }
+
+      const newIdSet = new Set(newItemIds);
+      const nextKey = nextOrder.join('|');
+      orderKeyRef.current = nextKey;
+      orderRef.current = nextOrder;
+      skipOrderSyncClearRef.current = true;
+      handRefillLayoutRef.current = targetLayout;
+      flushSync(() => onOrderChange(nextOrder));
+
+      if (newItemIds.length === 0) {
+        handRefillLayoutRef.current = null;
+        onComplete?.();
+        return;
+      }
+
+      const slotAt = (slotIndex: number) => slotHomeForLayout(slotIndex, targetLayout);
+      const flyItems: FlyInDie<ItemId>[] = [];
+      const carryoverStarts = new Map<ItemId, { x: number; y: number }>();
+      const carryoverTargets = new Map<ItemId, { x: number; y: number }>();
+      let needsCarryoverMove = false;
+
+      for (let slotIndex = 0; slotIndex < nextOrder.length; slotIndex++) {
+        const itemId = nextOrder[slotIndex]!;
+        const target = slotAt(slotIndex);
+
+        if (newIdSet.has(itemId)) {
+          positionsRef.current.set(itemId, { x: launchPoint.x, y: launchPoint.y });
+          alphaRef.current.set(itemId, 0);
+          flyInScaleRef.current.set(itemId, FLYIN_START_SCALE);
+          flyItems.push({
+            itemId,
+            fromX: launchPoint.x,
+            fromY: launchPoint.y,
+            toX: target.x,
+            toY: target.y,
+            delayMs: 0,
+            durationMs: FLYIN_DURATION_MS,
+          });
+          continue;
+        }
+
+        const cached = positionsRef.current.get(itemId) ?? target;
+        positionsRef.current.set(itemId, cached);
+        alphaRef.current.set(itemId, 1);
+        const dist = Math.hypot(cached.x - target.x, cached.y - target.y);
+        if (dist > REPOSITION_EPS) {
+          needsCarryoverMove = true;
+          carryoverStarts.set(itemId, cached);
+          carryoverTargets.set(itemId, target);
+        } else {
+          positionsRef.current.set(itemId, target);
+        }
+      }
+
+      const flyInBaseDelay = needsCarryoverMove ? CARRYOVER_REPOSITION_MS : 0;
+      for (let i = 0; i < flyItems.length; i++) {
+        flyItems[i]!.delayMs = flyInBaseDelay + i * FLYIN_STAGGER_MS;
+      }
+
+      flyInSoundsPlayedRef.current = new Set();
+      pendingFlyInRef.current = null;
+
+      const flyInSession: FlyInSession<ItemId> = {
+        startedAt: performance.now(),
+        items: flyItems,
+        onComplete: () => {
+          handRefillLayoutRef.current = null;
+          onComplete?.();
+        },
+      };
+
+      if (needsCarryoverMove) {
+        programmaticMoveRef.current = {
+          startedAt: performance.now(),
+          durationMs: CARRYOVER_REPOSITION_MS,
+          starts: carryoverStarts,
+          targets: carryoverTargets,
+        };
+        pendingFlyInRef.current = flyInSession;
+      } else {
+        flyInSessionRef.current = flyInSession;
+      }
+
+      updateRepositioningState();
+    },
+    [onOrderChange, slotHomeForLayout, updateRepositioningState],
+  );
+
+  useEffect(() => {
+    if (dragRef.current || skipOrderSyncClearRef.current) {
+      skipOrderSyncClearRef.current = false;
+      return;
+    }
+
+    const nextKey = order.join('|');
+    if (nextKey === orderKeyRef.current) {
+      return;
+    }
+
+    orderKeyRef.current = nextKey;
+    orderRef.current = order;
+    positionsRef.current.clear();
+    coastRef.current.clear();
+    dropSettlingItemIdRef.current = null;
+    dropSettlingUntilRef.current = 0;
+  }, [order]);
+
   const getPreviewOrder = useCallback((fromSlot: number, hoverSlot: number) => {
     const base = orderRef.current;
     return fromSlot === hoverSlot ? base : moveInArray(base, fromSlot, hoverSlot);
   }, []);
-
-  // NOTE: we intentionally do not snap `positionsRef` to slot homes on drop.
-  // During the short post-drop settling window we lerp from the last dragged
-  // position to avoid "instant teleport" feel.
 
   const getPosition = useCallback((itemId: ItemId, home: { x: number; y: number }) => {
     const cached = positionsRef.current.get(itemId);
@@ -147,14 +372,23 @@ export function useReorderableRow<ItemId extends string | number = number>({
     return home;
   }, []);
 
+  const getItemAlpha = useCallback((itemId: ItemId): number => {
+    return alphaRef.current.get(itemId) ?? 1;
+  }, []);
+
   const endDrag = useCallback(
     (session: DragSession<ItemId>) => {
       const newOrder = getPreviewOrder(session.fromSlot, session.previewSlot);
       const orderChanged = session.fromSlot !== session.previewSlot;
 
+      orderKeyRef.current = newOrder.join('|');
       orderRef.current = newOrder;
       dropSettlingUntilRef.current = performance.now() + DROP_SETTLE_MAX_MS;
       dropSettlingItemIdRef.current = session.itemId;
+
+      if (orderChanged) {
+        playSfx('diceRoll', { volume: 0.2 });
+      }
 
       coastRef.current.set(session.itemId, session.swing);
       const squish = squishRef.current.get(session.itemId);
@@ -342,8 +576,91 @@ export function useReorderableRow<ItemId extends string | number = number>({
     ],
   );
 
+  const stepProgrammaticMove = useCallback(() => {
+    const move = programmaticMoveRef.current;
+    if (!move) {
+      return false;
+    }
+
+    const elapsed = performance.now() - move.startedAt;
+    const progress = Math.min(elapsed / move.durationMs, 1);
+    const eased = easeOutQuad(progress);
+
+    for (const [itemId, target] of move.targets) {
+      const start = move.starts.get(itemId) ?? target;
+      const x = start.x + (target.x - start.x) * eased;
+      const y = start.y + (target.y - start.y) * eased;
+      positionsRef.current.set(itemId, { x, y });
+    }
+
+    if (progress >= 1) {
+      for (const [itemId, target] of move.targets) {
+        positionsRef.current.set(itemId, target);
+      }
+      programmaticMoveRef.current = null;
+
+      const pendingFlyIn = pendingFlyInRef.current;
+      if (pendingFlyIn) {
+        pendingFlyInRef.current = null;
+        pendingFlyIn.startedAt = performance.now();
+        flyInSessionRef.current = pendingFlyIn;
+      }
+
+      updateRepositioningState();
+      return false;
+    }
+
+    return true;
+  }, [updateRepositioningState]);
+
   const tickLayout = useCallback(
     (apply: (slotIndex: number, itemId: ItemId, visual: ItemVisual, meta: RowLayoutMeta<ItemId>) => void) => {
+      stepProgrammaticMove();
+
+      const flySession = flyInSessionRef.current;
+      if (flySession) {
+        const now = performance.now();
+        let allComplete = true;
+
+        for (const item of flySession.items) {
+          const itemElapsed = now - flySession.startedAt - item.delayMs;
+          if (itemElapsed < 0) {
+            allComplete = false;
+            positionsRef.current.set(item.itemId, { x: item.fromX, y: item.fromY });
+            alphaRef.current.set(item.itemId, 0);
+            flyInScaleRef.current.set(item.itemId, FLYIN_START_SCALE);
+            continue;
+          }
+
+          if (!flyInSoundsPlayedRef.current.has(item.itemId)) {
+            flyInSoundsPlayedRef.current.add(item.itemId);
+            playSfx('card1', { volume: 0.35 });
+          }
+
+          const progress = Math.min(itemElapsed / item.durationMs, 1);
+          const eased = easeOutBack(progress);
+          const x = item.fromX + (item.toX - item.fromX) * eased;
+          const y = item.fromY + (item.toY - item.fromY) * eased;
+          positionsRef.current.set(item.itemId, { x, y });
+          alphaRef.current.set(item.itemId, eased);
+          flyInScaleRef.current.set(item.itemId, FLYIN_START_SCALE + (1 - FLYIN_START_SCALE) * eased);
+
+          if (progress < 1) {
+            allComplete = false;
+          } else {
+            alphaRef.current.set(item.itemId, 1);
+            flyInScaleRef.current.delete(item.itemId);
+          }
+        }
+
+        if (allComplete) {
+          const onComplete = flySession.onComplete;
+          flyInSessionRef.current = null;
+          updateRepositioningState();
+          onComplete?.();
+        }
+      }
+
       const session = dragRef.current?.activated ? dragRef.current : null;
       const activeOrder = session ? getPreviewOrder(session.fromSlot, session.previewSlot) : orderRef.current;
       const timeSettling = !session && performance.now() < dropSettlingUntilRef.current;
@@ -367,7 +684,19 @@ export function useReorderableRow<ItemId extends string | number = number>({
         }
       }
 
-      const settling = session !== null || timeSettling || dropPositionSettling;
+      const rowLayout = activeRowLayout();
+      const slotHomeActive = (slotIndex: number) => slotHomeForLayout(slotIndex, rowLayout);
+
+      const programmaticActive = programmaticMoveRef.current !== null;
+      const flyInActive = flyInSessionRef.current !== null;
+      const pendingFlyInActive = pendingFlyInRef.current !== null;
+      const settling =
+        session !== null ||
+        timeSettling ||
+        dropPositionSettling ||
+        programmaticActive ||
+        flyInActive ||
+        pendingFlyInActive;
       const lerp = settling ? dragSnapLerp : snapLerp;
       const isSettled = !settling;
       const dt = 1 / 60;
@@ -382,9 +711,13 @@ export function useReorderableRow<ItemId extends string | number = number>({
         dropSettlingItemId: dropSettlingItemIdRef.current,
       };
 
-      for (let slotIndex = 0; slotIndex < layout.count; slotIndex++) {
-        const itemId = activeOrder[slotIndex]!;
-        const home = slotHome(slotIndex);
+      const slotCount = Math.max(rowLayout.count, activeOrder.length);
+      for (let slotIndex = 0; slotIndex < slotCount; slotIndex++) {
+        const itemId = activeOrder[slotIndex];
+        if (itemId === undefined) {
+          continue;
+        }
+        const home = slotHomeActive(slotIndex);
 
         let squish = squishRef.current.get(itemId);
         if (squish) {
@@ -397,8 +730,10 @@ export function useReorderableRow<ItemId extends string | number = number>({
           }
         }
 
-        const scaleX = squish?.scaleX ?? 1;
-        const scaleY = squish?.scaleY ?? 1;
+        const flyScale = flyInScaleRef.current.get(itemId);
+        const scaleX = (squish?.scaleX ?? 1) * (flyScale ?? 1);
+        const scaleY = (squish?.scaleY ?? 1) * (flyScale ?? 1);
+        const alpha = getItemAlpha(itemId);
 
         if (session?.itemId === itemId) {
           apply(
@@ -411,6 +746,26 @@ export function useReorderableRow<ItemId extends string | number = number>({
               zIndex: 1000,
               scaleX,
               scaleY,
+              alpha,
+            },
+            layoutMeta,
+          );
+          continue;
+        }
+
+        if (programmaticActive || flyInActive || pendingFlyInActive) {
+          const pos = getPosition(itemId, home);
+          apply(
+            slotIndex,
+            itemId,
+            {
+              x: pos.x,
+              y: pos.y,
+              rotation: 0,
+              zIndex: slotIndex,
+              scaleX,
+              scaleY,
+              alpha,
             },
             layoutMeta,
           );
@@ -447,12 +802,26 @@ export function useReorderableRow<ItemId extends string | number = number>({
             zIndex: slotIndex,
             scaleX,
             scaleY,
+            alpha,
           },
           layoutMeta,
         );
       }
     },
-    [dragSnapLerp, getPosition, getPreviewOrder, layout.count, slotHome, snapLerp, swing],
+    [
+      dragSnapLerp,
+      getItemAlpha,
+      getPosition,
+      getPreviewOrder,
+      activeRowLayout,
+      layout.count,
+      slotHome,
+      slotHomeForLayout,
+      snapLerp,
+      stepProgrammaticMove,
+      swing,
+      updateRepositioningState,
+    ],
   );
 
   const slotHomeForOrder = useCallback((slotIndex: number) => slotHome(slotIndex), [slotHome]);
@@ -463,5 +832,8 @@ export function useReorderableRow<ItemId extends string | number = number>({
     slotHome: slotHomeForOrder,
     draggingSlot,
     pressingItemId,
+    applyOrder,
+    beginHandFlyIn,
+    isRepositioning,
   };
 }

@@ -29,6 +29,9 @@ export const PixiStageCanvas = memo(function PixiStageCanvas({ children }: PixiS
             onInit={(app) => {
               app.stage.eventMode = 'static';
               app.stage.sortableChildren = true;
+              app.canvas.addEventListener('contextmenu', (event) => {
+                event.preventDefault();
+              });
             }}
             resolution={typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1}
           >

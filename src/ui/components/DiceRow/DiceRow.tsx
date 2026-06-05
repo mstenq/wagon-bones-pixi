@@ -1,5 +1,6 @@
 import { useTick } from '@pixi/react';
-import { use, useCallback, useMemo, useRef, useState } from 'react';
+import type { FederatedPointerEvent } from 'pixi.js';
+import { use, useCallback, useMemo, useRef } from 'react';
 
 import {
   DraggableItem,
@@ -8,183 +9,201 @@ import {
 import { Die, DEFAULT_DIE_SIZE, type DieHandle } from '@/ui/components/Dice/Die';
 import { DICE_DRAG_Z_INDEX, diceTypeFromEnhancement } from '@/ui/components/Dice/config';
 import { dieShadowDragStateFromFloor } from '@/ui/components/Dice/dieGroundShadow';
-import { createRollSession, stepRollAnimation, type ActiveRollSession } from '@/ui/components/DiceRow/diceRollAnimation';
-import { setDiceRowVisualOrder } from '@/ui/components/DiceRow/diceRowUi';
+import { useDiceRowController } from '@/ui/components/DiceRow/DiceRowController';
+import {
+  dieModeForDie,
+  dieShadowFloorLineY,
+  layoutForDiceCount,
+} from '@/ui/components/DiceRow/diceRowDisplay';
+import { sortDieIdsForRound } from '@/ui/components/DiceRow/diceRowInteraction';
+import { useDiceRowPhaseState } from '@/ui/components/DiceRow/useDiceRowPhaseState';
+import { useDiceRowHandRefill, type PouchLaunchPoint } from '@/ui/components/DiceRow/useDiceRowHandRefill';
+import { useDiceRowRollAnimation } from '@/ui/components/DiceRow/useDiceRowRollAnimation';
+import { useDiceRowRollTap } from '@/ui/components/DiceRow/useDiceRowRollTap';
 import { texturesReady } from '@/assets/dice/textures';
-import type { RoundRuntimeState } from '@/game/store/types';
-import type { Die as GameDie, PhaseState } from '@/game/types';
+import { gameFacade } from '@/game/facade';
 import { useGameRunStore, useGameRoundStore } from '@/game/store/reactHooks';
+import { getRunState } from '@/game/store/runStore';
+import { getRoundState } from '@/game/store/roundStore';
 import { dieValueInRound, resolveDiceByIds } from '@/game/store/roundResolve';
 import { rowArcPose } from '@/ui/interaction/rowArcPose';
-import { rowMetrics } from '@/ui/interaction/rowLayout';
 import {
   useReorderableRow,
+  type ApplyOrderOptions,
   type ReorderableRowLayout,
-  type RowLayoutMeta,
 } from '@/ui/interaction/useReorderableRow';
 
 export type DiceRowProps = {
   layout: ReorderableRowLayout;
+  pouchLaunch?: PouchLaunchPoint | null;
 };
 
-function layoutForDiceCount(layout: ReorderableRowLayout, diceCount: number): ReorderableRowLayout {
-  if (diceCount <= 0 || diceCount === layout.count) {
-    return layout;
-  }
+const EMPTY_IDS: readonly string[] = [];
 
-  const gap = layout.pitch - DEFAULT_DIE_SIZE;
-  const contentW = 2 * (layout.originX - DEFAULT_DIE_SIZE / 2) + layout.rowWidth;
-  const metrics = rowMetrics(diceCount, DEFAULT_DIE_SIZE, gap, contentW);
-
-  return { ...layout, ...metrics, count: diceCount };
-}
-
-function orderKey(ids: string[]): string {
-  return ids.join('|');
-}
-
-function dieShadowFloorLineY(
-  dieId: string,
-  homeY: number,
-  meta: RowLayoutMeta<string>,
-  slotHomeY: (slotIndex: number) => number,
-): number | null {
-  if (meta.dragSession?.itemId === dieId) {
-    return slotHomeY(meta.dragSession.fromSlot);
-  }
-  if (meta.dropSettlingItemId === dieId) {
-    return homeY;
-  }
-  return null;
-}
-
-function buildRollFinalValues(dice: GameDie[], round: RoundRuntimeState): Record<string, number> {
-  const values: Record<string, number> = {};
-  for (const die of dice) {
-    values[die.id] = dieValueInRound(die.id, round) ?? die.value;
-  }
-  return values;
-}
-
-function selectDisplayOrder(
-  phase: PhaseState | null,
-  visualOrder: string[],
-  rolledDisplayOrder: string[],
-  handDiceIds: string[],
-): string[] {
-  if (phase === 'SELECT') {
-    return visualOrder;
-  }
-  if (rolledDisplayOrder.length > 0) {
-    return rolledDisplayOrder;
-  }
-  if (visualOrder.length > 0) {
-    return visualOrder;
-  }
-  return handDiceIds;
-}
-
-function buildRollEnhancements(dice: GameDie[]): Record<string, GameDie['enhancement']> {
-  const enhancements: Record<string, GameDie['enhancement']> = {};
-  for (const die of dice) {
-    enhancements[die.id] = die.enhancement;
-  }
-  return enhancements;
-}
-
-export function DiceRow({ layout }: DiceRowProps) {
+export function DiceRow({ layout, pouchLaunch = null }: DiceRowProps) {
   use(texturesReady);
 
+  const controller = useDiceRowController();
   const run = useGameRunStore((state) => state);
   const round = useGameRoundStore((state) => state);
   const phase = round?.phase ?? null;
-  const handDiceIds = round?.handDiceIds ?? [];
+  const handDiceIds = round?.handDiceIds ?? EMPTY_IDS;
+  const selectedForScoreIds = useGameRoundStore((state) => state?.selectedForScoreIds ?? EMPTY_IDS);
 
-  const [visualOrder, setVisualOrder] = useState<string[]>(handDiceIds);
-  const [rolledDisplayOrder, setRolledDisplayOrder] = useState<string[]>([]);
-  const [isRolling, setIsRolling] = useState(false);
+  const dragRefs = useRef<Map<string, DraggableItemHandle | null>>(new Map());
+  const dieRefs = useRef<Map<string, DieHandle | null>>(new Map());
+  const displayOrderRef = useRef<string[]>([]);
+  const rollRowSnapshotRef = useRef<string[]>([]);
+  const applyOrderRef = useRef<(order: string[], options?: ApplyOrderOptions) => void>(() => {});
+  const onItemTapRef = useRef<
+    ((slotIndex: number, dieId: string, event: FederatedPointerEvent) => void) | undefined
+  >(undefined);
 
-  const prevHandKeyRef = useRef(orderKey(handDiceIds));
-  const prevPhaseRef = useRef<PhaseState | null>(phase);
-  const rollSessionRef = useRef<ActiveRollSession | null>(null);
-  /** Prevents restarting the roll animation every frame after the current one completes. */
-  const rollAnimDoneRef = useRef(false);
-
-  const handKey = orderKey(handDiceIds);
-  if (handKey !== prevHandKeyRef.current) {
-    prevHandKeyRef.current = handKey;
-    if (orderKey(visualOrder) !== handKey) {
-      setVisualOrder(handDiceIds);
-      setDiceRowVisualOrder(handDiceIds);
-    }
-    setRolledDisplayOrder([]);
-    rollSessionRef.current = null;
-    rollAnimDoneRef.current = false;
-    setIsRolling(false);
-  }
-
-  if (prevPhaseRef.current === 'SELECT' && phase === 'ROLL') {
-    rollAnimDoneRef.current = false;
-    const snapshot = visualOrder.length > 0 ? visualOrder : handDiceIds;
-    if (orderKey(rolledDisplayOrder) !== orderKey(snapshot)) {
-      setRolledDisplayOrder(snapshot);
-    }
-  }
-
-  if (phase === 'SELECT' && rolledDisplayOrder.length > 0) {
-    setRolledDisplayOrder([]);
-    rollSessionRef.current = null;
-    rollAnimDoneRef.current = false;
-    setIsRolling(false);
-  }
-
-  prevPhaseRef.current = phase;
-
-  const displayOrder = selectDisplayOrder(phase, visualOrder, rolledDisplayOrder, handDiceIds);
+  const { displayOrder, flushExternalReset } = useDiceRowPhaseState({
+    handDiceIds,
+    phase,
+    scoredIds: selectedForScoreIds,
+  });
+  displayOrderRef.current = [...displayOrder];
 
   const displayDice = useMemo(() => {
     if (!round || displayOrder.length === 0) {
       return [];
     }
-    return resolveDiceByIds(displayOrder, round, run);
+    return resolveDiceByIds([...displayOrder], round, run ?? undefined);
   }, [displayOrder, round, run]);
+
+  const bossLockedIds = useMemo(() => {
+    if (phase !== 'ROLL' || displayDice.length === 0) {
+      return new Set<string>();
+    }
+    return new Set(gameFacade.boss.getRollUiState(displayDice).lockedDieIds);
+  }, [displayDice, phase]);
+
+  const selectedSet = useMemo(() => new Set(selectedForScoreIds), [selectedForScoreIds]);
+  const rerollLockedSet = useMemo(() => new Set(controller.rerollLockedIds), [controller.rerollLockedIds]);
 
   const effectiveLayout = useMemo(
     () => layoutForDiceCount(layout, displayOrder.length),
     [displayOrder.length, layout],
   );
 
-  const dragRefs = useRef<Map<string, DraggableItemHandle | null>>(new Map());
-  const dieRefs = useRef<Map<string, DieHandle | null>>(new Map());
+  const onOrderChange = useCallback(
+    (nextOrder: string[]) => {
+      controller.setVisualOrder(nextOrder);
 
-  const onVisualOrderChange = useCallback((nextOrder: string[]) => {
-    setVisualOrder(nextOrder);
-    setDiceRowVisualOrder(nextOrder);
-  }, []);
+      const currentRound = getRoundState();
+      if (currentRound?.phase === 'ROLL') {
+        gameFacade.round.syncRolledDiceFromFaces(
+          resolveDiceByIds(nextOrder, currentRound, run ?? getRunState()),
+        );
+      }
+    },
+    [controller, run],
+  );
 
-  const dragDisabled = phase !== 'SELECT' || isRolling;
+  const applySortedOrder = useCallback(
+    (order: readonly string[], options?: ApplyOrderOptions) => {
+      const currentRound = getRoundState();
+      if (!currentRound) {
+        return;
+      }
 
-  const { onPointerDown, tickLayout, slotHome, draggingSlot, pressingItemId } = useReorderableRow<string>({
-    layout: effectiveLayout,
-    order: displayOrder,
-    onOrderChange: onVisualOrderChange,
-    disabled: dragDisabled,
-    swing: { factor: 0.1, maxRadians: 0.95, follow: 0.32, velocitySmoothing: 0.5 },
-    dragSnapLerp: 0.42,
+      const sorted = sortDieIdsForRound(order, currentRound, run ?? getRunState());
+      applyOrderRef.current(sorted, options);
+    },
+    [run],
+  );
+
+  const applyInstantOrder = useCallback(
+    (order: readonly string[]) => {
+      applyOrderRef.current([...order]);
+    },
+    [],
+  );
+
+  const applyBossLocksAndSort = useCallback(() => {
+    if (!round || phase !== 'ROLL') {
+      return;
+    }
+
+    const bossState = gameFacade.boss.getRollUiState(displayDice);
+    controller.setRerollLockedIds([...bossState.lockedDieIds]);
+    applySortedOrder(displayOrderRef.current, { animated: true });
+  }, [applySortedOrder, controller, displayDice, phase, round]);
+
+  const { isRolling, tickRollAnimation, onSortRequest, onRerollRequest } = useDiceRowRollAnimation({
+    handDiceIds,
+    round,
+    run,
+    phase,
+    displayOrder,
+    dieRefs,
+    applySortedOrder,
+    applyBossLocksAndSort,
   });
+
+  const onItemTap = useDiceRowRollTap({
+    phase,
+    isRolling,
+    round,
+    run,
+    selectedForScoreIds,
+    bossLockedIds,
+  });
+  onItemTapRef.current = phase === 'ROLL' ? onItemTap : undefined;
+
+  const dragDisabled = (phase !== 'SELECT' && phase !== 'ROLL') || isRolling;
+
+  const { onPointerDown, tickLayout, slotHome, draggingSlot, pressingItemId, applyOrder, beginHandFlyIn, isRepositioning } =
+    useReorderableRow<string>({
+      layout: effectiveLayout,
+      order: displayOrder,
+      onOrderChange,
+      disabled: dragDisabled,
+      swing: { factor: 0.1, maxRadians: 0.95, follow: 0.32, velocitySmoothing: 0.5 },
+      dragSnapLerp: 0.42,
+      onItemTap: (slotIndex, dieId, event) => {
+        onItemTapRef.current?.(slotIndex, dieId, event);
+      },
+    });
+  applyOrderRef.current = applyOrder;
+
+  const { isHandRefillFlying, runHandRefillFlyIn } = useDiceRowHandRefill({
+    baseLayout: layout,
+    pouchLaunch,
+    beginHandFlyIn,
+    applyInstantOrder,
+  });
+
+  const onSortRequestRef = useRef(onSortRequest);
+  onSortRequestRef.current = onSortRequest;
+  const onRerollRequestRef = useRef(onRerollRequest);
+  onRerollRequestRef.current = onRerollRequest;
+  const runHandRefillFlyInRef = useRef(runHandRefillFlyIn);
+  runHandRefillFlyInRef.current = runHandRefillFlyIn;
+
+  controller.bindHandlers({
+    sort: () => onSortRequestRef.current(),
+    reroll: (ids) => onRerollRequestRef.current(ids),
+    handRefill: (request) => runHandRefillFlyInRef.current(request),
+    getRollRowSnapshot: () => rollRowSnapshotRef.current,
+  });
+
+  const dragDisabledEffective = dragDisabled || isHandRefillFlying || isRepositioning;
 
   const draggingDieId = draggingSlot !== null ? pressingItemId : null;
 
   const onTick = useCallback(() => {
-    if (round && phase === 'ROLL' && !rollSessionRef.current && !rollAnimDoneRef.current && displayOrder.length > 0) {
-      const dice = resolveDiceByIds(displayOrder, round, run);
-      rollSessionRef.current = createRollSession(
-        displayOrder,
-        buildRollFinalValues(dice, round),
-        buildRollEnhancements(dice),
-      );
-      setIsRolling(true);
+    const animating = isRolling || isHandRefillFlying || isRepositioning;
+    controller.setAnimating(animating);
+
+    if (phase === 'ROLL') {
+      rollRowSnapshotRef.current = [...displayOrderRef.current];
     }
+
+    flushExternalReset();
+    tickRollAnimation();
 
     tickLayout((slotIndex, dieId, visual, meta) => {
       const isDragging = draggingDieId === dieId;
@@ -193,24 +212,25 @@ export function DiceRow({ layout }: DiceRowProps) {
       const home = slotHome(slotIndex);
 
       dragRefs.current.get(dieId)?.setTransform(visual.x, containerY, visual.rotation, visual.zIndex);
+      dragRefs.current.get(dieId)?.setAlpha(visual.alpha);
       dieRefs.current.get(dieId)?.setSquishScale(visual.scaleX * pose.scale, visual.scaleY * pose.scale);
 
       const shadowFloorY = dieShadowFloorLineY(dieId, home.y, meta, (fromSlot) => slotHome(fromSlot).y);
       dieRefs.current.get(dieId)?.setShadowDragState(dieShadowDragStateFromFloor(shadowFloorY, visual.y));
     });
-
-    const session = rollSessionRef.current;
-    if (!session) {
-      return;
-    }
-
-    const finished = stepRollAnimation(session, dieRefs.current);
-    if (finished) {
-      rollSessionRef.current = null;
-      rollAnimDoneRef.current = true;
-      setIsRolling(false);
-    }
-  }, [displayOrder, draggingDieId, effectiveLayout.count, phase, round, run, slotHome, tickLayout]);
+  }, [
+    controller,
+    draggingDieId,
+    effectiveLayout.count,
+    flushExternalReset,
+    isHandRefillFlying,
+    isRepositioning,
+    isRolling,
+    phase,
+    slotHome,
+    tickLayout,
+    tickRollAnimation,
+  ]);
 
   useTick(onTick);
 
@@ -232,6 +252,7 @@ export function DiceRow({ layout }: DiceRowProps) {
 
         const home = slotHome(slotIndex);
         const value = dieValueInRound(die.id, round, run) ?? die.value;
+        const mode = dieModeForDie(dieId, die, selectedSet, rerollLockedSet, bossLockedIds);
 
         return (
           <DraggableItem
@@ -242,7 +263,7 @@ export function DiceRow({ layout }: DiceRowProps) {
             x={home.x}
             y={home.y}
             hitSize={DEFAULT_DIE_SIZE}
-            disabled={dragDisabled}
+            disabled={dragDisabledEffective}
             onPointerDown={(event) => onPointerDown(slotIndex, event)}
           >
             <Die
@@ -253,6 +274,7 @@ export function DiceRow({ layout }: DiceRowProps) {
               value={value}
               effect="none"
               phase={slotIndex * 1.35}
+              mode={mode}
             />
           </DraggableItem>
         );

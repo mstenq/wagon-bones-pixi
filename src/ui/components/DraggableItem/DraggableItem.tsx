@@ -4,6 +4,7 @@ import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, type Rea
 
 export type DraggableItemHandle = {
   setTransform: (x: number, y: number, rotation: number, zIndex?: number) => void;
+  setAlpha: (alpha: number) => void;
 };
 
 export type DraggableItemProps = {
@@ -68,6 +69,13 @@ export const DraggableItem = forwardRef<DraggableItemHandle, DraggableItemProps>
         node.position.set(nextX, nextY);
         node.rotation = nextRotation;
         node.zIndex = nextZIndex;
+      },
+      setAlpha(alpha: number) {
+        const node = containerRef.current;
+        if (!node) {
+          return;
+        }
+        node.alpha = alpha;
       },
     }),
     [zIndex],

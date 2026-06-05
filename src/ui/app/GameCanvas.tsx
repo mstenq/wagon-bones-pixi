@@ -8,7 +8,9 @@ export const GameCanvas = memo(function GameCanvas() {
   return (
     <PixiStageCanvas>
       <GameScenePixiLayout>
-        {(contentSize) => <GameScene contentW={contentSize.w} contentH={contentSize.h} />}
+        {(contentSize, chrome) => (
+          <GameScene contentW={contentSize.w} contentH={contentSize.h} pouchLaunch={chrome.pouchLaunch} />
+        )}
       </GameScenePixiLayout>
     </PixiStageCanvas>
   );

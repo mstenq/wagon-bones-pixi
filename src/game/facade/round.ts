@@ -83,13 +83,16 @@ export const gameRound = {
     return roundActions.canUseReroll();
   },
 
-  submitScore(selectedIds: string[]): ScoreResult | null {
+  submitScore(
+    selectedIds: string[],
+    options?: { deferConsumableGrants?: boolean },
+  ): ScoreResult | null {
     const validation = roundActions.validateScoreSelection(selectedIds);
     if (!validation.allowed) return null;
 
     if (!roundActions.selectForScore(selectedIds)) return null;
 
-    return roundActions.calculateScore();
+    return roundActions.calculateScore(options);
   },
 
   getBossScoreWarning(selectedIds: string[]): string | null {
