@@ -11,10 +11,10 @@ export type InfoBoxProps = {
 };
 
 const labelClass =
-  "p-0.5 text-center text-[11px] leading-none font-body text-black md:text-xs lg:p-0.5 lg:text-sm xl:p-1 xl:text-xl";
+  "p-0.5 text-center text-[11px] leading-none font-body text-ui-panel-muted md:text-xs lg:p-0.5 lg:text-sm xl:p-1 xl:text-xl";
 
 const labelCompactClass =
-  "px-0.5 py-0 text-center text-[9px] leading-none font-body text-black";
+  "px-0.5 py-0 text-center text-[9px] leading-none font-body text-ui-panel-muted";
 
 const bodyClass =
   "mx-1 mb-1 flex min-h-6 flex-1 items-center justify-center lg:min-h-8 xl:mx-2 xl:mb-2 xl:min-h-12";
@@ -80,7 +80,7 @@ export function InfoBoxLegValue({ current, total, compact = false }: InfoBoxLegV
       <span className={[valueClass, "font-header text-amber-500"].join(" ")}>
         {current}
       </span>
-      <span className="hidden text-lg font-body text-black/70 tabular-nums xl:inline xl:text-2xl">
+      <span className="hidden text-lg font-body text-ui-panel-muted tabular-nums xl:inline xl:text-2xl">
         / {total}
       </span>
     </div>

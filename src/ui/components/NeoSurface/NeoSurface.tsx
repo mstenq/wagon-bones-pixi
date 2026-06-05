@@ -17,7 +17,7 @@ function faceToneClass(tone: NeoSurfaceFaceTone): string {
     return "bg-primary";
   }
   if (tone === "panel") {
-    return "bg-primary-50";
+    return "bg-ui-panel text-ui-panel-text";
   }
   return "";
 }

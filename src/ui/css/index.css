@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* Gameplay score boxes — keep full class names so Tailwind emits palette vars. */
-@source inline("bg-blue-500 bg-red-500 text-blue-950 text-red-950 bg-primary-50 bg-primary bg-white bg-ui-modifier-positive bg-ui-modifier-negative");
+@source inline("bg-blue-500 bg-red-500 text-blue-950 text-red-950 bg-primary-50 bg-primary bg-white bg-ui-panel bg-ui-panel-text bg-ui-panel-muted text-ui-panel-text text-ui-panel-muted bg-ui-modifier-positive bg-ui-modifier-negative");
 
 @theme {
 
@@ -28,7 +28,11 @@
   --color-primary-800: oklch(42.4% 0.199 265.638);
   --color-primary-900: oklch(37.9% 0.146 265.522);
   --color-primary-950: oklch(28.2% 0.091 267.935);
+  --color-ui-dark-background: #2d3236;
   --color-ui-disabled: #9ca3af;
+  --color-ui-panel: #1a1f21;
+  --color-ui-panel-text: #f3f4f6;
+  --color-ui-panel-muted: #9ca3af;
   --color-ui-modifier-positive: oklch(62% 0.17 145);
   --color-ui-modifier-negative: oklch(58% 0.14 35);
 
@@ -117,7 +121,7 @@
 
   html,
   body {
-    @apply m-0 min-h-dvh bg-background p-0 text-base leading-normal font-normal antialiased;
+    @apply m-0 min-h-dvh bg-ui-dark-background p-0 text-base leading-normal font-normal antialiased;
     font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   }
 

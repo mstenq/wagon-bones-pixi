@@ -32,7 +32,7 @@ export function RoundInfo({
         {subtitle ? (
           <p
             className={[
-              "-mb-2 text-center leading-snug text-black xl:text-xl pt-2 px-2 ",
+              "-mb-2 text-center leading-snug text-ui-panel-text xl:text-xl pt-2 px-2 ",
               compact ? "text-[12px]" : "text-sm lg:text-base xl:text-xl",
             ].join(" ")}
           >
@@ -54,7 +54,7 @@ export function RoundInfo({
           >
             <div
               className={[
-                "aspect-square w-full rounded-full border-2 border-black bg-black/10",
+                "aspect-square w-full rounded-full border-2 border-white/20 bg-white/10",
                 compact ? "max-w-5" : "max-w-8 lg:max-w-10 xl:max-w-16",
               ].join(" ")}
             >
@@ -74,7 +74,7 @@ export function RoundInfo({
           >
             <p
               className={[
-                "text-center leading-none text-black xl:text-xl",
+                "text-center leading-none text-ui-panel-muted xl:text-xl",
                 compact ? "text-[10px]" : "text-sm lg:text-base xl:text-xl",
               ].join(" ")}
             >
@@ -84,7 +84,7 @@ export function RoundInfo({
             <div className="flex items-center justify-center gap-1 xl:gap-2">
               <span
                 className={[
-                  "shrink-0 rounded-full border border-black/30",
+                  "shrink-0 rounded-full border border-white/30",
                   compact ? "size-2" : "size-3 lg:size-4 xl:size-4",
                 ].join(" ")}
                 style={{ backgroundColor: difficultyColor }}
@@ -106,7 +106,7 @@ export function RoundInfo({
                 compact ? "text-[10px]" : "text-sm lg:text-base xl:text-xl",
               ].join(" ")}
             >
-              <span className="text-black">payout </span>
+              <span className="text-ui-panel-muted">payout </span>
               <span className="font-header text-primary">{formattedPayout}</span>
             </p>
           </div>

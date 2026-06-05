@@ -42,16 +42,16 @@ export function HandInfo({
     : "flex min-h-0 flex-1 flex-col justify-between gap-1 lg:gap-1.5 xl:gap-3";
 
   const handNameClass = compact
-    ? "min-w-0 text-sm leading-none font-header tracking-wide text-black"
-    : "min-w-0 text-base leading-none font-header tracking-wide text-black lg:text-lg xl:text-2xl";
+    ? "min-w-0 text-sm leading-none font-header tracking-wide text-ui-panel-text"
+    : "min-w-0 text-base leading-none font-header tracking-wide text-ui-panel-text lg:text-lg xl:text-2xl";
 
   const levelClass = compact
-    ? "shrink-0 text-xs leading-none font-body text-black"
-    : "shrink-0 text-sm leading-none font-body text-black lg:text-base xl:text-lg";
+    ? "shrink-0 text-xs leading-none font-body text-ui-panel-muted"
+    : "shrink-0 text-sm leading-none font-body text-ui-panel-muted lg:text-base xl:text-lg";
 
   const multSymbolClass = compact
-    ? "shrink-0 text-sm leading-none font-header text-black"
-    : "shrink-0 text-lg leading-none font-header text-black lg:text-xl xl:text-2xl";
+    ? "shrink-0 text-sm leading-none font-header text-ui-panel-text"
+    : "shrink-0 text-lg leading-none font-header text-ui-panel-text lg:text-xl xl:text-2xl";
 
   return (
     <NeoSurface fullWidth className={className} faceClassName={faceClassName}>

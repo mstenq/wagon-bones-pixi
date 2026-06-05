@@ -20,8 +20,8 @@ export function ProfessionInfo({
   const iconWrapClass = compact ? "size-7 shrink-0" : "size-8 shrink-0 lg:size-10 ";
 
   const nameClass = compact
-    ? "min-w-0 font-body truncate text-xs leading-none font-header "
-    : "min-w-0 font-body truncate text-base leading-none font-header";
+    ? "min-w-0 font-body truncate text-xs leading-none font-header text-ui-panel-text"
+    : "min-w-0 font-body truncate text-base leading-none font-header text-ui-panel-text";
 
   return (
     <div
@@ -31,7 +31,7 @@ export function ProfessionInfo({
       <NeoSurface fullWidth className="h-full" faceClassName={faceClassName}>
         <div
           className={[
-            "aspect-square rounded-full border-2 border-black bg-black/10",
+            "aspect-square rounded-full border-2 border-white/20 bg-white/10",
             iconWrapClass,
           ].join(" ")}
         >

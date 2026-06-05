@@ -84,7 +84,7 @@ export function RoundScore({ score, compact = false, className }: RoundScoreProp
       >
         <div
           className={[
-            "flex shrink-0 flex-col justify-center gap-0 font-body text-black xl:w-16 xl:gap-0.5 xl:px-1",
+            "flex shrink-0 flex-col justify-center gap-0 font-body text-ui-panel-muted xl:w-16 xl:gap-0.5 xl:px-1",
             compact ? "w-8 gap-0.5 px-0.5" : "w-10 gap-0.5 px-0.5 lg:w-12",
           ].join(" ")}
         >

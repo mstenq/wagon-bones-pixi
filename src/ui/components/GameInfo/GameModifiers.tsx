@@ -27,8 +27,8 @@ export function GameModifiers({ modifiers, compact = false, className }: GameMod
     : "flex h-full min-h-0 items-center justify-center gap-1.5 p-2 lg:gap-2 lg:p-3 xl:gap-2.5 xl:p-4";
 
   const emptyClass = compact
-    ? "text-center text-[10px] leading-none text-black/50"
-    : "text-center text-xs leading-none text-black/50 lg:text-sm xl:text-base";
+    ? "text-center text-[10px] leading-none text-ui-panel-muted"
+    : "text-center text-xs leading-none text-ui-panel-muted lg:text-sm xl:text-base";
 
   const hasModifiers = modifiers.length > 0;
 
