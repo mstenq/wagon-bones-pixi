@@ -86,8 +86,10 @@ describe('scene lifecycle actions', () => {
         isVictory: false,
         investmentBonus: 0,
       },
+      rows: [{ label: 'Complete Round 1', amount: '$5', highlight: true }],
     });
     expect(sceneStore.getState().payout?.breakdown.total).toBe(8);
+    expect(sceneStore.getState().payout?.rows).toHaveLength(1);
     sceneActions.clearPayout();
     expect(sceneStore.getState().payout).toBeNull();
   });

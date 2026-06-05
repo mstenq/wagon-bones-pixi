@@ -13,7 +13,6 @@ const SCENE_LABELS: Partial<Record<ActiveSceneKey, string>> = {
   Shop: 'Shop',
   BoosterPack: 'Booster Pack',
   TrailEvent: 'Trail Event',
-  Payout: 'Payout',
 };
 
 export function InRunScenePlaceholder({ scene }: InRunScenePlaceholderProps) {

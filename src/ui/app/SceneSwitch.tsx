@@ -5,9 +5,10 @@ import { GameScreen } from '@/ui/screens/GameScreen';
 import { InRunScenePlaceholder } from '@/ui/screens/InRunScenePlaceholder';
 import { MainMenuScreen } from '@/ui/screens/MainMenuScreen';
 import { ProfessionSelectScreen } from '@/ui/screens/ProfessionSelectScreen';
+import { PayoutScreen } from '@/ui/screens/PayoutScreen';
 import { RoundSelectScreen } from '@/ui/screens/RoundSelectScreen';
 
-const IN_RUN_PLACEHOLDER_SCENES: ActiveSceneKey[] = ['Shop', 'BoosterPack', 'TrailEvent', 'Payout'];
+const IN_RUN_PLACEHOLDER_SCENES: ActiveSceneKey[] = ['Shop', 'BoosterPack', 'TrailEvent'];
 
 export function SceneSwitch() {
   const activeScene = useGameSceneStore((s) => s.activeScene);
@@ -23,6 +24,8 @@ export function SceneSwitch() {
       return <RoundSelectScreen />;
     case 'Game':
       return <GameScreen />;
+    case 'Payout':
+      return <PayoutScreen />;
     default:
       if (IN_RUN_PLACEHOLDER_SCENES.includes(activeScene)) {
         return <InRunScenePlaceholder scene={activeScene} />;

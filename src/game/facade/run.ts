@@ -3,6 +3,7 @@
 import { GAMEPLAY } from '../Constants';
 import { grantGhostMedicine } from '../ConsumablesSystem';
 import { milesToSave } from '../scoreMath';
+import { buildPayoutRows } from '../payoutPresentation';
 import { computePayoutBreakdown } from '../runProgression';
 import { grantTag, processBossPayoutTags } from '../TagSystem';
 import { getTrailTagById } from '../../data/trail_tags';
@@ -46,18 +47,26 @@ export const gameRun = {
       }
     }
 
+    const presentation = {
+      totalMilesSave: milesToSave(totalMiles),
+      targetMilesSave: milesToSave(targetMiles),
+      daysRemaining,
+      rerollsRemaining,
+      leg: run.leg,
+      round: run.round,
+      isVictory: selectIsBossRound(run) && run.leg === GAMEPLAY.LEGS && !run.endlessMode,
+      investmentBonus,
+    };
+
     const state: PayoutSceneState = {
       breakdown: payout,
-      presentation: {
-        totalMilesSave: milesToSave(totalMiles),
-        targetMilesSave: milesToSave(targetMiles),
-        daysRemaining,
-        rerollsRemaining,
-        leg: run.leg,
+      presentation,
+      rows: buildPayoutRows({
+        payout,
         round: run.round,
-        isVictory: selectIsBossRound(run) && run.leg === GAMEPLAY.LEGS && !run.endlessMode,
         investmentBonus,
-      },
+        run,
+      }),
     };
 
     sceneActions.enterPayout(state);

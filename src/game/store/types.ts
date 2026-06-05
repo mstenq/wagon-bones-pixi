@@ -57,6 +57,15 @@ export interface PayoutBreakdown {
   total: number;
 }
 
+export type PayoutAmountTone = 'money' | 'error';
+
+export interface PayoutRow {
+  label: string;
+  amount: string;
+  highlight?: boolean;
+  amountTone?: PayoutAmountTone;
+}
+
 // ─── Serialized instance shapes (definition IDs, not def objects) ───
 
 export interface StoredEquipmentInstance {
@@ -287,6 +296,7 @@ export interface PayoutPresentationState {
 export interface PayoutSceneState {
   breakdown: PayoutBreakdown;
   presentation: PayoutPresentationState;
+  rows: PayoutRow[];
 }
 
 export interface RoundSelectSceneState {
