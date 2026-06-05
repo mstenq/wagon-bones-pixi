@@ -53,6 +53,16 @@ export type DieHandle = {
   isPlayingAnimation: () => boolean;
 };
 
+/** Keep parent `DraggableItem` square hit box aligned with selection lift. */
+function syncParentHitAreaLift(parent: Container | null, size: number, liftPx: number): void {
+  const hit = parent?.hitArea;
+  if (!(hit instanceof Rectangle)) {
+    return;
+  }
+  const half = size / 2;
+  hit.y = -half - liftPx;
+}
+
 /** Visual die only — position via parent `DraggableItem` or any container. */
 export const Die = forwardRef<DieHandle, DieProps>(function Die(
   { diceType, size = DEFAULT_DIE_SIZE, value = 1, effect = 'none', phase = 0, mode = 'base' },
@@ -180,6 +190,7 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
     if (lift) {
       lift.y = -liftPx;
     }
+    syncParentHitAreaLift(rootRef.current?.parent ?? null, size, liftPx);
 
     applyShadowVisual();
 
