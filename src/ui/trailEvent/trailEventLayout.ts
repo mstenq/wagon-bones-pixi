@@ -52,23 +52,63 @@ export type TrailEventResultLayout = {
   buttonHeight: number;
 };
 
-function estimateDescriptionHeight(description: string, panelWidth: number): number {
-  const charsPerLine = Math.max(24, Math.floor((panelWidth - 48) / 9));
-  const lines = Math.max(1, Math.ceil(description.length / charsPerLine));
-  return lines * 22;
+const TEXT_HORIZONTAL_PADDING = 48;
+const TITLE_FONT_SIZE = 26;
+const TITLE_LINE_HEIGHT = 32;
+const BODY_FONT_SIZE = 16;
+const BODY_LINE_HEIGHT = 22;
+
+function estimateWrappedLineCount(text: string, wrapWidth: number, avgCharWidth: number): number {
+  if (!text) {
+    return 1;
+  }
+
+  const charsPerLine = Math.max(1, Math.floor(wrapWidth / avgCharWidth));
+  const words = text.split(/\s+/).filter(Boolean);
+  if (words.length === 0) {
+    return 1;
+  }
+
+  let lines = 1;
+  let currentChars = words[0]!.length;
+  for (let i = 1; i < words.length; i++) {
+    const word = words[i]!;
+    const nextLength = currentChars + 1 + word.length;
+    if (nextLength <= charsPerLine) {
+      currentChars = nextLength;
+      continue;
+    }
+    lines++;
+    currentChars = word.length;
+  }
+
+  return lines;
+}
+
+function estimateTextBlockHeight(
+  text: string,
+  panelWidth: number,
+  fontSize: number,
+  lineHeight: number,
+): number {
+  const wrapWidth = panelWidth - TEXT_HORIZONTAL_PADDING;
+  const avgCharWidth = fontSize * 0.55;
+  const lines = estimateWrappedLineCount(text, wrapWidth, avgCharWidth);
+  return lines * lineHeight;
 }
 
 export function computeTrailEventPanelLayout(
   contentW: number,
   contentH: number,
+  title: string,
   description: string,
   choiceCount: number,
 ): TrailEventPanelLayout {
   const contentCX = contentW / 2;
   const panelW = Math.min(PANEL_MAX_WIDTH, contentW - PANEL_SIDE_MARGIN);
   const imageBlockHeight = IMAGE_TOP_GAP + IMAGE_MAX_HEIGHT + 16;
-  const nameBlockHeight = 32;
-  const descriptionHeight = estimateDescriptionHeight(description, panelW);
+  const nameBlockHeight = estimateTextBlockHeight(title, panelW, TITLE_FONT_SIZE, TITLE_LINE_HEIGHT);
+  const descriptionHeight = estimateTextBlockHeight(description, panelW, BODY_FONT_SIZE, BODY_LINE_HEIGHT);
   const choicesBlockHeight =
     choiceCount > 0 ? CHOICES_GAP + choiceCount * CHOICE_HEIGHT + (choiceCount - 1) * CHOICE_GAP : 0;
 

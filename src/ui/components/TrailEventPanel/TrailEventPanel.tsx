@@ -74,7 +74,7 @@ export function TrailEventPanel({
   const faceRef = useRef<Graphics | null>(null);
 
   const accentColor = trailEventCategoryColor(event.category as TrailEventCategory);
-  const titleStyle = useMemo(() => trailEventTitleTextStyle(), []);
+  const titleStyle = useMemo(() => trailEventTitleTextStyle(layout.panel.width), [layout.panel.width]);
   const descriptionStyle = useMemo(
     () => trailEventDescriptionTextStyle(layout.panel.width),
     [layout.panel.width],

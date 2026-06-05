@@ -32,13 +32,15 @@ export const TRAIL_EVENT_POSITIVE_COLOR = hexToPixiColor(TEXT_COLORS.SCORE_GREEN
 export const TRAIL_EVENT_NEGATIVE_COLOR = hexToPixiColor(TEXT_COLORS.ERROR_RED);
 export const TRAIL_EVENT_GOLD_COLOR = hexToPixiColor(TEXT_COLORS.GOLD);
 
-export function trailEventTitleTextStyle(): TextStyle {
+export function trailEventTitleTextStyle(panelWidth: number): TextStyle {
   return new TextStyle({
     fontFamily: UI_FONT_HEADER,
     fontSize: 26,
     fill: TRAIL_EVENT_TITLE_COLOR,
     align: 'center',
     wordWrap: true,
+    wordWrapWidth: panelWidth - 48,
+    lineHeight: 32,
   });
 }
 

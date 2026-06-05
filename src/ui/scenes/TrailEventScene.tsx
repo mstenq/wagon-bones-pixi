@@ -43,6 +43,7 @@ export function TrailEventScene({ contentW, contentH }: TrailEventSceneProps) {
   const panelLayout = computeTrailEventPanelLayout(
     contentW,
     contentH,
+    event.name,
     event.description,
     showResolved ? 0 : availableChoices.length,
   );
