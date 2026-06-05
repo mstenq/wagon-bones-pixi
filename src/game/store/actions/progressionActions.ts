@@ -68,7 +68,7 @@ export const progressionActions = {
     const cost = selectShopRerollCost(state);
     if (!canAfford(state, cost)) return false;
     const freeSource = selectShopRerollFreeSource(state);
-    economyActions.trySpend(cost);
+    if (!economyActions.trySpend(cost)) return false;
     runStore.setState((s) => {
       const rerollIndex = s.shopRerollCount;
       let statusTraitTokens = s.statusTraitTokens;

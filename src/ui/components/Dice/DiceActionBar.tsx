@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 
+import { isDevMode } from '@/game/DevMode';
 import { advanceAfterScore } from '@/ui/components/Dice/advanceAfterScore';
 import { ButtonElement } from '@/ui/components/Button/ButtonElement';
 import { useDiceRowController } from '@/ui/components/DiceRow/DiceRowController';
@@ -142,6 +143,20 @@ export function DiceActionBar() {
     });
   };
 
+  const handleDevWin = () => {
+    if (isAnimating) {
+      return;
+    }
+    playSfx('button', { volume: 0.4 });
+    const previousRowIds = visualOrder.length > 0 ? visualOrder : controller.getRollRowSnapshot();
+    gameFacade.round.forceWinRound();
+    advanceAfterScore({
+      onNextDay: (nextHandIds) => {
+        controller.requestHandRefillFlyIn({ nextHandIds, previousRowIds });
+      },
+    });
+  };
+
   const handleReroll = () => {
     if (isAnimating) {
       return;
@@ -176,6 +191,15 @@ export function DiceActionBar() {
         </p>
       ) : null}
       <div className="pointer-events-auto flex flex-col items-center gap-2">
+        {isDevMode() ? (
+          <ButtonElement
+            variant="neutral"
+            label="Dev Win"
+            disabled={isAnimating}
+            onClick={handleDevWin}
+            className="min-w-32"
+          />
+        ) : null}
         {showRollPhaseControls ? (
           <ButtonElement
             variant="neutral"

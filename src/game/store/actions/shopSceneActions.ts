@@ -2,12 +2,19 @@
 // Opens / rerolls shop visits and writes sceneStore.shop.
 
 import { generateShopPermit } from '../../PermitsSystem';
-import { progressionActions } from './progressionActions';
-import { generateNewShopState, generateRerolledShopStock } from '../shopStock';
-import { getRunState, runActions } from '../runStore';
 import { buildShopFreeRerollPlan } from '../selectors/runSelectors';
+import { getRunState, runActions } from '../runStore';
 import { getSceneState, sceneActions, sceneStore } from '../sceneStore';
+import { generateNewShopState, generateRerolledShopStock } from '../shopStock';
 import type { ShopSceneState } from '../types';
+import { progressionActions } from './progressionActions';
+
+function syncRunShopRerollFromScene(shop: ShopSceneState): void {
+  const run = getRunState();
+  if (run.shopRerollCount !== shop.shopRerollCount) {
+    runActions.patch({ shopRerollCount: shop.shopRerollCount });
+  }
+}
 
 export const shopSceneActions = {
   /** First visit or return with no existing shop slice — rolls stock, packs, and shop tags. */
@@ -47,6 +54,7 @@ export const shopSceneActions = {
   },
 
   restoreShop(shop: ShopSceneState): void {
+    syncRunShopRerollFromScene(shop);
     sceneActions.enterShop(shop);
   },
 };

@@ -15,34 +15,23 @@ import { useTick } from '@pixi/react';
 import { forwardRef, use, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
 
 import {
-  ACTION_TAB_HEIGHT,
-  ACTION_TAB_VISIBLE_HEIGHT,
   CARD_HOVER_SCALE,
   CARD_LIFT_PX,
   CARD_OWNED_ENLARGED_SCALE,
   CARD_SELECTED_Z_INDEX,
   SELL_TAB_HEIGHT,
   SELL_TAB_WIDTH,
-  TAB_WIDTH,
   type CardDisplayMode,
 } from '@/ui/components/Card/config';
+import { CardShopTabs } from '@/ui/components/Card/CardShopTabs';
 import {
-  ACTION_TAB_TEXT_Y,
-  actionTabAnchorY,
-  drawBottomActionTab,
-  drawBottomActionTabShadow,
-  drawPriceTab,
   drawSellTab,
   drawSellTabShadow,
-  formatPrice,
   formatSellLabel,
-  priceTabAnchorY,
-  priceTabTextStyle,
   sellTabAnchorX,
   sellTabInnerX,
   SELL_TAB_TEXT_X,
   sellTabTextStyle,
-  tabTextStyle,
 } from '@/ui/components/Card/cardTab';
 import {
   createScalarSpring,
@@ -87,6 +76,12 @@ const TILT_LERP = 0.18;
 const IDLE_RETURN_LERP = 0.12;
 const CLICK_SQUISH_MS = 140;
 
+export type CardSecondaryAction = {
+  label: string;
+  onAction: () => void;
+  disabled?: boolean;
+};
+
 export type CardProps = {
   texture: Texture | null;
   width?: number;
@@ -102,6 +97,12 @@ export type CardProps = {
   onBuy?: () => void;
   onSelect?: () => void;
   onSell?: () => void;
+  /** Shop/pack BUY tab disabled (e.g. cannot afford). */
+  buyDisabled?: boolean;
+  /** Optional second shop tab (e.g. BUY & USE). */
+  secondaryAction?: CardSecondaryAction;
+  /** Override primary action tab fill (e.g. permit purple). */
+  primaryActionTabColor?: number;
   /** Parent handles pointer events (e.g. inside `DraggableItem`). */
   embedded?: boolean;
   /** When embedded, parent can drive owned selection (e.g. from game store). */
@@ -140,6 +141,9 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     onBuy,
     onSelect,
     onSell,
+    buyDisabled = false,
+    secondaryAction,
+    primaryActionTabColor,
     embedded = false,
     selected,
     onSelectedChange,
@@ -183,12 +187,6 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     applyFilters: () => {},
   });
   effectArtRef.current.applyFilters = applyArtFilters;
-  const actionTabRef = useRef<Container | null>(null);
-  const actionTabInnerRef = useRef<Container | null>(null);
-  const actionTabShadowRef = useRef<Graphics | null>(null);
-  const actionTabGfxRef = useRef<Graphics | null>(null);
-  const priceTabRef = useRef<Container | null>(null);
-  const priceTabGfxRef = useRef<Graphics | null>(null);
   const sellTabRef = useRef<Container | null>(null);
   const sellTabInnerRef = useRef<Container | null>(null);
   const sellTabShadowRef = useRef<Graphics | null>(null);
@@ -234,12 +232,16 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     }
   }
 
-  if (embedded && selected !== undefined && selected !== prevSelectedProp) {
+  if (selected !== undefined && selected !== prevSelectedProp) {
     setPrevSelectedProp(selected);
-    if (displayMode === 'owned') {
+    if (displayMode === 'owned' && embedded) {
       setEnlarged(selected);
       setScalarTarget(ownedScaleSpringRef.current, selected ? CARD_OWNED_ENLARGED_SCALE : 1);
       setScalarTarget(sellTabSpringRef.current, selected ? 1 : 0);
+    }
+    if ((displayMode === 'shop' || displayMode === 'pack') && !embedded) {
+      setRaised(selected);
+      setScalarTarget(liftSpringRef.current, selected ? CARD_LIFT_PX : 0);
     }
   }
 
@@ -312,15 +314,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   }, []);
 
   const hideCardChrome = useCallback(() => {
-    const actionTab = actionTabRef.current;
-    const priceTab = priceTabRef.current;
     const sellTab = sellTabRef.current;
-    if (actionTab) {
-      actionTab.alpha = 0;
-    }
-    if (priceTab) {
-      priceTab.alpha = 0;
-    }
     if (sellTab) {
       sellTab.alpha = 0;
     }
@@ -520,22 +514,6 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     [interactive, tiltConfig, width, height],
   );
 
-  const onBuyPointerDown = useCallback(
-    (event: FederatedPointerEvent) => {
-      event.stopPropagation();
-      onBuy?.();
-    },
-    [onBuy],
-  );
-
-  const onSelectPointerDown = useCallback(
-    (event: FederatedPointerEvent) => {
-      event.stopPropagation();
-      onSelect?.();
-    },
-    [onSelect],
-  );
-
   const onSellPointerTap = useCallback(
     (event: FederatedPointerEvent) => {
       event.stopPropagation();
@@ -552,9 +530,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     tiltEnabled &&
     (displayMode === undefined || displayMode === 'owned' || displayMode === 'pack');
 
-  const showActionTab = interactive && raised && (displayMode === 'shop' || displayMode === 'pack');
-  const actionTabLabel = displayMode === 'shop' ? 'BUY' : 'SELECT';
-  const actionTabHandler = displayMode === 'shop' ? onBuyPointerDown : onSelectPointerDown;
+  const shopTabScaleRef = useRef({ scaleX: 1, scaleY: 1 });
 
   useTick(() => {
     const dt = app.ticker.deltaMS / 1000;
@@ -582,8 +558,6 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     const idle = idleRef.current;
     const lift = liftRef.current;
     const squishNode = squishRef.current;
-    const actionTab = actionTabRef.current;
-    const priceTab = priceTabRef.current;
     const sellTab = sellTabRef.current;
     const isDragging = draggingRef.current;
     const isHovered = hoveredRef.current && !isDragging;
@@ -699,27 +673,12 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
       const ownedScale = displayMode === 'owned' ? ownedScaleSpringRef.current.value : 1;
       const scaleX = useExternalSquish ? externalSquish.scaleX * ownedScale : squishSpring.scaleX * ownedScale;
       const scaleY = useExternalSquish ? externalSquish.scaleY * ownedScale : squishSpring.scaleY * ownedScale;
+      shopTabScaleRef.current = { scaleX, scaleY };
 
       applyItemAnimationSquish(squishNode, { scaleX, scaleY }, growPopMul, shakeX);
 
       if (lift) {
         lift.y = -liftSpringRef.current.value;
-      }
-
-      const liftProgress = CARD_LIFT_PX > 0 ? liftSpringRef.current.value / CARD_LIFT_PX : 0;
-
-      if (priceTab) {
-        priceTab.y = priceTabAnchorY(height, scaleY);
-      }
-
-      if (actionTab) {
-        const liftY = liftSpringRef.current.value;
-        actionTab.y = actionTabAnchorY(height, scaleY) + liftY;
-        const inner = actionTabInnerRef.current;
-        if (inner) {
-          inner.y = -ACTION_TAB_HEIGHT + liftProgress * ACTION_TAB_HEIGHT;
-        }
-        actionTab.alpha = showActionTab && liftProgress > 0 ? 1 : 0;
       }
 
       if (sellTab) {
@@ -755,41 +714,20 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     <pixiContainer ref={bindRoot} sortableChildren eventMode={interactive ? 'passive' : 'none'}>
       <pixiContainer ref={liftRef} sortableChildren eventMode="passive">
         {interactive && (displayMode === 'shop' || displayMode === 'pack') ? (
-          <pixiContainer ref={actionTabRef} zIndex={0} eventMode="passive">
-            <pixiContainer
-              ref={actionTabInnerRef}
-              y={-ACTION_TAB_HEIGHT}
-              eventMode={showActionTab ? 'static' : 'none'}
-              cursor="pointer"
-              hitArea={
-                new Rectangle(
-                  -TAB_WIDTH / 2,
-                  ACTION_TAB_HEIGHT / 2 - ACTION_TAB_VISIBLE_HEIGHT,
-                  TAB_WIDTH,
-                  ACTION_TAB_VISIBLE_HEIGHT,
-                )
-              }
-              onPointerDown={actionTabHandler}
-            >
-              <pixiGraphics ref={actionTabShadowRef} draw={drawBottomActionTabShadow} eventMode="none" />
-              <pixiGraphics ref={actionTabGfxRef} draw={drawBottomActionTab} eventMode="none" />
-              <pixiText
-                text={actionTabLabel}
-                x={0}
-                y={ACTION_TAB_TEXT_Y}
-                anchor={0.5}
-                style={tabTextStyle}
-                eventMode="none"
-              />
-            </pixiContainer>
-          </pixiContainer>
-        ) : null}
-
-        {displayMode === 'shop' ? (
-          <pixiContainer ref={priceTabRef} eventMode="passive">
-            <pixiGraphics ref={priceTabGfxRef} draw={drawPriceTab} eventMode="none" />
-            <pixiText text={formatPrice(price)} anchor={0.5} y={-2} style={priceTabTextStyle} eventMode="none" />
-          </pixiContainer>
+          <CardShopTabs
+            width={width}
+            height={height}
+            displayMode={displayMode}
+            price={price}
+            buyDisabled={buyDisabled}
+            liftSpring={liftSpringRef.current}
+            scaleRef={shopTabScaleRef}
+            raised={raised}
+            onBuy={onBuy}
+            onSelect={onSelect}
+            secondaryAction={secondaryAction}
+            primaryActionTabColor={primaryActionTabColor}
+          />
         ) : null}
 
         {displayMode === 'owned' ? (

@@ -12,6 +12,7 @@ import {
   type ButtonProps,
 } from '@/ui/components/Button/buttonTheme';
 import { drawButtonFace, drawButtonShadow } from '@/ui/components/Button/buttonVisuals';
+import { playSfx } from '@/ui/audio/sfx';
 import { useUiPrimary } from '@/ui/theme/UiPrimaryProvider';
 
 export type { ButtonProps, ButtonVariant } from '@/ui/components/Button/buttonTheme';
@@ -148,6 +149,7 @@ function useButtonInteraction(
       const inside = local.x >= -width / 2 && local.x <= width / 2 && local.y >= -height / 2 && local.y <= height / 2;
 
       if (wasPressed && inside) {
+        playSfx('button', { volume: 0.4 });
         onClickRef.current?.();
       }
       applyFaceOffset();
@@ -204,6 +206,7 @@ export function Button({
   height = DEFAULT_BUTTON_HEIGHT,
   disabled = false,
   onClick,
+  faceTheme,
 }: ButtonProps) {
   useUiPrimary();
   const reducedMotion = prefersReducedMotion();
@@ -211,10 +214,10 @@ export function Button({
   const interaction = useButtonInteraction(disabled, width, height, reducedMotion, onClick, variant);
 
   const labelStyle = useMemo(() => buttonLabelTextStyle(), []);
+  const theme = faceTheme ?? getButtonVariantTheme(variant);
 
   useTick(() => {
     interaction.stepOffsetAnim();
-    const theme = getButtonVariantTheme(variant);
     if (interaction.shadowRef.current) {
       drawButtonShadow(interaction.shadowRef.current, width, height);
     }

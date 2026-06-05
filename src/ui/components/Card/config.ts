@@ -11,6 +11,11 @@ export const SELL_TAB_ATTACH_OVERLAP = 8;
 export const SELL_TAB_WIDTH = 92;
 /** Keeps label off the flat edge that tucks under the card. */
 export const SELL_TAB_LEFT_PADDING = 16;
+/** Right-side shop tab (e.g. BUY & USE) that slides out from the card edge. */
+export const SECONDARY_ACTION_TAB_WIDTH = 50;
+export const SECONDARY_ACTION_TAB_HEIGHT = 45;
+export const SECONDARY_ACTION_TAB_ATTACH_OVERLAP = 8;
+export const SECONDARY_ACTION_TAB_Y_INSET = 30;
 export const ACTION_TAB_ATTACH_OVERLAP = 55;
 export const TAB_SHADOW_OFFSET_X = 2;
 export const TAB_SHADOW_OFFSET_Y = 3;

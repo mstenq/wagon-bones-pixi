@@ -8,10 +8,12 @@
 import { createRoot } from 'react-dom/client';
 
 import { initAudioPreferences } from '@/game/AudioPreferences';
+import { initDevModeFromUrl } from '@/game/DevMode';
 import '@/ui/pixi/extend';
 import '@/ui/css/index.css';
 
 initAudioPreferences();
+initDevModeFromUrl();
 
 const elem = document.getElementById('root')!;
 const root = import.meta.hot?.data.root ?? createRoot(elem);

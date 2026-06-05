@@ -54,13 +54,11 @@ function ownedDefIds(run: RunState): string[] {
   return [...run.equipment.map((e) => e.defId), ...run.consumables.map((c) => c.defId)];
 }
 
-/** Roll weighted shop stock rows (before tag injection / auras). */
-export function generateShopStockRows(run: RunState = getRunState()): ShopStockGenRow[] {
-  const slotCount = Math.max(1, run.shopSlots);
-  const items: ShopStockGenRow[] = [];
-  const excludeIds = ownedDefIds(run);
+function buildShopStockCategories(run: RunState): {
+  categories: { type: 'equipment' | 'supply' | 'trail_guide' | 'frontier' | 'dice'; weight: number }[];
+  diceMode: 'none' | 'enhanced' | 'stickered';
+} {
   const profession = run.professionId ? getProfessionById(run.professionId) : null;
-
   const diceMode = hasPermitDiceInShop(run.purchasedPermits);
   const categories: { type: 'equipment' | 'supply' | 'trail_guide' | 'frontier' | 'dice'; weight: number }[] = [
     { type: 'equipment', weight: SHOP_WEIGHTS.equipment },
@@ -73,45 +71,101 @@ export function generateShopStockRows(run: RunState = getRunState()): ShopStockG
   if (profession?.modifiers?.frontierInShop) {
     categories.push({ type: 'frontier', weight: SHOP_WEIGHTS.frontier });
   }
+  return { categories, diceMode };
+}
 
+/** Roll one weighted shop stock row (before tag injection / auras). */
+export function pickOneShopStockRow(excludeIds: string[], run: RunState = getRunState()): ShopStockGenRow | null {
+  const { categories, diceMode } = buildShopStockCategories(run);
   const totalWeight = categories.reduce((sum, c) => sum + c.weight, 0);
+  if (totalWeight <= 0) {
+    return null;
+  }
+
+  let roll = rngFloat('shop') * totalWeight;
+  let picked = categories[0]!.type;
+  for (const cat of categories) {
+    roll -= cat.weight;
+    if (roll <= 0) {
+      picked = cat.type;
+      break;
+    }
+  }
+
+  if (picked === 'dice' && diceMode !== 'none') {
+    return { type: 'dice', die: generateShopDie(diceMode) };
+  }
+
+  if (picked === 'equipment') {
+    const [def] = generateShopStock(1, excludeIds);
+    if (!def) {
+      return null;
+    }
+    return {
+      type: 'equipment',
+      def,
+      preview: rollShopEquipmentPreview(def, run.purchasedPermits),
+    };
+  }
+
+  let consumableDef: ConsumableDef;
+  if (picked === 'supply') {
+    consumableDef = getRandomSupplyDef(undefined, excludeIds);
+  } else if (picked === 'trail_guide') {
+    consumableDef = getRandomTrailGuideDef(undefined, excludeIds);
+  } else {
+    consumableDef = getShopRandomFrontierDef(undefined, excludeIds);
+  }
+  return { type: 'consumable', consumableDef };
+}
+
+function stockDefIds(stock: StoredShopItem[]): string[] {
+  return stock.flatMap((item) => {
+    if (item.type === 'equipment' || item.type === 'consumable') {
+      return [item.defId];
+    }
+    return [];
+  });
+}
+
+/** Append new stock rows when shop slot count increases (e.g. after buying a permit). */
+export function appendMissingShopStockSlots(stock: StoredShopItem[], run: RunState = getRunState()): StoredShopItem[] {
+  const target = Math.max(1, run.shopSlots);
+  const result = [...stock];
+  let excludeIds = [...ownedDefIds(run), ...stockDefIds(result)];
+
+  while (result.length < target) {
+    const row = pickOneShopStockRow(excludeIds, run);
+    if (!row) {
+      break;
+    }
+    result.push(shopRowsToStored([row])[0]!);
+    if (row.type === 'equipment' && row.def) {
+      excludeIds = [...excludeIds, row.def.id];
+    } else if (row.type === 'consumable' && row.consumableDef) {
+      excludeIds = [...excludeIds, row.consumableDef.id];
+    }
+  }
+
+  return result;
+}
+
+/** Roll weighted shop stock rows (before tag injection / auras). */
+export function generateShopStockRows(run: RunState = getRunState()): ShopStockGenRow[] {
+  const slotCount = Math.max(1, run.shopSlots);
+  const items: ShopStockGenRow[] = [];
+  let excludeIds = ownedDefIds(run);
 
   for (let i = 0; i < slotCount; i++) {
-    let roll = rngFloat('shop') * totalWeight;
-    let picked = categories[0]!.type;
-    for (const cat of categories) {
-      roll -= cat.weight;
-      if (roll <= 0) {
-        picked = cat.type;
-        break;
-      }
-    }
-
-    if (picked === 'dice' && diceMode !== 'none') {
-      items.push({ type: 'dice', die: generateShopDie(diceMode) });
+    const row = pickOneShopStockRow(excludeIds, run);
+    if (!row) {
       continue;
     }
-
-    if (picked === 'equipment') {
-      const [def] = generateShopStock(1, excludeIds);
-      if (!def) continue;
-      items.push({
-        type: 'equipment',
-        def,
-        preview: rollShopEquipmentPreview(def, run.purchasedPermits),
-      });
-      excludeIds.push(def.id);
-    } else {
-      let consumableDef: ConsumableDef;
-      if (picked === 'supply') {
-        consumableDef = getRandomSupplyDef(undefined, excludeIds);
-      } else if (picked === 'trail_guide') {
-        consumableDef = getRandomTrailGuideDef(undefined, excludeIds);
-      } else {
-        consumableDef = getShopRandomFrontierDef(undefined, excludeIds);
-      }
-      items.push({ type: 'consumable', consumableDef });
-      excludeIds.push(consumableDef.id);
+    items.push(row);
+    if (row.type === 'equipment' && row.def) {
+      excludeIds = [...excludeIds, row.def.id];
+    } else if (row.type === 'consumable' && row.consumableDef) {
+      excludeIds = [...excludeIds, row.consumableDef.id];
     }
   }
 

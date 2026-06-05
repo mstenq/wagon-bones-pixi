@@ -12,6 +12,10 @@ import {
   SELL_TAB_HEIGHT,
   SELL_TAB_LEFT_PADDING,
   SELL_TAB_WIDTH,
+  SECONDARY_ACTION_TAB_ATTACH_OVERLAP,
+  SECONDARY_ACTION_TAB_HEIGHT,
+  SECONDARY_ACTION_TAB_WIDTH,
+  SECONDARY_ACTION_TAB_Y_INSET,
   TAB_GREEN,
   TAB_HEIGHT,
   TAB_SHADOW_ALPHA,
@@ -83,8 +87,17 @@ function drawBottomTabShape(
 }
 
 function drawSellTabShape(graphics: Graphics, offsetX: number, offsetY: number, style: TabDrawStyle = {}): void {
-  const width = SELL_TAB_WIDTH;
-  const height = SELL_TAB_HEIGHT;
+  drawRightSlideTabShape(graphics, SELL_TAB_WIDTH, SELL_TAB_HEIGHT, offsetX, offsetY, style);
+}
+
+function drawRightSlideTabShape(
+  graphics: Graphics,
+  width: number,
+  height: number,
+  offsetX: number,
+  offsetY: number,
+  style: TabDrawStyle = {},
+): void {
   const halfH = height / 2;
   const radius = 6;
   const fill = style.fill ?? TAB_GREEN;
@@ -129,6 +142,18 @@ export function drawPriceTab(graphics: Graphics): void {
 /** Green BUY / SELECT tab tucked under the card bottom edge. */
 export function drawBottomActionTab(graphics: Graphics): void {
   drawBottomTabShape(graphics, TAB_WIDTH, ACTION_TAB_HEIGHT, 0, 0);
+}
+
+export function drawBottomActionTabStyled(graphics: Graphics, style: TabDrawStyle): void {
+  drawBottomTabShape(graphics, TAB_WIDTH, ACTION_TAB_HEIGHT, 0, 0, style);
+}
+
+export function drawBottomActionTabShadowStyled(graphics: Graphics): void {
+  drawBottomTabShape(graphics, TAB_WIDTH, ACTION_TAB_HEIGHT, TAB_SHADOW_OFFSET_X, TAB_SHADOW_OFFSET_Y, {
+    fill: 0x000000,
+    fillAlpha: TAB_SHADOW_ALPHA,
+    strokeWidth: 0,
+  });
 }
 
 export function drawBottomActionTabShadow(graphics: Graphics): void {
@@ -191,7 +216,46 @@ export function sellTabInnerX(reveal: number): number {
   return -SELL_TAB_WIDTH + reveal * SELL_TAB_WIDTH;
 }
 
+export function secondaryActionTabAnchorX(cardWidth: number, cardScale = 1): number {
+  return (cardWidth / 2) * cardScale - SECONDARY_ACTION_TAB_ATTACH_OVERLAP;
+}
+
+export function secondaryActionTabAnchorY(cardHeight: number, cardScale = 1): number {
+  const halfH = (cardHeight / 2) * cardScale;
+  return halfH - SECONDARY_ACTION_TAB_Y_INSET - SECONDARY_ACTION_TAB_HEIGHT / 2;
+}
+
+export function secondaryActionTabInnerX(reveal: number): number {
+  return -SECONDARY_ACTION_TAB_WIDTH + reveal * SECONDARY_ACTION_TAB_WIDTH;
+}
+
+/** Right-side shop tab; flat left edge tucks under the card. */
+export function drawRightShopActionTab(graphics: Graphics, style: TabDrawStyle = {}): void {
+  drawRightSlideTabShape(graphics, SECONDARY_ACTION_TAB_WIDTH, SECONDARY_ACTION_TAB_HEIGHT, 0, 0, {
+    ...style,
+    fill: style.fill ?? TAB_GREEN,
+    stroke: style.stroke ?? 0x2a8a48,
+  });
+}
+
+export function drawRightShopActionTabShadow(graphics: Graphics): void {
+  drawRightSlideTabShape(
+    graphics,
+    SECONDARY_ACTION_TAB_WIDTH,
+    SECONDARY_ACTION_TAB_HEIGHT,
+    TAB_SHADOW_OFFSET_X,
+    TAB_SHADOW_OFFSET_Y,
+    {
+      fill: 0x000000,
+      fillAlpha: TAB_SHADOW_ALPHA,
+      strokeWidth: 0,
+    },
+  );
+}
+
 export const SELL_TAB_TEXT_X = SELL_TAB_LEFT_PADDING + (SELL_TAB_WIDTH - SELL_TAB_LEFT_PADDING) / 2;
+
+export const SECONDARY_ACTION_TAB_TEXT_X = SECONDARY_ACTION_TAB_WIDTH / 2;
 
 /** Re-export for hit-area / layout math in Card. */
 export {

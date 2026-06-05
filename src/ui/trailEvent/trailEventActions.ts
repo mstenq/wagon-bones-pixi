@@ -15,6 +15,7 @@ import {
 } from '@/game/TrailEventsSystem';
 import { buildTrailProtectionText } from '@/ui/trailEvent/formatTrailEffect';
 import { navigateToRoundSelect } from '@/ui/roundSelect/roundSelectActions';
+import { navigateToShop } from '@/ui/shop/shopActions';
 
 function requireTrailEventState() {
   const state = getSceneState().trailEvent;
@@ -123,5 +124,5 @@ export function proceedAfterTrailEvent(): void {
     return;
   }
 
-  sceneActions.setActiveScene('Shop');
+  navigateToShop();
 }

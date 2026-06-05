@@ -28,6 +28,8 @@ export type ButtonProps = {
   height?: number;
   disabled?: boolean;
   onClick?: () => void;
+  /** Optional face colors overriding the variant theme. */
+  faceTheme?: ButtonVariantTheme;
 };
 
 export type ButtonElementProps = {

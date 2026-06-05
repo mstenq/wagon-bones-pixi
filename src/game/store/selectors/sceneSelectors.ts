@@ -29,6 +29,24 @@ export function selectShopStockRevision(state: SceneRuntimeState = getSceneState
   return `${shop.shopRerollCount}|${shopStockRevisionKey(shop.stock)}|${packFlags}`;
 }
 
+/** Stable revision token for shop affordability UI subscriptions. */
+export function selectShopAffordabilityRevision(state: RunState = getRunState()): string {
+  return [
+    state.balance,
+    state.shopRerollCount,
+    selectShopRerollCost(state),
+    state.shopFreeRerollPlan.join(','),
+    selectTrailGuidesFree(state) ? 1 : 0,
+    selectUsedEquipmentSlots(state),
+    state.maxEquipmentSlots,
+    state.purchasedPermits.join(','),
+    state.permitPurchasedThisLeg ? 1 : 0,
+    state.currentLegPermitId ?? '',
+    state.bonusShopPermitId ?? '',
+    state.lastUsedConsumableId ?? '',
+  ].join('|');
+}
+
 /** Run + scene inputs that drive shop card/pack/reroll affordability. */
 export function selectShopAffordabilityInputs(state: RunState = getRunState()): {
   balance: number;
@@ -37,6 +55,7 @@ export function selectShopAffordabilityInputs(state: RunState = getRunState()): 
   trailGuidesFree: boolean;
   usedEquipmentSlots: number;
   maxEquipmentSlots: number;
+  purchasedPermits: readonly string[];
   ownedEquipmentDefIds: string[];
   ownedConsumableDefIds: string[];
 } {
@@ -47,6 +66,7 @@ export function selectShopAffordabilityInputs(state: RunState = getRunState()): 
     trailGuidesFree: selectTrailGuidesFree(state),
     usedEquipmentSlots: selectUsedEquipmentSlots(state),
     maxEquipmentSlots: state.maxEquipmentSlots,
+    purchasedPermits: state.purchasedPermits,
     ownedEquipmentDefIds: state.equipment.map((e) => e.defId),
     ownedConsumableDefIds: state.consumables.map((c) => c.defId),
   };

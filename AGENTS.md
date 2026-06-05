@@ -15,6 +15,35 @@ Prefer **not** to use `useEffect`. Handle behavior through:
 
 If `useEffect` is unavoidable (e.g. subscribing to an external system with no event/callback API), add a **comment directly above it** explaining why other approaches do not work.
 
+## React: Zustand selectors (avoid infinite loops)
+
+`useGameRunStore` / `useGameSceneStore` / `useGameRoundStore` wrap Zustand → React 19 `useSyncExternalStore`. The snapshot from `getSnapshot` must be **referentially stable** when underlying data has not changed.
+
+**Do not** pass a selector that allocates every call:
+
+- `useGameRunStore(selectFooInputs)` when `selectFooInputs` returns `{ balance, ... }` or `.map()` / `.filter()` / `.join()` into a new array
+- Inline selectors like `useGameRunStore((s) => ({ a: s.a }))`
+- `useGameRunStore((s) => s.items.map(...))`
+
+Each render returns a new object/array → React thinks the store changed → re-render → loop. Console: *"The result of getSnapshot should be cached to avoid an infinite loop"*.
+
+**Do** subscribe to a **stable primitive** (string/number/boolean or stable store slice reference):
+
+```ts
+// Revision token — add `selectFooRevision` next to derived selectors in selectors/
+const revision = useGameRunStore(selectFooRevision);
+const inputs = useMemo(() => selectFooInputs(runStore.getState()), [revision]);
+```
+
+Or use `useRunStoreRevision(revisionSelector, readSelector)` from `src/game/store/reactHooks.ts` when you only need a one-off read during render.
+
+**When adding derived view-model selectors:**
+
+1. Add a `select*Revision` string (or number) that encodes every input the derived value depends on.
+2. Keep `select*Inputs` / `select*ViewModel` as pure functions for `getState()` / `useMemo` — not as the direct `useGame*Store` argument unless they return a primitive or an existing stable reference from state (e.g. `state.shop`).
+
+**Safe direct subscriptions:** primitives (`state.balance`), stable references already in the store (`state.shop`, `state.equipment`), and memoized revision strings.
+
 ## Card/die aura effects
 
 Auras live in `src/ui/effects/`. Shipped ids: `none`, `holy`, `fire`, `arcane`, `ghost` (`EFFECT_IDS` in `types.ts`, wired in `registry.ts`). Reference implementations: `definitions/holy.ts`, `fire.ts`, `arcane.ts`, `ghost.ts` — Pixi `Graphics`, sprites, `ColorMatrixFilter`, custom GLSL in `filters/` (e.g. `ghostAuraFilter.ts`), and built-in filters via `applyArtFilters` on card/die art.
