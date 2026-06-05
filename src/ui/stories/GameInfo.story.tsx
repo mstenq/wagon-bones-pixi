@@ -181,6 +181,11 @@ function GameInfoStoryPreview() {
             payoutAmount: 4,
           }}
           roundScore={324}
+          profession={{ name: "Trail Guide" }}
+          modifiers={[
+            { id: "story-positive", polarity: "positive" },
+            { id: "story-negative", polarity: "negative" },
+          ]}
           handInfo={{
             handName: "High Card",
             level: 1,

@@ -1,5 +1,7 @@
 import { ButtonElement } from "@/ui/components/Button/ButtonElement";
 import { BankInfo } from "@/ui/components/BankInfo/BankInfo";
+import { GameModifiers, type GameModifier } from "@/ui/components/GameInfo/GameModifiers";
+import { ProfessionInfo, type ProfessionInfoProps } from "@/ui/components/GameInfo/ProfessionInfo";
 import { HandInfo, type HandInfoProps } from "@/ui/components/HandInfo/HandInfo";
 import { InfoBox, InfoBoxLegValue, InfoBoxRockValue } from "@/ui/components/InfoBox/InfoBox";
 import { RoundInfo, type RoundInfoProps } from "@/ui/components/RoundInfo/RoundInfo";
@@ -24,6 +26,8 @@ export type GameInfoProps = {
   displayMode: GameInfoDisplayMode;
   roundInfo: Omit<RoundTitleProps & RoundInfoProps, "className">;
   roundScore: number;
+  profession: Omit<ProfessionInfoProps, "className" | "compact">;
+  modifiers: GameModifier[];
   handInfo: Omit<HandInfoProps, "className">;
   stats: GameInfoStats;
   balance: number;
@@ -31,6 +35,34 @@ export type GameInfoProps = {
   onOptionsClick?: () => void;
   className?: string;
 };
+
+type GameInfoProfessionModifiersRowProps = {
+  profession: Omit<ProfessionInfoProps, "className" | "compact">;
+  modifiers: GameModifier[];
+  compact: boolean;
+  className?: string;
+};
+
+function GameInfoProfessionModifiersRow({
+  profession,
+  modifiers,
+  compact,
+  className,
+}: GameInfoProfessionModifiersRowProps) {
+  return (
+    <div
+      className={[
+        "flex w-full min-w-0 items-stretch gap-0.5 xl:gap-2",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      <ProfessionInfo {...profession} compact={compact} className="min-h-0 min-w-0 flex-1" />
+      <GameModifiers modifiers={modifiers} compact={compact} className="min-h-0 min-w-0" />
+    </div>
+  );
+}
 
 type GameInfoActionButtonsProps = {
   onRunInfoClick?: () => void;
@@ -156,6 +188,8 @@ export function GameInfo({
   displayMode,
   roundInfo,
   roundScore,
+  profession,
+  modifiers,
   handInfo,
   stats,
   balance,
@@ -179,18 +213,25 @@ export function GameInfo({
   return (
     <section className={rootClassName} aria-label="Game information">
       {isPortraitStack ? (
-        <>
-          <div className={compact ? "flex flex-col gap-1" : "contents"}>
-            <RoundTitle title={title} compact={compact} />
-            <RoundInfo {...roundBody} compact={compact} />
-            <RoundScore score={roundScore} compact={compact} />
-            <HandInfo {...handInfo} compact={compact} />
-          </div>
-        </>
+        <div className={compact ? "flex flex-col gap-1" : "contents"}>
+          <RoundTitle title={title} compact={compact} />
+          <GameInfoProfessionModifiersRow
+            profession={profession}
+            modifiers={modifiers}
+            compact={compact}
+          />
+          <RoundInfo {...roundBody} compact={compact} />
+          <RoundScore score={roundScore} compact={compact} />
+          <HandInfo {...handInfo} compact={compact} />
+        </div>
       ) : (
-        <div className="grid min-h-0 min-w-0 grid-cols-2 grid-rows-[auto_auto] items-stretch gap-0.5 xl:gap-2">
+        <div className="grid min-h-0 min-w-0 grid-cols-2 grid-rows-[auto_auto_auto] items-stretch gap-0.5 xl:gap-2">
           <RoundTitle title={title} className="h-full min-h-0 min-w-0" />
           <RoundScore score={roundScore} compact className="h-full min-h-0 min-w-0" />
+          <div className="col-span-full flex w-full min-w-0 items-stretch gap-0.5 xl:gap-2">
+            <ProfessionInfo {...profession} compact className="min-h-0 min-w-0 flex-1" />
+            <GameModifiers modifiers={modifiers} compact className="min-h-0 min-w-0 " />
+          </div>
           <RoundInfo {...roundBody} className="h-full min-h-0" />
           <HandInfo {...handInfo} className="h-full min-h-0" />
         </div>

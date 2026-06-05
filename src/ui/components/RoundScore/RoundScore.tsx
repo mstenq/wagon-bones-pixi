@@ -65,7 +65,7 @@ export function RoundScore({ score, compact = false, className }: RoundScoreProp
 
   const facePadding = compact
     ? "flex min-h-10 items-stretch gap-1 p-2"
-    : "flex items-stretch gap-1 p-2 lg:p-2.5 xl:gap-2 xl:p-5";
+    : "flex items-stretch gap-1 p-2 lg:p-2.5 xl:gap-2 xl:p-3";
 
   const faceLayout = compact
     ? `${facePadding} h-full min-h-0`

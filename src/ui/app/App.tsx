@@ -40,7 +40,7 @@ export function App() {
 
   return (
     <UiPrimaryProvider className="box-border flex h-dvh w-full flex-col pt-safe-top pr-safe-right pb-safe-bottom pl-safe-left landscape:flex-row">
-      <aside className="w-full bg-background  shrink-0 overflow-y-auto bg-background max-h-[22dvh] landscape:max-h-none landscape:min-w-0 landscape:w-[clamp(11.5rem,20vw,15rem)] lg:landscape:w-[clamp(16rem,22vw,18rem)] xl:landscape:w-96">
+      <aside className="w-full bg-background  shrink-0 bg-background  landscape:max-h-none landscape:min-w-0 landscape:w-[clamp(11.5rem,20vw,15rem)] lg:landscape:w-[clamp(16rem,22vw,18rem)] xl:landscape:w-96">
         <GameInfo
           displayMode={isLandscapeViewport ? "portrait" : "landscape"}
           roundInfo={{
@@ -52,6 +52,11 @@ export function App() {
             payoutAmount: 10,
           }}
           roundScore={100}
+          profession={{ name: "Developer" }}
+          modifiers={[
+            { id: "placeholder-positive", polarity: "positive" },
+            { id: "placeholder-negative", polarity: "negative" },
+          ]}
           handInfo={{ handName: "Hand 1", level: 1, chips: 100, mult: 2 }}
           stats={{
             hands: 5,

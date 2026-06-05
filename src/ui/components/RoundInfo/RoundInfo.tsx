@@ -32,7 +32,7 @@ export function RoundInfo({
         {subtitle ? (
           <p
             className={[
-              "mb-1 text-center leading-snug text-black xl:mb-2 xl:text-xl pt-2 px-2",
+              "-mb-2 text-center leading-snug text-black xl:text-xl pt-2 px-2 ",
               compact ? "text-[12px]" : "text-sm lg:text-base xl:text-xl",
             ].join(" ")}
           >

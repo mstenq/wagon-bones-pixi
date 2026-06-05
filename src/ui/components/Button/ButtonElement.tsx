@@ -23,7 +23,7 @@ export function ButtonElement({
   const faceClassName = [
     "neo-surface-face neo-surface-face--interactive",
     "font-body cursor-pointer leading-none text-black",
-    "flex min-h-6 w-full min-w-0 items-center justify-center px-1.5 py-0.5 text-xs lg:min-h-8 lg:px-2 lg:py-1 lg:text-sm xl:min-h-12 xl:px-4 xl:py-2.5 xl:text-[1.4rem]",
+    "flex min-h-8 w-full min-w-0 items-center justify-center px-1.5 py-0.5 text-xs lg:min-h-8 lg:px-2 lg:py-1 lg:text-sm xl:min-h-12 xl:px-4 xl:py-2.5 xl:text-[1.4rem]",
     "disabled:cursor-not-allowed disabled:bg-ui-disabled",
     variantFaceClass[variant],
   ].join(" ");

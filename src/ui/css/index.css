@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* Gameplay score boxes — keep full class names so Tailwind emits palette vars. */
-@source inline("bg-blue-500 bg-red-500 text-blue-950 text-red-950 bg-primary-50 bg-primary bg-white");
+@source inline("bg-blue-500 bg-red-500 text-blue-950 text-red-950 bg-primary-50 bg-primary bg-white bg-ui-modifier-positive bg-ui-modifier-negative");
 
 @theme {
 
@@ -29,6 +29,8 @@
   --color-primary-900: oklch(37.9% 0.146 265.522);
   --color-primary-950: oklch(28.2% 0.091 267.935);
   --color-ui-disabled: #9ca3af;
+  --color-ui-modifier-positive: oklch(62% 0.17 145);
+  --color-ui-modifier-negative: oklch(58% 0.14 35);
 
   --animate-score-bump: score-box-digit-bump 110ms cubic-bezier(0.34, 1.45, 0.64, 1) both;
   /* Duration matches WAVE_IDLE_PERIOD_S in waveBounce.ts */
