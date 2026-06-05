@@ -6,6 +6,8 @@ export type RoundInfoProps = {
   iconSrc?: string;
   difficultyColor: string;
   targetScore: number;
+  /** When set, overrides numeric `targetScore` formatting (e.g. scientific miles). */
+  targetScoreLabel?: string;
   payoutAmount: number;
   compact?: boolean;
   className?: string;
@@ -16,11 +18,12 @@ export function RoundInfo({
   iconSrc,
   difficultyColor,
   targetScore,
+  targetScoreLabel,
   payoutAmount,
   compact = false,
   className,
 }: RoundInfoProps) {
-  const formattedScore = formatRoundScore(targetScore);
+  const formattedScore = targetScoreLabel ?? formatRoundScore(targetScore);
   const formattedPayout = formatRoundPayout(payoutAmount);
 
   return (

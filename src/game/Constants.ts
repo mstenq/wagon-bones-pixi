@@ -191,7 +191,7 @@ export const COLORS = {
   // Backgrounds
   BG_PRIMARY: 0x1a1a2e,
   BG_DARK: 0x0a0a1a,
-  BG_FELT: 0x2a4a2a,
+  BG_FELT: 0xf8f3eb,
   BG_CARD: 0x2a2a3a,
   BG_PANEL: 0x1e1e3a,
   BG_WIN: 0x1a3a1a,

@@ -11,6 +11,7 @@ import { type PackItem, type PackCategory, type InstantEffect } from './BoosterP
 import type { DiceSelectionConfig } from './DiceSelectionSystem';
 import { getRunRngState, getRunSeed, restoreRunRng, type RunRngState } from './RunRng';
 import { milesToSave, milesFromSave } from './scoreMath';
+import { prepareRoundSelectScene } from './roundSelectEntry';
 import { getRunState, runActions } from './store/runStore';
 import { getRoundState, roundStore } from './store/roundStore';
 import { getSceneState, sceneActions } from './store/sceneStore';
@@ -31,12 +32,14 @@ import {
 import type {
   ActiveSceneKey,
   BoosterPackSceneState,
+  PreRunSceneKey,
   SceneRuntimeState,
   ShopSceneState,
   StoredShopItem,
   StoredPackItem,
   TrailEventSceneState,
 } from './store/types';
+import { isPreRunScene } from './store/types';
 import { createEmptyTrailRoundEffects, type TrailEventModifiers, type TrailRoundEffects } from './TrailEventsSystem';
 import type { BossRoundState } from './store/types';
 import { getTrailTagById } from '../data/trail_tags';
@@ -44,7 +47,14 @@ import bosses from '../data/bosses';
 
 export const SAVE_VERSION = 4;
 
-export type ActiveScene = Exclude<ActiveSceneKey, 'none' | 'Payout'>;
+export type ActiveScene = Exclude<ActiveSceneKey, PreRunSceneKey | 'Payout'>;
+
+function resolvePersistedActiveScene(scene: ActiveSceneKey): ActiveScene {
+  if (isPreRunScene(scene) || scene === 'Payout') {
+    return 'RoundSelect';
+  }
+  return scene;
+}
 
 export interface SerializedEquipmentInstance {
   defId: string;
@@ -447,8 +457,7 @@ export function buildSaveSnapshot(options: BuildSaveSnapshotOptions = {}): GameS
   const round = getRoundState();
   const sceneState = getSceneState();
 
-  const activeScene =
-    options.activeScene ?? (sceneState.activeScene === 'none' ? 'RoundSelect' : sceneState.activeScene);
+  const activeScene = options.activeScene ?? resolvePersistedActiveScene(sceneState.activeScene);
   const scene: SerializedSceneRuntimeState = serializeSceneState({
     ...sceneState,
     ...options.scene,
@@ -510,6 +519,10 @@ export function applySaveSnapshot(snapshot: GameSaveSnapshot): { scene: ActiveSc
   }
 
   sceneActions.hydrate(deserializeSceneState(normalized.scene));
+
+  if (normalized.activeScene === 'RoundSelect') {
+    prepareRoundSelectScene();
+  }
 
   return { scene: normalized.activeScene };
 }

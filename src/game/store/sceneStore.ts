@@ -15,7 +15,7 @@ import type {
 
 export function createInitialSceneState(): SceneRuntimeState {
   return {
-    activeScene: 'none',
+    activeScene: 'MainMenu',
     shop: null,
     boosterPack: null,
     trailEvent: null,
@@ -53,7 +53,7 @@ export const sceneActions = {
 
   leaveScene(): void {
     sceneStore.setState({
-      activeScene: 'none',
+      activeScene: 'MainMenu',
       shop: null,
       boosterPack: null,
       trailEvent: null,

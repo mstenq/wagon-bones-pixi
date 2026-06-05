@@ -40,7 +40,18 @@ export function selectDicePouchCounts(state: RunState = getRunState()) {
   };
 }
 
-export function selectTagStackModel(state: RunState = getRunState()) {
+/** Stable revision token for dice pouch UI subscriptions. */
+export function selectDicePouchSnapshot(state: RunState = getRunState()): string {
+  const counts = selectDicePouchCounts(state);
+  return `${counts.available}/${counts.total}#${state.spentDiceIds.join(',')}`;
+}
+
+export type TagStackModel = {
+  tags: TrailTagInstance[];
+  twinWagonCount: number;
+};
+
+export function selectTagStackModel(state: RunState = getRunState()): TagStackModel {
   const pending = selectPendingTags(state).filter((t) => !t.def.category.startsWith('immediate_'));
   const nonAuraPending = pending.filter((t) => t.def.category !== 'shop_aura');
   const tags = groupTagsById([...nonAuraPending, ...getQueuedAuraTags(state)]);
@@ -48,6 +59,16 @@ export function selectTagStackModel(state: RunState = getRunState()) {
     tags,
     twinWagonCount: state.twinWagonCount,
   };
+}
+
+/** Stable revision token for React store subscriptions (avoids uncached object snapshots). */
+export function selectTagStackSnapshot(state: RunState = getRunState()): string {
+  const model = selectTagStackModel(state);
+  if (model.tags.length === 0 && model.twinWagonCount === 0) {
+    return '';
+  }
+  const tagKey = model.tags.map((t) => `${t.def.id}:${t.copies}`).join('|');
+  return `${tagKey}#${model.twinWagonCount}`;
 }
 
 export function selectRunSidebarModel(state: RunState = getRunState()) {

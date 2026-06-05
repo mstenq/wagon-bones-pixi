@@ -22,12 +22,17 @@ export type RoundCardProps = {
   /** Reserved for future Sprite art; circle placeholder is drawn when omitted. */
   image?: string;
   targetScore: number;
+  /** When set, overrides numeric `targetScore` formatting (e.g. scientific miles). */
+  targetScoreLabel?: string;
   rewardAmount: number;
   trailTag?: string;
   x?: number;
   y?: number;
   onPlayRound?: () => void;
   onSkipRound?: () => void;
+  onRerollBoss?: () => void;
+  rerollBossEnabled?: boolean;
+  rerollBossLabel?: string;
 };
 
 export type RoundCardStatusTheme = {
@@ -117,6 +122,7 @@ export function roundCardLayout(cardWidth: number, cardHeight: number) {
     targetScoreY: top + 198,
     rewardY: top + 232,
     playButtonY: cardHeight / 2 - 108,
+    rerollButtonY: cardHeight / 2 - 162,
     skipRowY: cardHeight / 2 - 54,
   };
 }

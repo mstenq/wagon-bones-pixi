@@ -26,6 +26,8 @@ export type GameInfoProps = {
   displayMode: GameInfoDisplayMode;
   roundInfo: Omit<RoundTitleProps & RoundInfoProps, 'className'>;
   roundScore: number;
+  /** When set, overrides numeric `roundScore` formatting (e.g. scientific miles). */
+  roundScoreLabel?: string;
   profession: Omit<ProfessionInfoProps, 'className' | 'compact'>;
   modifiers: GameModifier[];
   handInfo: Omit<HandInfoProps, 'className'>;
@@ -177,6 +179,7 @@ export function GameInfo({
   displayMode,
   roundInfo,
   roundScore,
+  roundScoreLabel,
   profession,
   modifiers,
   handInfo,
@@ -206,13 +209,13 @@ export function GameInfo({
           <RoundTitle title={title} compact={compact} />
           <GameInfoProfessionModifiersRow profession={profession} modifiers={modifiers} compact={compact} />
           <RoundInfo {...roundBody} compact={compact} />
-          <RoundScore score={roundScore} compact={compact} />
+          <RoundScore score={roundScore} scoreLabel={roundScoreLabel} compact={compact} />
           <HandInfo {...handInfo} compact={compact} />
         </div>
       ) : (
         <div className="grid min-h-0 min-w-0 grid-cols-2 grid-rows-[auto_auto_auto] items-stretch gap-0.5 xl:gap-2">
           <RoundTitle title={title} className="h-full min-h-0 min-w-0" />
-          <RoundScore score={roundScore} compact className="h-full min-h-0 min-w-0" />
+          <RoundScore score={roundScore} scoreLabel={roundScoreLabel} compact className="h-full min-h-0 min-w-0" />
           <div className="col-span-full flex w-full min-w-0 items-stretch gap-0.5 xl:gap-2">
             <ProfessionInfo {...profession} compact className="min-h-0 min-w-0 flex-1" />
             <GameModifiers modifiers={modifiers} compact className="min-h-0 min-w-0 " />

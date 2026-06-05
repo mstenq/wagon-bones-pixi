@@ -55,7 +55,7 @@ describe('game stores', () => {
 
   test('scene store initializes with no active scene payload', () => {
     const scene = sceneStore.getState();
-    expect(scene.activeScene).toBe('none');
+    expect(scene.activeScene).toBe('MainMenu');
     expect(scene.shop).toBeNull();
     expect(scene.boosterPack).toBeNull();
     expect(scene.trailEvent).toBeNull();

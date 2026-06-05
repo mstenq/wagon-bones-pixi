@@ -18,14 +18,8 @@ if (import.meta.hot) {
 }
 
 async function mount() {
-  if (import.meta.env.DEV) {
-    const { DevRouter } = await import('./ui/app/DevRouter');
-    root.render(<DevRouter />);
-    return;
-  }
-
-  const { App } = await import('./ui/app/App');
-  root.render(<App />);
+  const { DevRouter } = await import('./ui/app/DevRouter');
+  root.render(<DevRouter />);
 }
 
 // https://bun.com/docs/bundler/hot-reloading#import-meta-hot-data

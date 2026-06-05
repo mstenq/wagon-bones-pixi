@@ -23,7 +23,23 @@ export type { RoundSkipPreviewMeta };
 
 // ─── Active scene keys ───
 
-export type ActiveSceneKey = 'none' | 'Game' | 'Shop' | 'BoosterPack' | 'TrailEvent' | 'RoundSelect' | 'Payout';
+export type ActiveSceneKey =
+  | 'MainMenu'
+  | 'ProfessionSelect'
+  | 'DifficultySelect'
+  | 'Game'
+  | 'Shop'
+  | 'BoosterPack'
+  | 'TrailEvent'
+  | 'RoundSelect'
+  | 'Payout';
+
+/** Pre-run menu scenes — not written to save snapshots. */
+export type PreRunSceneKey = 'MainMenu' | 'ProfessionSelect' | 'DifficultySelect';
+
+export function isPreRunScene(scene: ActiveSceneKey): scene is PreRunSceneKey {
+  return scene === 'MainMenu' || scene === 'ProfessionSelect' || scene === 'DifficultySelect';
+}
 
 export interface PayoutBreakdown {
   roundReward: number;

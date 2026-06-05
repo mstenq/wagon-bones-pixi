@@ -38,19 +38,19 @@ export type ItemVisual = {
   scaleY: number;
 };
 
-export type RowDragSession = {
-  itemId: number;
+export type RowDragSession<ItemId extends string | number = number> = {
+  itemId: ItemId;
   fromSlot: number;
 };
 
-export type RowLayoutMeta = {
-  dragSession: RowDragSession | null;
-  dropSettlingItemId: number | null;
+export type RowLayoutMeta<ItemId extends string | number = number> = {
+  dragSession: RowDragSession<ItemId> | null;
+  dropSettlingItemId: ItemId | null;
 };
 
-type DragSession = {
+type DragSession<ItemId extends string | number> = {
   pointerId: number;
-  itemId: number;
+  itemId: ItemId;
   fromSlot: number;
   target: Container;
   parent: Container;
@@ -75,10 +75,10 @@ const DEFAULT_DRAG_THRESHOLD = 8;
 const DROP_SETTLE_MAX_MS = 600;
 const DROP_SETTLE_POSITION_EPS = 1.5;
 
-export type UseReorderableRowOptions = {
+export type UseReorderableRowOptions<ItemId extends string | number = number> = {
   layout: ReorderableRowLayout;
-  order: number[];
-  onOrderChange: (order: number[]) => void;
+  order: ItemId[];
+  onOrderChange: (order: ItemId[]) => void;
   disabled?: boolean;
   swing?: DragSwingConfig;
   snapLerp?: number;
@@ -86,12 +86,12 @@ export type UseReorderableRowOptions = {
   /** Pixels before pointer movement counts as drag instead of tap. */
   dragThreshold?: number;
   /** Fired on pointer up when movement stayed below `dragThreshold`. */
-  onItemTap?: (slotIndex: number, itemId: number, event: FederatedPointerEvent) => void;
+  onItemTap?: (slotIndex: number, itemId: ItemId, event: FederatedPointerEvent) => void;
   squishGrab?: SquishTargets;
   squishDrag?: SquishTargets;
 };
 
-export function useReorderableRow({
+export function useReorderableRow<ItemId extends string | number = number>({
   layout,
   order,
   onOrderChange,
@@ -103,18 +103,18 @@ export function useReorderableRow({
   onItemTap,
   squishGrab = SQUISH_GRAB,
   squishDrag = SQUISH_DRAG,
-}: UseReorderableRowOptions) {
+}: UseReorderableRowOptions<ItemId>) {
   const { app } = useApplication();
   const [draggingSlot, setDraggingSlot] = useState<number | null>(null);
-  const [pressingItemId, setPressingItemId] = useState<number | null>(null);
-  const dragRef = useRef<DragSession | null>(null);
-  const coastRef = useRef<Map<number, number>>(new Map());
-  const squishRef = useRef<Map<number, SquishState>>(new Map());
-  const positionsRef = useRef<Map<number, { x: number; y: number }>>(new Map());
+  const [pressingItemId, setPressingItemId] = useState<ItemId | null>(null);
+  const dragRef = useRef<DragSession<ItemId> | null>(null);
+  const coastRef = useRef<Map<ItemId, number>>(new Map());
+  const squishRef = useRef<Map<ItemId, SquishState>>(new Map());
+  const positionsRef = useRef<Map<ItemId, { x: number; y: number }>>(new Map());
   // After drop, we keep lerping for a short moment so the dragged die
   // doesn't teleport to its final slot instantly.
   const dropSettlingUntilRef = useRef<number>(0);
-  const dropSettlingItemIdRef = useRef<number | null>(null);
+  const dropSettlingItemIdRef = useRef<ItemId | null>(null);
   /** Layout order — updated on drop before React; do not overwrite from stale `order` prop. */
   const orderRef = useRef(order);
 
@@ -138,7 +138,7 @@ export function useReorderableRow({
   // During the short post-drop settling window we lerp from the last dragged
   // position to avoid "instant teleport" feel.
 
-  const getPosition = useCallback((itemId: number, home: { x: number; y: number }) => {
+  const getPosition = useCallback((itemId: ItemId, home: { x: number; y: number }) => {
     const cached = positionsRef.current.get(itemId);
     if (cached) {
       return cached;
@@ -148,7 +148,7 @@ export function useReorderableRow({
   }, []);
 
   const endDrag = useCallback(
-    (session: DragSession) => {
+    (session: DragSession<ItemId>) => {
       const newOrder = getPreviewOrder(session.fromSlot, session.previewSlot);
       const orderChanged = session.fromSlot !== session.previewSlot;
 
@@ -191,7 +191,7 @@ export function useReorderableRow({
       const itemId = orderRef.current[slotIndex]!;
       const local = parent.toLocal(event.global);
 
-      const session: DragSession = {
+      const session: DragSession<ItemId> = {
         pointerId: event.pointerId,
         itemId,
         fromSlot: slotIndex,
@@ -343,7 +343,7 @@ export function useReorderableRow({
   );
 
   const tickLayout = useCallback(
-    (apply: (slotIndex: number, itemId: number, visual: ItemVisual, meta: RowLayoutMeta) => void) => {
+    (apply: (slotIndex: number, itemId: ItemId, visual: ItemVisual, meta: RowLayoutMeta<ItemId>) => void) => {
       const session = dragRef.current?.activated ? dragRef.current : null;
       const activeOrder = session ? getPreviewOrder(session.fromSlot, session.previewSlot) : orderRef.current;
       const timeSettling = !session && performance.now() < dropSettlingUntilRef.current;
@@ -377,7 +377,7 @@ export function useReorderableRow({
         session.rotation = session.swing;
       }
 
-      const layoutMeta: RowLayoutMeta = {
+      const layoutMeta: RowLayoutMeta<ItemId> = {
         dragSession: session ? { itemId: session.itemId, fromSlot: session.fromSlot } : null,
         dropSettlingItemId: dropSettlingItemIdRef.current,
       };

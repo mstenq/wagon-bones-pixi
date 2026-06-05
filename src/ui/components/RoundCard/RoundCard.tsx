@@ -45,12 +45,16 @@ export function RoundCard({
   title,
   image: _image,
   targetScore,
+  targetScoreLabel,
   rewardAmount,
   trailTag,
   x = 0,
   y = 0,
   onPlayRound,
   onSkipRound,
+  onRerollBoss,
+  rerollBossEnabled = true,
+  rerollBossLabel = 'Reroll $10',
 }: RoundCardProps) {
   useUiPrimary();
 
@@ -66,10 +70,11 @@ export function RoundCard({
   const trailTagShadowRef = useRef<Graphics | null>(null);
   const trailTagFaceRef = useRef<Graphics | null>(null);
 
-  const formattedScore = formatRoundScore(targetScore);
+  const formattedScore = targetScoreLabel ?? formatRoundScore(targetScore);
   const rewardLine = formatRewardLine(rewardAmount);
   const rewardIsNegative = rewardAmount <= 0;
   const showActions = status === 'select';
+  const showBossReroll = showActions && onRerollBoss !== undefined;
   const showSkippedOverlay = status === 'skipped';
 
   const statusStyle = useMemo(() => statusLabelTextStyle(statusTheme.statusLabelColor), [statusTheme.statusLabelColor]);
@@ -141,6 +146,19 @@ export function RoundCard({
 
         {showActions ? (
           <>
+            {showBossReroll ? (
+              <Button
+                variant="neutral"
+                label={rerollBossLabel}
+                x={0}
+                y={layout.rerollButtonY}
+                width={contentWidth}
+                height={ROUND_CARD_PLAY_BUTTON_HEIGHT}
+                onClick={onRerollBoss}
+                disabled={!rerollBossEnabled}
+              />
+            ) : null}
+
             <Button
               variant="primary"
               label="Play Round"

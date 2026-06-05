@@ -2,13 +2,15 @@ import { memo } from 'react';
 
 import { PixiStageCanvas } from '@/ui/app/PixiStageCanvas';
 import { GameScenePixiLayout } from '@/ui/layout/GameScenePixiLayout';
-import { GameScene } from '@/ui/scenes/GameScene';
+import { RoundSelectScene } from '@/ui/scenes/RoundSelectScene';
 
-export const GameCanvas = memo(function GameCanvas() {
+export const RoundSelectCanvas = memo(function RoundSelectCanvas() {
   return (
     <PixiStageCanvas>
       <GameScenePixiLayout>
-        {(contentSize) => <GameScene contentW={contentSize.w} contentH={contentSize.h} />}
+        {(contentSize) => (
+          <RoundSelectScene contentW={contentSize.w} contentH={contentSize.h} />
+        )}
       </GameScenePixiLayout>
     </PixiStageCanvas>
   );
