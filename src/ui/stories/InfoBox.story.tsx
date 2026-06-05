@@ -1,10 +1,6 @@
-import {
-  InfoBox,
-  InfoBoxLegValue,
-  InfoBoxRockValue,
-} from "@/ui/components/InfoBox/InfoBox";
-import type { StoryDefinition } from "@/ui/types/storyTypes";
-import { UiPrimaryProvider } from "@/ui/theme/UiPrimaryProvider";
+import { InfoBox, InfoBoxLegValue, InfoBoxRockValue } from '@/ui/components/InfoBox/InfoBox';
+import type { StoryDefinition } from '@/ui/types/storyTypes';
+import { UiPrimaryProvider } from '@/ui/theme/UiPrimaryProvider';
 
 function InfoBoxStory() {
   return (
@@ -31,7 +27,7 @@ function InfoBoxStory() {
 }
 
 const infoBoxStory: StoryDefinition = {
-  name: "InfoBox",
+  name: 'InfoBox',
   component: <InfoBoxStory />,
 };
 

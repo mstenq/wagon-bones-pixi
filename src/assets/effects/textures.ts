@@ -1,6 +1,6 @@
-import { Assets, Texture } from "pixi.js";
+import { Assets, Texture } from 'pixi.js';
 
-import { EFFECT_IMAGES, type EffectImageKey } from "@/assets/effects/images";
+import { EFFECT_IMAGES, type EffectImageKey } from '@/assets/effects/images';
 
 const effectAlias = (key: EffectImageKey) => `effect-${key}`;
 

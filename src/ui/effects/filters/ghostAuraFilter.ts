@@ -1,11 +1,7 @@
-import { Filter, GlProgram, UniformGroup } from "pixi.js";
+import { Filter, GlProgram, UniformGroup } from 'pixi.js';
 
 /** Spectral green tint (#08c7b8) — matches former ISF `tint_color` default. */
-const GHOST_TINT_COLOR = new Float32Array([
-  0 / 255,
-  255 / 255,
-  208 / 255,
-  1]);
+const GHOST_TINT_COLOR = new Float32Array([0 / 255, 255 / 255, 208 / 255, 1]);
 
 const vertex = `
 in vec2 aPosition;
@@ -72,12 +68,12 @@ export type GhostAuraFilter = {
 
 export function createGhostAuraFilter(): GhostAuraFilter {
   const ghostUniforms = new UniformGroup({
-    uInvertAmount: { value: 1.0, type: "f32" },
-    uTintAmount: { value: 0.72, type: "f32" },
-    uSaturation: { value: 0.35, type: "f32" },
-    uBrightness: { value: 1.02, type: "f32" },
-    uPulse: { value: 0.0, type: "f32" },
-    uTintColor: { value: GHOST_TINT_COLOR, type: "vec4<f32>" },
+    uInvertAmount: { value: 1.0, type: 'f32' },
+    uTintAmount: { value: 0.72, type: 'f32' },
+    uSaturation: { value: 0.35, type: 'f32' },
+    uBrightness: { value: 1.02, type: 'f32' },
+    uPulse: { value: 0.0, type: 'f32' },
+    uTintColor: { value: GHOST_TINT_COLOR, type: 'vec4<f32>' },
   });
 
   const filter = new Filter({

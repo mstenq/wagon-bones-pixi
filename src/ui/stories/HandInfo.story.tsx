@@ -1,7 +1,7 @@
-import { HandInfo } from "@/ui/components/HandInfo/HandInfo";
-import { useQueryParam } from "@/ui/hooks/useQueryParam";
-import type { StoryDefinition } from "@/ui/types/storyTypes";
-import { panelButtonClass, panelLabelClass } from "@/ui/styles/panelControls";
+import { HandInfo } from '@/ui/components/HandInfo/HandInfo';
+import { useQueryParam } from '@/ui/hooks/useQueryParam';
+import type { StoryDefinition } from '@/ui/types/storyTypes';
+import { panelButtonClass, panelLabelClass } from '@/ui/styles/panelControls';
 
 const FLAME_MIN = 0;
 const FLAME_MAX = 1;
@@ -28,17 +28,17 @@ function parseFlameIntensity(raw: string): number | undefined {
 }
 
 function HandInfoStory() {
-  const [chips, setChips] = useQueryParam("chips", {
+  const [chips, setChips] = useQueryParam('chips', {
     default: BASE_CHIPS,
     parse: parseNonNegativeInt,
     serialize: String,
   });
-  const [mult, setMult] = useQueryParam("mult", {
+  const [mult, setMult] = useQueryParam('mult', {
     default: BASE_MULT,
     parse: parseNonNegativeInt,
     serialize: String,
   });
-  const [flameIntensity, setFlameIntensity] = useQueryParam("flame", {
+  const [flameIntensity, setFlameIntensity] = useQueryParam('flame', {
     default: 0.65,
     parse: parseFlameIntensity,
     serialize: (value) => value.toFixed(2),
@@ -82,19 +82,13 @@ function HandInfoStory() {
         />
       </label>
 
-      <HandInfo
-        handName="Full House"
-        level={1}
-        chips={chips}
-        mult={mult}
-        flameIntensity={flameIntensity}
-      />
+      <HandInfo handName="Full House" level={1} chips={chips} mult={mult} flameIntensity={flameIntensity} />
     </div>
   );
 }
 
 const handInfoStory: StoryDefinition = {
-  name: "HandInfo",
+  name: 'HandInfo',
   component: <HandInfoStory />,
 };
 

@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState } from 'react';
 
-import { BankInfo } from "@/ui/components/BankInfo/BankInfo";
-import type { StoryDefinition } from "@/ui/types/storyTypes";
-import { panelButtonClass } from "@/ui/styles/panelControls";
+import { BankInfo } from '@/ui/components/BankInfo/BankInfo';
+import type { StoryDefinition } from '@/ui/types/storyTypes';
+import { panelButtonClass } from '@/ui/styles/panelControls';
 
 const DEFAULT_BALANCE = 15;
 
@@ -16,11 +16,7 @@ function BankInfoStory() {
   return (
     <div className="flex flex-col items-center gap-4">
       <div className="flex flex-wrap justify-center gap-4">
-        <button
-          type="button"
-          className={panelButtonClass}
-          onClick={() => setBalance(DEFAULT_BALANCE)}
-        >
+        <button type="button" className={panelButtonClass} onClick={() => setBalance(DEFAULT_BALANCE)}>
           Reset
         </button>
         <button
@@ -38,7 +34,7 @@ function BankInfoStory() {
 }
 
 const bankInfoStory: StoryDefinition = {
-  name: "BankInfo",
+  name: 'BankInfo',
   component: <BankInfoStory />,
 };
 

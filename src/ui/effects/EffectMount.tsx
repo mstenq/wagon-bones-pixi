@@ -1,18 +1,9 @@
-import { useApplication, useTick } from "@pixi/react";
-import { Container, type Filter } from "pixi.js";
-import {
-  useCallback,
-  useRef,
-  type MutableRefObject,
-  type ReactNode,
-} from "react";
+import { useApplication, useTick } from '@pixi/react';
+import { Container, type Filter } from 'pixi.js';
+import { useCallback, useRef, type MutableRefObject, type ReactNode } from 'react';
 
-import { CARD_EFFECT_PADDING, DIE_EFFECT_PADDING } from "@/ui/effects/dieTuning";
-import {
-  createEffectRuntime,
-  destroyEffect,
-  stepEffect,
-} from "@/ui/effects/runtime";
+import { CARD_EFFECT_PADDING, DIE_EFFECT_PADDING } from '@/ui/effects/dieTuning';
+import { createEffectRuntime, destroyEffect, stepEffect } from '@/ui/effects/runtime';
 import type {
   EffectArtRef,
   EffectArtTarget,
@@ -20,7 +11,7 @@ import type {
   EffectHostKind,
   EffectId,
   EffectRuntime,
-} from "@/ui/effects/types";
+} from '@/ui/effects/types';
 
 export type EffectMountProps = {
   effect: EffectId;
@@ -45,12 +36,12 @@ export function EffectMount({
   artRef,
   children,
 }: EffectMountProps) {
-  const resolvedPadding = padding ?? (hostKind === "die" ? DIE_EFFECT_PADDING : CARD_EFFECT_PADDING);
+  const resolvedPadding = padding ?? (hostKind === 'die' ? DIE_EFFECT_PADDING : CARD_EFFECT_PADDING);
   const { app } = useApplication();
   const backRef = useRef<Container | null>(null);
   const frontRef = useRef<Container | null>(null);
   const runtimeRef = useRef<EffectRuntime | null>(null);
-  const prevEffectRef = useRef<EffectId>("none");
+  const prevEffectRef = useRef<EffectId>('none');
 
   const tryAttachRuntime = useCallback(() => {
     const back = backRef.current;
@@ -58,7 +49,7 @@ export function EffectMount({
     if (!back || !front) {
       return;
     }
-    if (effect === "none") {
+    if (effect === 'none') {
       if (runtimeRef.current) {
         destroyEffect(runtimeRef.current);
         runtimeRef.current = null;
@@ -106,7 +97,7 @@ export function EffectMount({
       destroyEffect(runtimeRef.current);
       runtimeRef.current = null;
     }
-    if (effect === "none") {
+    if (effect === 'none') {
       artRef.current?.applyFilters(null);
     } else {
       tryAttachRuntime();

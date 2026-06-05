@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from 'react';
 
-import { NeoSurface } from "@/ui/components/NeoSurface/NeoSurface";
+import { NeoSurface } from '@/ui/components/NeoSurface/NeoSurface';
 import {
   buildRoundScoreAnimationFrames,
   formatRoundScore,
   STEP_INTERVAL_MS,
-} from "@/ui/components/RoundScore/roundScoreAnimation";
+} from '@/ui/components/RoundScore/roundScoreAnimation';
 
 export type RoundScoreProps = {
   score: number;
@@ -15,7 +15,7 @@ export type RoundScoreProps = {
 };
 
 function formatRoundScoreDisplay(value: number): string {
-  return formatRoundScore(value).toLocaleString("en-US");
+  return formatRoundScore(value).toLocaleString('en-US');
 }
 
 export function RoundScore({ score, compact = false, className }: RoundScoreProps) {
@@ -64,17 +64,15 @@ export function RoundScore({ score, compact = false, className }: RoundScoreProp
   }, [targetScore]);
 
   const facePadding = compact
-    ? "flex min-h-10 items-stretch gap-1 p-2"
-    : "flex items-stretch gap-1 p-2 lg:p-2.5 xl:gap-2 xl:p-3";
+    ? 'flex min-h-10 items-stretch gap-1 p-2'
+    : 'flex items-stretch gap-1 p-2 lg:p-2.5 xl:gap-2 xl:p-3';
 
-  const faceLayout = compact
-    ? `${facePadding} h-full min-h-0`
-    : facePadding;
+  const faceLayout = compact ? `${facePadding} h-full min-h-0` : facePadding;
 
   return (
     <NeoSurface
       fullWidth
-      className={["min-w-0 max-w-full", className].filter(Boolean).join(" ")}
+      className={['min-w-0 max-w-full', className].filter(Boolean).join(' ')}
       faceClassName={faceLayout}
     >
       <div
@@ -84,26 +82,14 @@ export function RoundScore({ score, compact = false, className }: RoundScoreProp
       >
         <div
           className={[
-            "flex shrink-0 flex-col justify-center gap-0 font-body text-ui-panel-muted xl:w-16 xl:gap-0.5 xl:px-1",
-            compact ? "w-8 gap-0.5 px-0.5" : "w-10 gap-0.5 px-0.5 lg:w-12",
-          ].join(" ")}
+            'flex shrink-0 flex-col justify-center gap-0 font-body text-ui-panel-muted xl:w-16 xl:gap-0.5 xl:px-1',
+            compact ? 'w-8 gap-0.5 px-0.5' : 'w-10 gap-0.5 px-0.5 lg:w-12',
+          ].join(' ')}
         >
-          <span
-            className={
-              compact
-                ? "text-[11px] leading-none"
-                : "text-sm leading-none lg:text-base xl:text-xl"
-            }
-          >
+          <span className={compact ? 'text-[11px] leading-none' : 'text-sm leading-none lg:text-base xl:text-xl'}>
             Round
           </span>
-          <span
-            className={
-              compact
-                ? "text-[11px] leading-none"
-                : "text-sm leading-none lg:text-base xl:text-xl"
-            }
-          >
+          <span className={compact ? 'text-[11px] leading-none' : 'text-sm leading-none lg:text-base xl:text-xl'}>
             score
           </span>
         </div>
@@ -111,9 +97,9 @@ export function RoundScore({ score, compact = false, className }: RoundScoreProp
         <div className="flex min-w-0 flex-1 items-center justify-end px-1 py-0.5 lg:px-1 xl:px-3 xl:py-2">
           <span
             className={[
-              "max-w-full truncate text-right font-header leading-none text-primary tabular-nums lg:text-2xl xl:text-4xl",
-              compact ? "text-lg" : "text-xl",
-            ].join(" ")}
+              'max-w-full truncate text-right font-header leading-none text-primary tabular-nums lg:text-2xl xl:text-4xl',
+              compact ? 'text-lg' : 'text-xl',
+            ].join(' ')}
           >
             {formatRoundScoreDisplay(displayScore)}
           </span>

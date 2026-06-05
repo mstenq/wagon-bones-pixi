@@ -1,4 +1,4 @@
-import { Filter, GlProgram, UniformGroup, type Texture } from "pixi.js";
+import { Filter, GlProgram, UniformGroup, type Texture } from 'pixi.js';
 
 /** Tune card burn-away destroy here. */
 export const BURN_DESTROY = {
@@ -78,10 +78,10 @@ export type BurnDissolveFilter = {
 export function createBurnDissolveFilter(dissolveTexture: Texture): BurnDissolveFilter {
   const [r, g, b, a] = BURN_DESTROY.burnColor;
   const burnUniforms = new UniformGroup({
-    uDissolveValue: { value: 0, type: "f32" },
-    uBurnSize: { value: BURN_DESTROY.burnSize, type: "f32" },
-    uNoiseScale: { value: BURN_DESTROY.noiseScale, type: "f32" },
-    uBurnColor: { value: new Float32Array([r, g, b, a]), type: "vec4<f32>" },
+    uDissolveValue: { value: 0, type: 'f32' },
+    uBurnSize: { value: BURN_DESTROY.burnSize, type: 'f32' },
+    uNoiseScale: { value: BURN_DESTROY.noiseScale, type: 'f32' },
+    uBurnColor: { value: new Float32Array([r, g, b, a]), type: 'vec4<f32>' },
   });
 
   const filter = new Filter({

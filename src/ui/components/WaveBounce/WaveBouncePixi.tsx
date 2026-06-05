@@ -1,6 +1,6 @@
-import { useTick } from "@pixi/react";
-import { Text, type Container, type Text as PixiText, type TextStyle } from "pixi.js";
-import { useCallback, useMemo, useRef } from "react";
+import { useTick } from '@pixi/react';
+import { Text, type Container, type Text as PixiText, type TextStyle } from 'pixi.js';
+import { useCallback, useMemo, useRef } from 'react';
 
 import {
   WAVE_CLICK_BUMP_PX,
@@ -9,7 +9,7 @@ import {
   waveClickBumpY,
   waveIdleAmplitudePx,
   waveIdleOffsetY,
-} from "@/ui/components/WaveBounce/waveBounce";
+} from '@/ui/components/WaveBounce/waveBounce';
 
 export type WaveBouncePixiClickRipple = {
   normX: number;
@@ -85,10 +85,7 @@ export function WaveBouncePixi({
 
   const resolvedAmplitude = amplitudePx ?? waveIdleAmplitudePx(fontSizePx);
 
-  const layouts = useMemo(
-    () => buildCharLayouts(text, style, charGapPx),
-    [charGapPx, style, text],
-  );
+  const layouts = useMemo(() => buildCharLayouts(text, style, charGapPx), [charGapPx, style, text]);
 
   const totalWidth = useMemo(() => {
     if (layouts.length === 0) {
@@ -114,9 +111,7 @@ export function WaveBouncePixi({
     timeRef.current += dt;
     const now = performance.now();
     const rippleActive =
-      clickRipple !== null &&
-      clickRipple.startMs > 0 &&
-      now - clickRipple.startMs < clickRippleDurationMs;
+      clickRipple !== null && clickRipple.startMs > 0 && now - clickRipple.startMs < clickRippleDurationMs;
 
     for (let index = 0; index < layouts.length; index += 1) {
       const node = charRefs.current[index];
@@ -126,12 +121,7 @@ export function WaveBouncePixi({
 
       let offsetY = 0;
       if (!reducedMotion && !idleWavePaused) {
-        offsetY += waveIdleOffsetY(
-          timeRef.current,
-          index,
-          staggerSeconds,
-          resolvedAmplitude,
-        );
+        offsetY += waveIdleOffsetY(timeRef.current, index, staggerSeconds, resolvedAmplitude);
       }
 
       if (rippleActive && clickRipple) {

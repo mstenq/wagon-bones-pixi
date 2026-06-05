@@ -1,23 +1,16 @@
-import { useTick } from "@pixi/react";
-import { use, useCallback, useRef } from "react";
+import { useTick } from '@pixi/react';
+import { use, useCallback, useRef } from 'react';
 
-import {
-  DraggableItem,
-  type DraggableItemHandle,
-} from "@/ui/components/DraggableItem/DraggableItem";
-import { Die, DEFAULT_DIE_SIZE, type DieHandle } from "@/ui/components/Dice/Die";
-import { dieShadowDragStateFromFloor } from "@/ui/components/Dice/dieGroundShadow";
-import { DICE_DRAG_Z_INDEX } from "@/ui/components/Dice/config";
-import { texturesReady } from "@/assets/dice/textures";
-import { DICE_COUNT } from "@/data/dice";
-import { gameFacade } from "@/game/facade";
-import { rollSpinFrame, useRunStore } from "@/game/store/runStore";
-import { rowArcPose } from "@/ui/interaction/rowArcPose";
-import {
-  useReorderableRow,
-  type ReorderableRowLayout,
-  type RowLayoutMeta,
-} from "@/ui/interaction/useReorderableRow";
+import { DraggableItem, type DraggableItemHandle } from '@/ui/components/DraggableItem/DraggableItem';
+import { Die, DEFAULT_DIE_SIZE, type DieHandle } from '@/ui/components/Dice/Die';
+import { dieShadowDragStateFromFloor } from '@/ui/components/Dice/dieGroundShadow';
+import { DICE_DRAG_Z_INDEX } from '@/ui/components/Dice/config';
+import { texturesReady } from '@/assets/dice/textures';
+import { DICE_COUNT } from '@/data/dice';
+import { gameFacade } from '@/game/facade';
+import { rollSpinFrame, useRunStore } from '@/game/store/runStore';
+import { rowArcPose } from '@/ui/interaction/rowArcPose';
+import { useReorderableRow, type ReorderableRowLayout, type RowLayoutMeta } from '@/ui/interaction/useReorderableRow';
 
 const ROLL_MS = 1400;
 
@@ -64,8 +57,7 @@ export function DiceRow({ layout }: DiceRowProps) {
   const dieRefs = useRef<(DieHandle | null)[]>([]);
   const rollRef = useRef<ActiveRoll | null>(null);
 
-  const { onPointerDown, tickLayout, slotHome, draggingSlot, pressingItemId } =
-    useReorderableRow({
+  const { onPointerDown, tickLayout, slotHome, draggingSlot, pressingItemId } = useReorderableRow({
     layout,
     order,
     onOrderChange: setDiceOrder,
@@ -83,27 +75,11 @@ export function DiceRow({ layout }: DiceRowProps) {
       const containerY = visual.y + pose.yOffset;
       const home = slotHome(slotIndex);
 
-      dragRefs.current[itemId]?.setTransform(
-        visual.x,
-        containerY,
-        visual.rotation,
-        visual.zIndex,
-      );
-      dieRefs.current[itemId]?.setSquishScale(
-        visual.scaleX * pose.scale,
-        visual.scaleY * pose.scale,
-      );
+      dragRefs.current[itemId]?.setTransform(visual.x, containerY, visual.rotation, visual.zIndex);
+      dieRefs.current[itemId]?.setSquishScale(visual.scaleX * pose.scale, visual.scaleY * pose.scale);
 
-      const shadowFloorY = dieShadowFloorLineY(
-        itemId,
-        home.y,
-        layout.count,
-        meta,
-        (fromSlot) => slotHome(fromSlot).y,
-      );
-      dieRefs.current[itemId]?.setShadowDragState(
-        dieShadowDragStateFromFloor(shadowFloorY, visual.y),
-      );
+      const shadowFloorY = dieShadowFloorLineY(itemId, home.y, layout.count, meta, (fromSlot) => slotHome(fromSlot).y);
+      dieRefs.current[itemId]?.setShadowDragState(dieShadowDragStateFromFloor(shadowFloorY, visual.y));
     });
 
     if (isRolling && rollTargets && !rollRef.current) {

@@ -1,7 +1,7 @@
-import { WaveBounceChars } from "@/ui/components/WaveBounce/WaveBounceChars";
-import { useQueryParam } from "@/ui/hooks/useQueryParam";
-import type { StoryDefinition } from "@/ui/types/storyTypes";
-import { panelLabelClass, panelSelectClass } from "@/ui/styles/panelControls";
+import { WaveBounceChars } from '@/ui/components/WaveBounce/WaveBounceChars';
+import { useQueryParam } from '@/ui/hooks/useQueryParam';
+import type { StoryDefinition } from '@/ui/types/storyTypes';
+import { panelLabelClass, panelSelectClass } from '@/ui/styles/panelControls';
 
 const DEFAULT_STAGGER_SECONDS = 0.1;
 const STAGGER_MIN = 0;
@@ -17,7 +17,7 @@ function parseStaggerSeconds(raw: string): number | undefined {
 }
 
 function WaveBounceCharsStory() {
-  const [staggerSeconds, setStaggerSeconds] = useQueryParam("stagger", {
+  const [staggerSeconds, setStaggerSeconds] = useQueryParam('stagger', {
     default: DEFAULT_STAGGER_SECONDS,
     parse: parseStaggerSeconds,
     serialize: (value) => value.toFixed(3),
@@ -49,7 +49,7 @@ function WaveBounceCharsStory() {
 }
 
 const waveBounceCharsStory: StoryDefinition = {
-  name: "WaveBounceChars",
+  name: 'WaveBounceChars',
   component: <WaveBounceCharsStory />,
 };
 

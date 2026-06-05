@@ -1,11 +1,11 @@
-import { TextStyle } from "pixi.js";
+import { TextStyle } from 'pixi.js';
 
 import {
   BUTTON_DISABLED_FACE_HEX,
   BUTTON_NEUTRAL_FACE_HEX,
   BUTTON_VARIANTS,
   type ButtonVariant,
-} from "@/ui/components/Button/buttonVariantColors";
+} from '@/ui/components/Button/buttonVariantColors';
 import {
   getPixiPrimaryFaceHex,
   NEO_BORDER_COLOR,
@@ -14,8 +14,8 @@ import {
   NEO_SHADOW_OFFSET_X,
   NEO_SHADOW_OFFSET_Y,
   UI_FONT_BODY,
-} from "@/ui/theme/uiTokens";
-import { hexToPixiColor } from "@/ui/pixi/color";
+} from '@/ui/theme/uiTokens';
+import { hexToPixiColor } from '@/ui/pixi/color';
 
 export { BUTTON_VARIANTS, type ButtonVariant };
 
@@ -48,7 +48,7 @@ const disabledFace = hexToPixiColor(BUTTON_DISABLED_FACE_HEX);
 const neutralFace = hexToPixiColor(BUTTON_NEUTRAL_FACE_HEX);
 
 export function getButtonVariantTheme(variant: ButtonVariant): ButtonVariantTheme {
-  if (variant === "primary") {
+  if (variant === 'primary') {
     return {
       face: hexToPixiColor(getPixiPrimaryFaceHex()),
       disabledFace,
@@ -74,10 +74,7 @@ export const BUTTON_HOVER_OFFSET_Y = NEO_SHADOW_OFFSET_Y / 2;
  */
 export const BUTTON_PRESS_TRANSITION_MS = 70;
 
-export function buttonFaceOffset(
-  hovered: boolean,
-  pressed: boolean,
-): { x: number; y: number } {
+export function buttonFaceOffset(hovered: boolean, pressed: boolean): { x: number; y: number } {
   if (pressed) {
     return { x: BUTTON_SHADOW_OFFSET_X, y: BUTTON_SHADOW_OFFSET_Y };
   }
@@ -97,6 +94,6 @@ export function buttonLabelTextStyle(): TextStyle {
     fontFamily: BUTTON_LABEL_FONT_FAMILY,
     fontSize: BUTTON_LABEL_FONT_SIZE,
     fill: BUTTON_TEXT_COLOR,
-    align: "center",
+    align: 'center',
   });
 }

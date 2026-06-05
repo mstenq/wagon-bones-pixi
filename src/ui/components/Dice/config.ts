@@ -1,32 +1,15 @@
-export {
-  DICE_COUNT,
-  DICE_ENHANCEMENT_OPTIONS,
-  DICE_LABELS,
-  DICE_TYPES,
-  type DiceType,
-} from "@/data/dice";
+export { DICE_COUNT, DICE_ENHANCEMENT_OPTIONS, DICE_LABELS, DICE_TYPES, type DiceType } from '@/data/dice';
 
-export type DieMode =
-  | "base"
-  | "selected"
-  | "debuffed"
-  | "playedNonScoring"
-  | "locked";
+export type DieMode = 'base' | 'selected' | 'debuffed' | 'playedNonScoring' | 'locked';
 
-export const DIE_MODES: DieMode[] = [
-  "base",
-  "selected",
-  "debuffed",
-  "playedNonScoring",
-  "locked",
-];
+export const DIE_MODES: DieMode[] = ['base', 'selected', 'debuffed', 'playedNonScoring', 'locked'];
 
 export const DIE_MODE_LABELS: Record<DieMode, string> = {
-  base: "Base",
-  selected: "Selected",
-  debuffed: "Debuffed",
-  playedNonScoring: "Played (non-scoring)",
-  locked: "Locked",
+  base: 'Base',
+  selected: 'Selected',
+  debuffed: 'Debuffed',
+  playedNonScoring: 'Played (non-scoring)',
+  locked: 'Locked',
 };
 
 export const DIE_SELECTED_LIFT_PX = 30;
@@ -39,10 +22,10 @@ export const DIE_ROW_ARC_DROP_PX = 16;
 export const DIE_ROW_SCALE_BOOST = 0.045;
 
 export function dieModeAlpha(mode: DieMode): number {
-  if (mode === "debuffed") {
+  if (mode === 'debuffed') {
     return 0.8;
   }
-  if (mode === "playedNonScoring") {
+  if (mode === 'playedNonScoring') {
     return 0.7;
   }
   return 1;

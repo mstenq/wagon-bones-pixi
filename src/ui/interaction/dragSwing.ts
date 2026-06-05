@@ -30,20 +30,12 @@ export function decaySwing(angle: number, config: DragSwingConfig = {}): number 
   return Math.abs(next) < 0.002 ? 0 : next;
 }
 
-export function stepSwing(
-  current: number,
-  target: number,
-  config: DragSwingConfig = {},
-): number {
+export function stepSwing(current: number, target: number, config: DragSwingConfig = {}): number {
   const { follow } = { ...defaults, ...config };
   return current + (target - current) * follow;
 }
 
-export function smoothVelocity(
-  current: number,
-  sample: number,
-  config: DragSwingConfig = {},
-): number {
+export function smoothVelocity(current: number, sample: number, config: DragSwingConfig = {}): number {
   const { velocitySmoothing } = { ...defaults, ...config };
   return current * (1 - velocitySmoothing) + sample * velocitySmoothing;
 }

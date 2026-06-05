@@ -1,6 +1,6 @@
-import { BlurFilter, Rectangle, type Graphics } from "pixi.js";
+import { BlurFilter, Rectangle, type Graphics } from 'pixi.js';
 
-import { DIE_SELECTED_LIFT_PX } from "@/ui/components/Dice/config";
+import { DIE_SELECTED_LIFT_PX } from '@/ui/components/Dice/config';
 
 // --- Tune die ground shadow (overhead light, fixed floor Y) ---
 
@@ -13,8 +13,8 @@ const DIE_SHADOW_RADIUS_X = 0.38;
 const DIE_SHADOW_RADIUS_Y = 0.1;
 
 const DIE_SHADOW_BASE_ALPHA = 0.38;
-const DIE_SHADOW_LIFT_ALPHA_FADE = 0.10;
-const DIE_SHADOW_LIFT_SIZE_EXPAND = 0.30;
+const DIE_SHADOW_LIFT_ALPHA_FADE = 0.1;
+const DIE_SHADOW_LIFT_SIZE_EXPAND = 0.3;
 
 export const DIE_SHADOW_BLUR_BASE = 2;
 const DIE_SHADOW_BLUR_LIFT_ADD = 4;
@@ -61,7 +61,10 @@ export function dieShadowLocalPose(
   };
 }
 
-function dieShadowFloorPin(floorLineY: number, containerY: number): {
+function dieShadowFloorPin(
+  floorLineY: number,
+  containerY: number,
+): {
   floorOffsetY: number;
   extraLiftPx: number;
   belowPx: number;
@@ -78,8 +81,7 @@ function dieShadowDragBelowFade(belowPx: number): number {
   if (belowPx <= DIE_SHADOW_DRAG_BELOW_FADE_START_PX) {
     return 1;
   }
-  const t =
-    (belowPx - DIE_SHADOW_DRAG_BELOW_FADE_START_PX) / DIE_SHADOW_DRAG_BELOW_FADE_RANGE_PX;
+  const t = (belowPx - DIE_SHADOW_DRAG_BELOW_FADE_START_PX) / DIE_SHADOW_DRAG_BELOW_FADE_RANGE_PX;
   return Math.max(0, 1 - t);
 }
 
@@ -87,10 +89,7 @@ function dieShadowDragBelowFade(belowPx: number): number {
  * Build per-frame shadow drag state from a flat row floor Y (or idle when unpinned).
  * `layoutY` is hook layout Y without row-arc offset; arc belongs on the draggable only.
  */
-export function dieShadowDragStateFromFloor(
-  floorLineY: number | null,
-  layoutY: number,
-): DieShadowDragState {
+export function dieShadowDragStateFromFloor(floorLineY: number | null, layoutY: number): DieShadowDragState {
   if (floorLineY === null) {
     return {
       floorOffsetY: 0,
@@ -129,11 +128,7 @@ function dieShadowMetrics(size: number, liftT: number): DieShadowMetrics {
   };
 }
 
-function setDieShadowFilterArea(
-  graphics: Graphics,
-  filterArea: Rectangle,
-  metrics: DieShadowMetrics,
-): void {
+function setDieShadowFilterArea(graphics: Graphics, filterArea: Rectangle, metrics: DieShadowMetrics): void {
   const { rx, ry, pad } = metrics;
   filterArea.x = -rx - pad;
   filterArea.y = -ry - pad;

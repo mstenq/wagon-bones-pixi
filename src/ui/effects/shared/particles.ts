@@ -26,7 +26,7 @@ export function createParticlePool(max: number): Particle[] {
 
 export function spawnParticle(
   pool: Particle[],
-  config: Omit<Particle, "life" | "maxLife"> & { maxLife: number },
+  config: Omit<Particle, 'life' | 'maxLife'> & { maxLife: number },
 ): void {
   const slot = pool.find((p) => p.life <= 0);
   if (!slot) {

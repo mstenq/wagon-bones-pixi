@@ -1,46 +1,40 @@
-import { useCallback, useState, type CSSProperties } from "react";
+import { useCallback, useState, type CSSProperties } from 'react';
 
-import { GameInfo, type GameInfoDisplayMode } from "@/ui/components/GameInfo/GameInfo";
-import { useQueryParam } from "@/ui/hooks/useQueryParam";
-import type { StoryDefinition } from "@/ui/types/storyTypes";
-import {
-  panelButtonClass,
-  panelLabelClass,
-  panelSelectClass,
-} from "@/ui/styles/panelControls";
-import { UiPrimaryProvider, useUiPrimary } from "@/ui/theme/UiPrimaryProvider";
-import { UI_PRIMARY_COLORS, type UiPrimaryColor } from "@/ui/theme/uiTokens";
+import { GameInfo, type GameInfoDisplayMode } from '@/ui/components/GameInfo/GameInfo';
+import { useQueryParam } from '@/ui/hooks/useQueryParam';
+import type { StoryDefinition } from '@/ui/types/storyTypes';
+import { panelButtonClass, panelLabelClass, panelSelectClass } from '@/ui/styles/panelControls';
+import { UiPrimaryProvider, useUiPrimary } from '@/ui/theme/UiPrimaryProvider';
+import { UI_PRIMARY_COLORS, type UiPrimaryColor } from '@/ui/theme/uiTokens';
 
-const DISPLAY_MODES: GameInfoDisplayMode[] = ["portrait", "landscape"];
+const DISPLAY_MODES: GameInfoDisplayMode[] = ['portrait', 'landscape'];
 
 /** Fonts loaded in index.html (Google Fonts link). */
 const STORY_FONTS = [
-  "Abril Fatface",
-  "Alegreya Sans SC",
-  "Angkor",
-  "Arbutus",
-  "Bree Serif",
-  "Girassol",
-  "Goblin One",
-  "Gravitas One",
-  "IM Fell English",
-  "Rye",
-  "Sancreek",
-  "Smokum",
-  "Special Elite",
-  "Tilt Warp",
-  "Ultra",
+  'Abril Fatface',
+  'Alegreya Sans SC',
+  'Angkor',
+  'Arbutus',
+  'Bree Serif',
+  'Girassol',
+  'Goblin One',
+  'Gravitas One',
+  'IM Fell English',
+  'Rye',
+  'Sancreek',
+  'Smokum',
+  'Special Elite',
+  'Tilt Warp',
+  'Ultra',
 ] as const;
 
 type StoryFont = (typeof STORY_FONTS)[number];
 
-const DEFAULT_FONT_HEADER: StoryFont = "Angkor";
-const DEFAULT_FONT_BODY: StoryFont = "Bree Serif";
+const DEFAULT_FONT_HEADER: StoryFont = 'Angkor';
+const DEFAULT_FONT_BODY: StoryFont = 'Bree Serif';
 
 function parseDisplayMode(raw: string): GameInfoDisplayMode | undefined {
-  return DISPLAY_MODES.includes(raw as GameInfoDisplayMode)
-    ? (raw as GameInfoDisplayMode)
-    : undefined;
+  return DISPLAY_MODES.includes(raw as GameInfoDisplayMode) ? (raw as GameInfoDisplayMode) : undefined;
 }
 
 function isStoryFont(value: string): value is StoryFont {
@@ -52,7 +46,7 @@ function isUiPrimaryColor(value: string): value is UiPrimaryColor {
 }
 
 function fontFamilyCss(name: StoryFont): string {
-  const fallback = name.includes("Sans") ? "sans-serif" : "serif";
+  const fallback = name.includes('Sans') ? 'sans-serif' : 'serif';
   return `"${name}", ${fallback}`;
 }
 
@@ -61,19 +55,16 @@ function pickRandomFont(): StoryFont {
   return STORY_FONTS[index] ?? DEFAULT_FONT_HEADER;
 }
 
-function storyPreviewStyle(
-  fontHeader: StoryFont,
-  fontBody: StoryFont,
-): CSSProperties {
+function storyPreviewStyle(fontHeader: StoryFont, fontBody: StoryFont): CSSProperties {
   return {
-    ["--font-header" as string]: fontFamilyCss(fontHeader),
-    ["--font-body" as string]: fontFamilyCss(fontBody),
+    ['--font-header' as string]: fontFamilyCss(fontHeader),
+    ['--font-body' as string]: fontFamilyCss(fontBody),
   };
 }
 
 function GameInfoStoryPreview() {
-  const [displayMode, setDisplayMode] = useQueryParam<GameInfoDisplayMode>("mode", {
-    default: "portrait",
+  const [displayMode, setDisplayMode] = useQueryParam<GameInfoDisplayMode>('mode', {
+    default: 'portrait',
     parse: parseDisplayMode,
   });
   const [fontHeader, setFontHeader] = useState<StoryFont>(DEFAULT_FONT_HEADER);
@@ -169,25 +160,25 @@ function GameInfoStoryPreview() {
       </label>
 
       <div
-        className={`w-full ${displayMode === "portrait" ? "max-w-sm" : ""}`}
+        className={`w-full ${displayMode === 'portrait' ? 'max-w-sm' : ''}`}
         style={storyPreviewStyle(fontHeader, fontBody)}
       >
         <GameInfo
           displayMode={displayMode}
           roundInfo={{
-            title: "Big Blind",
-            difficultyColor: "#ffffff",
+            title: 'Big Blind',
+            difficultyColor: '#ffffff',
             targetScore: 450,
             payoutAmount: 4,
           }}
           roundScore={324}
-          profession={{ name: "Trail Guide" }}
+          profession={{ name: 'Trail Guide' }}
           modifiers={[
-            { id: "story-positive", polarity: "positive" },
-            { id: "story-negative", polarity: "negative" },
+            { id: 'story-positive', polarity: 'positive' },
+            { id: 'story-negative', polarity: 'negative' },
           ]}
           handInfo={{
-            handName: "High Card",
+            handName: 'High Card',
             level: 1,
             chips: 0,
             mult: 0,
@@ -200,8 +191,8 @@ function GameInfoStoryPreview() {
             round: 2,
           }}
           balance={20}
-          onRunInfoClick={() => console.log("run-info")}
-          onOptionsClick={() => console.log("options")}
+          onRunInfoClick={() => console.log('run-info')}
+          onOptionsClick={() => console.log('options')}
         />
       </div>
     </div>
@@ -217,7 +208,7 @@ function GameInfoStory() {
 }
 
 const gameInfoStory: StoryDefinition = {
-  name: "GameInfo",
+  name: 'GameInfo',
   component: <GameInfoStory />,
 };
 

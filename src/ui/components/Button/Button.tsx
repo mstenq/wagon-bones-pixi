@@ -1,11 +1,6 @@
-import { useTick } from "@pixi/react";
-import {
-  Rectangle,
-  type Container,
-  type FederatedPointerEvent,
-  type Graphics,
-} from "pixi.js";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useTick } from '@pixi/react';
+import { Rectangle, type Container, type FederatedPointerEvent, type Graphics } from 'pixi.js';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 import {
   BUTTON_PRESS_TRANSITION_MS,
@@ -15,12 +10,12 @@ import {
   DEFAULT_BUTTON_WIDTH,
   getButtonVariantTheme,
   type ButtonProps,
-} from "@/ui/components/Button/buttonTheme";
-import { drawButtonFace, drawButtonShadow } from "@/ui/components/Button/buttonVisuals";
-import { useUiPrimary } from "@/ui/theme/UiPrimaryProvider";
+} from '@/ui/components/Button/buttonTheme';
+import { drawButtonFace, drawButtonShadow } from '@/ui/components/Button/buttonVisuals';
+import { useUiPrimary } from '@/ui/theme/UiPrimaryProvider';
 
-export type { ButtonProps, ButtonVariant } from "@/ui/components/Button/buttonTheme";
-export { BUTTON_VARIANTS } from "@/ui/components/Button/buttonTheme";
+export type { ButtonProps, ButtonVariant } from '@/ui/components/Button/buttonTheme';
+export { BUTTON_VARIANTS } from '@/ui/components/Button/buttonTheme';
 
 type OffsetAnim = {
   fromX: number;
@@ -31,10 +26,7 @@ type OffsetAnim = {
 };
 
 function prefersReducedMotion(): boolean {
-  return (
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  );
+  return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
 function useButtonInteraction(
@@ -43,7 +35,7 @@ function useButtonInteraction(
   height: number,
   reducedMotion: boolean,
   onClick: (() => void) | undefined,
-  variant: ButtonProps["variant"],
+  variant: ButtonProps['variant'],
 ) {
   const shadowRef = useRef<Graphics | null>(null);
   const faceRef = useRef<Graphics | null>(null);
@@ -66,10 +58,7 @@ function useButtonInteraction(
     contentRef.current?.position.set(0, 0);
   }
 
-  const hitArea = useMemo(
-    () => new Rectangle(-width / 2, -height / 2, width, height),
-    [height, width],
-  );
+  const hitArea = useMemo(() => new Rectangle(-width / 2, -height / 2, width, height), [height, width]);
 
   const snapContentOffset = useCallback((x: number, y: number) => {
     offsetAnimRef.current = null;
@@ -114,14 +103,8 @@ function useButtonInteraction(
       return;
     }
 
-    const t = Math.min(
-      1,
-      (performance.now() - anim.startMs) / BUTTON_PRESS_TRANSITION_MS,
-    );
-    content.position.set(
-      anim.fromX + (anim.toX - anim.fromX) * t,
-      anim.fromY + (anim.toY - anim.fromY) * t,
-    );
+    const t = Math.min(1, (performance.now() - anim.startMs) / BUTTON_PRESS_TRANSITION_MS);
+    content.position.set(anim.fromX + (anim.toX - anim.fromX) * t, anim.fromY + (anim.toY - anim.fromY) * t);
 
     if (t >= 1) {
       snapContentOffset(anim.toX, anim.toY);
@@ -134,8 +117,8 @@ function useButtonInteraction(
         return;
       }
       node.hitArea = hitArea;
-      node.eventMode = disabled ? "none" : "static";
-      node.cursor = disabled ? "default" : "pointer";
+      node.eventMode = disabled ? 'none' : 'static';
+      node.cursor = disabled ? 'default' : 'pointer';
     },
     [disabled, hitArea],
   );
@@ -162,11 +145,7 @@ function useButtonInteraction(
 
       const target = event.currentTarget as Container;
       const local = target.toLocal(event.global);
-      const inside =
-        local.x >= -width / 2 &&
-        local.x <= width / 2 &&
-        local.y >= -height / 2 &&
-        local.y <= height / 2;
+      const inside = local.x >= -width / 2 && local.x <= width / 2 && local.y >= -height / 2 && local.y <= height / 2;
 
       if (wasPressed && inside) {
         onClickRef.current?.();
@@ -229,14 +208,7 @@ export function Button({
   useUiPrimary();
   const reducedMotion = prefersReducedMotion();
 
-  const interaction = useButtonInteraction(
-    disabled,
-    width,
-    height,
-    reducedMotion,
-    onClick,
-    variant,
-  );
+  const interaction = useButtonInteraction(disabled, width, height, reducedMotion, onClick, variant);
 
   const labelStyle = useMemo(() => buttonLabelTextStyle(), []);
 
@@ -263,20 +235,10 @@ export function Button({
       onPointerOver={interaction.onPointerOver}
       onPointerOut={interaction.onPointerOut}
     >
-      <pixiGraphics
-        ref={interaction.shadowRef}
-        zIndex={0}
-        eventMode="none"
-        draw={() => {}}
-      />
+      <pixiGraphics ref={interaction.shadowRef} zIndex={0} eventMode="none" draw={() => {}} />
       <pixiContainer ref={interaction.contentRef} zIndex={1} sortableChildren eventMode="none">
         <pixiGraphics ref={interaction.faceRef} eventMode="none" draw={() => {}} />
-        <pixiText
-          text={label}
-          style={labelStyle}
-          anchor={0.5}
-          eventMode="none"
-        />
+        <pixiText text={label} style={labelStyle} anchor={0.5} eventMode="none" />
       </pixiContainer>
     </pixiContainer>
   );

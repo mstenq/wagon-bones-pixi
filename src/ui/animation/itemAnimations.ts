@@ -1,20 +1,13 @@
-import {
-  Color,
-  Container,
-  Text,
-  TextStyle,
-  type ColorSource,
-  type Texture,
-} from "pixi.js";
+import { Color, Container, Text, TextStyle, type ColorSource, type Texture } from 'pixi.js';
 
 import {
   burnDestroyDissolveAt,
   createBurnDissolveFilter,
   BURN_DESTROY,
   type BurnDissolveFilter,
-} from "@/ui/actionEffects/burnDissolveFilter";
-import type { ActionEffectComplete } from "@/ui/actionEffects/types";
-import type { SquishTargets } from "@/ui/interaction/spring";
+} from '@/ui/actionEffects/burnDissolveFilter';
+import type { ActionEffectComplete } from '@/ui/actionEffects/types';
+import type { SquishTargets } from '@/ui/interaction/spring';
 
 export type ItemShakeConfig = {
   amount?: number;
@@ -30,10 +23,10 @@ export type ItemTextEffectConfig = {
 };
 
 export type ItemAnimationConfig =
-  | { type: "appear" }
-  | { type: "destroy" }
-  | { type: "shake"; shake?: ItemShakeConfig }
-  | { type: "textEffect"; textEffect: ItemTextEffectConfig };
+  | { type: 'appear' }
+  | { type: 'destroy' }
+  | { type: 'shake'; shake?: ItemShakeConfig }
+  | { type: 'textEffect'; textEffect: ItemTextEffectConfig };
 
 const SHAKE_DEFAULT_AMOUNT = 3;
 const SHAKE_FREQ = 48;
@@ -79,11 +72,7 @@ function easeInCubic(t: number): number {
 }
 
 /** `startScale` 0 for appear pop-in, 1 for shake on an existing item. */
-function computeGrowPopScale(
-  normalizedTime: number,
-  timing: GrowPopTiming,
-  startScale: number,
-): number {
+function computeGrowPopScale(normalizedTime: number, timing: GrowPopTiming, startScale: number): number {
   const u = clamp01(normalizedTime);
   if (u >= 1) {
     return 1;
@@ -99,8 +88,8 @@ function computeGrowPopScale(
 const floatTextStyleBase = new TextStyle({
   fontFamily: '"Jersey 10", sans-serif',
   fontSize: TEXT_EFFECT_FONT_SIZE,
-  fontWeight: "700",
-  align: "left",
+  fontWeight: '700',
+  align: 'left',
 });
 
 type WhipTextChar = {
@@ -116,21 +105,21 @@ type FloatTextRow = {
 const charWidthCache = new Map<string, number>();
 
 type DestroyAnimState = {
-  kind: "destroy";
+  kind: 'destroy';
   progress: number;
   duration: number;
   onComplete?: ActionEffectComplete;
 };
 
 type AppearAnimState = {
-  kind: "appear";
+  kind: 'appear';
   elapsed: number;
   duration: number;
   onComplete?: ActionEffectComplete;
 };
 
 type ShakeAnimState = {
-  kind: "shake";
+  kind: 'shake';
   elapsed: number;
   duration: number;
   amount: number;
@@ -138,25 +127,21 @@ type ShakeAnimState = {
 };
 
 type TextEffectAnimState = {
-  kind: "textEffect";
+  kind: 'textEffect';
   elapsed: number;
   duration: number;
   amount: number;
   onComplete?: ActionEffectComplete;
 };
 
-type ActiveItemAnimation =
-  | DestroyAnimState
-  | AppearAnimState
-  | ShakeAnimState
-  | TextEffectAnimState;
+type ActiveItemAnimation = DestroyAnimState | AppearAnimState | ShakeAnimState | TextEffectAnimState;
 
 export type ItemAnimationHostContext = {
   root: Container | null;
   squish: Container | null;
   overlay: Container | null;
   hostExtent: number;
-  textPlacement: "above" | "below";
+  textPlacement: 'above' | 'below';
   beforeDestroy?: () => void;
   getBurnTexture: () => Texture | null | undefined;
   burnDissolve: BurnDissolveFilter | null;
@@ -198,7 +183,7 @@ export function isItemAnimationBusy(runtime: ItemAnimationRuntime): boolean {
 
 export function shouldBlockItemPointer(runtime: ItemAnimationRuntime): boolean {
   const kind = runtime.active?.kind;
-  return kind === "destroy" || kind === "appear";
+  return kind === 'destroy' || kind === 'appear';
 }
 
 function getGrowPopScale(runtime: ItemAnimationRuntime): number {
@@ -217,7 +202,7 @@ export function getGrowPopSquishMultiplier(runtime: ItemAnimationRuntime): Squis
 
 function getActiveShakeAmount(runtime: ItemAnimationRuntime): number {
   const anim = runtime.active;
-  if (!anim || anim.kind === "destroy" || anim.kind === "appear") {
+  if (!anim || anim.kind === 'destroy' || anim.kind === 'appear') {
     return 0;
   }
   return anim.amount;
@@ -225,7 +210,7 @@ function getActiveShakeAmount(runtime: ItemAnimationRuntime): number {
 
 function getActiveShakeTiming(runtime: ItemAnimationRuntime): { elapsed: number; duration: number } | null {
   const anim = runtime.active;
-  if (!anim || anim.kind === "destroy" || anim.kind === "appear") {
+  if (!anim || anim.kind === 'destroy' || anim.kind === 'appear') {
     return null;
   }
   return { elapsed: anim.elapsed, duration: anim.duration };
@@ -267,7 +252,7 @@ function createTextStyleForColor(color: ColorSource): TextStyle {
 
 function createWhipTextRow(text: string, color: ColorSource): FloatTextRow {
   const style = createTextStyleForColor(color);
-  const row = new Container({ eventMode: "none" });
+  const row = new Container({ eventMode: 'none' });
   const chars: WhipTextChar[] = [];
   let cursor = 0;
   const charGap = 1;
@@ -277,7 +262,7 @@ function createWhipTextRow(text: string, color: ColorSource): FloatTextRow {
       text: char,
       style,
       anchor: { x: 0, y: 0.5 },
-      eventMode: "none",
+      eventMode: 'none',
     });
     node.x = cursor;
     node.visible = false;
@@ -292,7 +277,7 @@ function createWhipTextRow(text: string, color: ColorSource): FloatTextRow {
 
 function floatTextY(ctx: ItemAnimationHostContext): number {
   const half = ctx.hostExtent / 2;
-  if (ctx.textPlacement === "above") {
+  if (ctx.textPlacement === 'above') {
     return -half - TEXT_EFFECT_GAP;
   }
   return half + TEXT_EFFECT_GAP;
@@ -392,8 +377,7 @@ function stepWhipTextRow(floatRow: FloatTextRow, elapsed: number, totalDuration:
 
   const fadeStart = totalDuration - TEXT_EFFECT_FADE_OUT_DURATION;
   if (elapsed > fadeStart) {
-    floatRow.row.alpha =
-      1 - smoothstep((elapsed - fadeStart) / TEXT_EFFECT_FADE_OUT_DURATION) * 0.92;
+    floatRow.row.alpha = 1 - smoothstep((elapsed - fadeStart) / TEXT_EFFECT_FADE_OUT_DURATION) * 0.92;
   } else {
     floatRow.row.alpha = 1;
   }
@@ -446,10 +430,10 @@ export function startItemAnimation(
     return false;
   }
 
-  if (config.type === "appear") {
+  if (config.type === 'appear') {
     startGrowPop(runtime, APPEAR_DURATION, 0);
     runtime.active = {
-      kind: "appear",
+      kind: 'appear',
       elapsed: 0,
       duration: APPEAR_DURATION,
       onComplete,
@@ -457,7 +441,7 @@ export function startItemAnimation(
     return true;
   }
 
-  if (config.type === "destroy") {
+  if (config.type === 'destroy') {
     const burnTex = ctx.getBurnTexture();
     if (!burnTex) {
       if (ctx.root) {
@@ -481,7 +465,7 @@ export function startItemAnimation(
     }
 
     runtime.active = {
-      kind: "destroy",
+      kind: 'destroy',
       progress: 0,
       duration: BURN_DESTROY.duration,
       onComplete,
@@ -489,11 +473,11 @@ export function startItemAnimation(
     return true;
   }
 
-  if (config.type === "shake") {
+  if (config.type === 'shake') {
     const duration = resolveShakeDuration(config.shake);
     startGrowPop(runtime, duration, 1);
     runtime.active = {
-      kind: "shake",
+      kind: 'shake',
       elapsed: 0,
       duration,
       amount: resolveShakeAmount(config.shake),
@@ -509,9 +493,7 @@ export function startItemAnimation(
   runtime.floatTextRow = floatRow;
   attachFloatTextRow(ctx, floatRow);
 
-  const shakeAmount = textEffect.shake
-    ? resolveShakeAmount(textEffect.shake)
-    : 0;
+  const shakeAmount = textEffect.shake ? resolveShakeAmount(textEffect.shake) : 0;
 
   if (shakeAmount > 0) {
     startGrowPop(runtime, resolveShakeDuration(textEffect.shake), 1);
@@ -519,7 +501,7 @@ export function startItemAnimation(
 
   const duration = resolveTextEffectDuration(textEffect);
   runtime.active = {
-    kind: "textEffect",
+    kind: 'textEffect',
     elapsed: 0,
     duration,
     amount: shakeAmount,
@@ -532,11 +514,8 @@ export type ItemAnimationStepResult = {
   destroyBlocksTick: boolean;
 };
 
-function finishItemAnimation(
-  runtime: ItemAnimationRuntime,
-  anim: ActiveItemAnimation,
-): void {
-  if (anim.kind === "textEffect") {
+function finishItemAnimation(runtime: ItemAnimationRuntime, anim: ActiveItemAnimation): void {
+  if (anim.kind === 'textEffect') {
     removeFloatTextRow(runtime.floatTextRow);
     runtime.floatTextRow = null;
   }
@@ -546,7 +525,10 @@ function finishItemAnimation(
   onComplete?.();
 }
 
-function isTimedAnimationDone(runtime: ItemAnimationRuntime, anim: AppearAnimState | ShakeAnimState | TextEffectAnimState): boolean {
+function isTimedAnimationDone(
+  runtime: ItemAnimationRuntime,
+  anim: AppearAnimState | ShakeAnimState | TextEffectAnimState,
+): boolean {
   return isGrowPopSettled(runtime) || anim.elapsed >= anim.duration;
 }
 
@@ -560,7 +542,7 @@ export function stepItemAnimation(
     return { destroyBlocksTick: false };
   }
 
-  if (anim.kind === "destroy") {
+  if (anim.kind === 'destroy') {
     anim.progress += dt / anim.duration;
     const linear = Math.min(1, anim.progress);
     ctx.burnDissolve?.setDissolve(burnDestroyDissolveAt(linear));
@@ -585,7 +567,7 @@ export function stepItemAnimation(
     stepGrowPop(runtime, dt);
   }
 
-  if (anim.kind === "textEffect") {
+  if (anim.kind === 'textEffect') {
     const floatRow = runtime.floatTextRow;
     if (floatRow && !floatRow.row.destroyed) {
       if (!floatRow.row.parent) {
@@ -603,7 +585,7 @@ export function stepItemAnimation(
     return { destroyBlocksTick: false };
   }
 
-  if (anim.kind === "appear" || anim.kind === "shake") {
+  if (anim.kind === 'appear' || anim.kind === 'shake') {
     if (isTimedAnimationDone(runtime, anim)) {
       finishItemAnimation(runtime, anim);
     }
@@ -614,32 +596,32 @@ export function stepItemAnimation(
 
 export const itemTextAnim = {
   retrigger: (): ItemAnimationConfig => ({
-    type: "textEffect",
-    textEffect: { text: "Again!", color: "#a855f7", shake: { amount: 5 } },
+    type: 'textEffect',
+    textEffect: { text: 'Again!', color: '#a855f7', shake: { amount: 5 } },
   }),
   mult: (n: number): ItemAnimationConfig => ({
-    type: "textEffect",
-    textEffect: { text: `+${n} mult`, color: "#ef4444", shake: { amount: 2 } },
+    type: 'textEffect',
+    textEffect: { text: `+${n} mult`, color: '#ef4444', shake: { amount: 2 } },
   }),
   mile: (n: number): ItemAnimationConfig => ({
-    type: "textEffect",
-    textEffect: { text: `+${n} miles`, color: "#60a5fa", shake: { amount: 2 } },
+    type: 'textEffect',
+    textEffect: { text: `+${n} miles`, color: '#60a5fa', shake: { amount: 2 } },
   }),
   money: (n: number): ItemAnimationConfig => ({
-    type: "textEffect",
+    type: 'textEffect',
     textEffect: {
       text: `+$${n}`,
-      color: "#facc15",
+      color: '#facc15',
       duration: TEXT_EFFECT_MONEY_PAYOUT_DURATION,
       shake: { amount: 1 },
     },
   }),
   moneyTrigger: (n: number): ItemAnimationConfig => ({
-    type: "textEffect",
-    textEffect: { text: `+$${n}`, color: "#facc15", shake: { amount: 1 } },
+    type: 'textEffect',
+    textEffect: { text: `+$${n}`, color: '#facc15', shake: { amount: 1 } },
   }),
 };
 
 export function itemShakeAnim(shake?: ItemShakeConfig): ItemAnimationConfig {
-  return { type: "shake", shake };
+  return { type: 'shake', shake };
 }

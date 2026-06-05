@@ -1,6 +1,6 @@
-import { BlurFilter, DisplacementFilter, Sprite, type Graphics, type Texture } from "pixi.js";
+import { BlurFilter, DisplacementFilter, Sprite, type Graphics, type Texture } from 'pixi.js';
 
-import { getEffectTexture } from "@/assets/effects/textures";
+import { getEffectTexture } from '@/assets/effects/textures';
 import {
   addGlowLayer,
   addSpriteLayer,
@@ -11,20 +11,17 @@ import {
   boundsFromCtx,
   makeRuntime,
   noopDestroy,
-} from "@/ui/effects/effectHelpers";
-import { hostParticleScale, isDieMount, tightDieBounds } from "@/ui/effects/dieTuning";
-import {
-  createFireArtMatrix,
-  stepFireArtMatrix,
-} from "@/ui/effects/shared/artColor";
-import { drawEffectBackdrop } from "@/ui/effects/shared/cardEffect";
-import type { BorderBounds } from "@/ui/effects/shared/borderFrame";
-import { createDieEdgeLoop } from "@/ui/effects/shared/dieOutline";
-import { applyBlurredGlowForMount, setGlowFilterAreaForMount } from "@/ui/effects/shared/glow";
-import { createParticlePool, spawnParticle, stepParticles } from "@/ui/effects/shared/particles";
-import { burstTimer } from "@/ui/effects/shared/pseudoRandom";
-import { projectPointToSurface } from "@/ui/effects/shared/surfaceProjection";
-import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
+} from '@/ui/effects/effectHelpers';
+import { hostParticleScale, isDieMount, tightDieBounds } from '@/ui/effects/dieTuning';
+import { createFireArtMatrix, stepFireArtMatrix } from '@/ui/effects/shared/artColor';
+import { drawEffectBackdrop } from '@/ui/effects/shared/cardEffect';
+import type { BorderBounds } from '@/ui/effects/shared/borderFrame';
+import { createDieEdgeLoop } from '@/ui/effects/shared/dieOutline';
+import { applyBlurredGlowForMount, setGlowFilterAreaForMount } from '@/ui/effects/shared/glow';
+import { createParticlePool, spawnParticle, stepParticles } from '@/ui/effects/shared/particles';
+import { burstTimer } from '@/ui/effects/shared/pseudoRandom';
+import { projectPointToSurface } from '@/ui/effects/shared/surfaceProjection';
+import type { EffectDefinition, EffectFrameContext } from '@/ui/effects/types';
 
 type Point = { x: number; y: number };
 
@@ -194,11 +191,14 @@ function drawFlameLane(
       : 0;
     const noise = hash(Math.floor(time * (10.5 + lane * 1.3)) + i * 31.7 + lane * 101.3 + seed * 23);
     const fineNoise = hash(Math.floor(time * 26.0) + i * 9.13 + seed * 53.0);
-    const wave = 0.5 + 0.5 * Math.sin(
-      time * (FIRE_TUNE.flame.riseSpeedBase + lane * FIRE_TUNE.flame.riseSpeedStep)
-      + i * (FIRE_TUNE.flame.waveFreqBase + lane * FIRE_TUNE.flame.waveFreqStep)
-      + lanePhase,
-    );
+    const wave =
+      0.5 +
+      0.5 *
+        Math.sin(
+          time * (FIRE_TUNE.flame.riseSpeedBase + lane * FIRE_TUNE.flame.riseSpeedStep) +
+            i * (FIRE_TUNE.flame.waveFreqBase + lane * FIRE_TUNE.flame.waveFreqStep) +
+            lanePhase,
+        );
     const lit = wave * 0.72 + noise * 0.38 + cursorNear * 0.25 > FIRE_TUNE.flame.noiseThreshold;
     if (!lit) {
       continue;
@@ -213,11 +213,9 @@ function drawFlameLane(
     const midY = (p0.y + p1.y) * 0.5;
     const tangentX = -n.y;
     const tangentY = n.x;
-    const height = (
-      baseHeight
-      + lane * FIRE_TUNE.flame.laneHeightStep
-      + noise * FIRE_TUNE.flame.tipJitter
-    ) * (1 + cursorNear * FIRE_TUNE.cursor.heightBoost);
+    const height =
+      (baseHeight + lane * FIRE_TUNE.flame.laneHeightStep + noise * FIRE_TUNE.flame.tipJitter) *
+      (1 + cursorNear * FIRE_TUNE.cursor.heightBoost);
     const sway = Math.sin(time * (5.2 + lane * 0.55) + i * 0.49 + lanePhase) * (2.2 + lane + fineNoise * 2);
     const waist = Math.max(1.5, height * (0.3 + fineNoise * 0.18));
     const tipX = midX + n.x * height + tangentX * sway;
@@ -231,10 +229,13 @@ function drawFlameLane(
     const base1 = projectPointToSurface({ x: bx1, y: by1 }, frame);
     const control1 = projectPointToSurface({ x: c1x, y: c1y }, frame);
     const control2 = projectPointToSurface({ x: c2x, y: c2y }, frame);
-    const baseControl = projectPointToSurface({
-      x: midX - n.x * inset * 0.4,
-      y: midY - n.y * inset * 0.4,
-    }, frame);
+    const baseControl = projectPointToSurface(
+      {
+        x: midX - n.x * inset * 0.4,
+        y: midY - n.y * inset * 0.4,
+      },
+      frame,
+    );
 
     gfx.moveTo(base0.x, base0.y);
     gfx.quadraticCurveTo(control1.x, control1.y, tip.x, tip.y);
@@ -243,7 +244,7 @@ function drawFlameLane(
     gfx.closePath();
   }
   if (texture) {
-    gfx.fill({ color, alpha, texture, textureSpace: "global" });
+    gfx.fill({ color, alpha, texture, textureSpace: 'global' });
     return;
   }
   gfx.fill({ color, alpha });
@@ -270,22 +271,25 @@ function drawEdgeBand(
       ? 1 - Math.min(1, ringDistance01(idx, cursorIndex, ringPoints.length) / FIRE_TUNE.cursor.radiusScale)
       : 0;
     const shimmer = Math.sin(time * 8.0 + idx * 0.8 + seed * 4.0) * (0.55 + cursorNear * 1.2);
-    const projected = projectPointToSurface({
-      x: p.x + n.x * shimmer,
-      y: p.y + n.y * shimmer,
-    }, frame);
+    const projected = projectPointToSurface(
+      {
+        x: p.x + n.x * shimmer,
+        y: p.y + n.y * shimmer,
+      },
+      frame,
+    );
     if (i === 0) {
       gfx.moveTo(projected.x, projected.y);
     } else {
       gfx.lineTo(projected.x, projected.y);
     }
   }
-  gfx.stroke({ width, color, alpha, cap: "round", join: "round" });
+  gfx.stroke({ width, color, alpha, cap: 'round', join: 'round' });
 }
 
 export const fireEffect: EffectDefinition = {
-  id: "fire",
-  label: "Fire",
+  id: 'fire',
+  label: 'Fire',
   create(layers, mount, art) {
     const bounds = boundsFromCtx(mount);
     const artBounds = artBoundsFromMount(mount);
@@ -313,18 +317,18 @@ export const fireEffect: EffectDefinition = {
     const flameBody = addGlowLayer(layers.front, 2);
     const flameCore = addGlowLayer(layers.front, 3);
 
-    const emberTex = getEffectTexture("ember");
-    const flameNoiseTex = getEffectTexture("arcaneNoiseA");
+    const emberTex = getEffectTexture('ember');
+    const flameNoiseTex = getEffectTexture('arcaneNoiseA');
     const embers: Sprite[] = [];
     const emberCount = isDie ? 14 : 24;
     for (let i = 0; i < emberCount; i++) {
-      const s = addSpriteLayer(layers.front, emberTex, 4 + i, "add");
+      const s = addSpriteLayer(layers.front, emberTex, 4 + i, 'add');
       if (s) embers.push(s);
     }
 
     const particles = createParticlePool(isDie ? 18 : 32);
     const artMatrix = createFireArtMatrix();
-    const dispTex = getEffectTexture("displacementHeat");
+    const dispTex = getEffectTexture('displacementHeat');
     let dispFilter: DisplacementFilter | null = null;
     let dispSprite: Sprite | null = null;
     let elapsed = 0;
@@ -332,7 +336,7 @@ export const fireEffect: EffectDefinition = {
     let particleIndex = 0;
 
     if (dispTex && !isDie) {
-      dispSprite = new Sprite({ texture: dispTex, anchor: 0.5, eventMode: "none" });
+      dispSprite = new Sprite({ texture: dispTex, anchor: 0.5, eventMode: 'none' });
       dispSprite.alpha = 0;
       dispFilter = new DisplacementFilter({ sprite: dispSprite, scale: 6 });
       applyArtFilters(art, [artMatrix, dispFilter]);
@@ -353,8 +357,8 @@ export const fireEffect: EffectDefinition = {
       };
       const cursorActive = frame.hovered && !frame.dragging;
       const cursorIndex = nearestRingPointIndex(ringPoints, pointer);
-      const baseHeight = (isDie ? FIRE_TUNE.flame.baseHeight.die : FIRE_TUNE.flame.baseHeight.card)
-        * (0.92 + burst * 0.28);
+      const baseHeight =
+        (isDie ? FIRE_TUNE.flame.baseHeight.die : FIRE_TUNE.flame.baseHeight.card) * (0.92 + burst * 0.28);
 
       drawEffectBackdrop(
         backdrop,
@@ -491,9 +495,11 @@ export const fireEffect: EffectDefinition = {
         const particleSeedB = hash(frame.phase * 59.0 + particleIndex * 19.17 + phaseSeed * 31.0);
         const particleSeedC = hash(frame.phase * 71.0 + particleIndex * 23.91 + phaseSeed * 53.0);
         particleIndex += 1;
-        const spawnIndex = cursorActive && particleSeed < 0.55
-          ? (cursorIndex + Math.floor((particleSeedB - 0.5) * ringPoints.length * 0.18) + ringPoints.length) % ringPoints.length
-          : Math.floor(particleSeed * ringPoints.length);
+        const spawnIndex =
+          cursorActive && particleSeed < 0.55
+            ? (cursorIndex + Math.floor((particleSeedB - 0.5) * ringPoints.length * 0.18) + ringPoints.length) %
+              ringPoints.length
+            : Math.floor(particleSeed * ringPoints.length);
         const p = ringPoints[spawnIndex]!;
         const n = ringNormals[spawnIndex]!;
         const overCard = !isDie && particleSeedC < 0.42;
@@ -534,7 +540,7 @@ export const fireEffect: EffectDefinition = {
     };
 
     return makeRuntime(
-      "fire",
+      'fire',
       step,
       noopDestroy(
         () => applyArtFilters(art, null),

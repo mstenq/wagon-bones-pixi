@@ -1,4 +1,4 @@
-import { useCallback, useRef, useSyncExternalStore } from "react";
+import { useCallback, useRef, useSyncExternalStore } from 'react';
 
 const listeners = new Set<() => void>();
 
@@ -10,10 +10,10 @@ function notifyQueryParamListeners() {
 
 function subscribeToSearchParams(onStoreChange: () => void) {
   const handler = () => onStoreChange();
-  window.addEventListener("popstate", handler);
+  window.addEventListener('popstate', handler);
   listeners.add(handler);
   return () => {
-    window.removeEventListener("popstate", handler);
+    window.removeEventListener('popstate', handler);
     listeners.delete(handler);
   };
 }
@@ -30,8 +30,8 @@ function writeSearchParam(key: string, serialized: string | null) {
     params.set(key, serialized);
   }
   const search = params.toString();
-  const url = `${window.location.pathname}${search ? `?${search}` : ""}${window.location.hash}`;
-  window.history.replaceState(null, "", url);
+  const url = `${window.location.pathname}${search ? `?${search}` : ''}${window.location.hash}`;
+  window.history.replaceState(null, '', url);
   notifyQueryParamListeners();
 }
 

@@ -1,10 +1,10 @@
-import { useTick } from "@pixi/react";
-import { useMemo, useRef } from "react";
-import type { Graphics } from "pixi.js";
+import { useTick } from '@pixi/react';
+import { useMemo, useRef } from 'react';
+import type { Graphics } from 'pixi.js';
 
-import { Button } from "@/ui/components/Button/Button";
-import { formatRewardLine, formatRoundScore } from "@/ui/components/RoundCard/roundCardFormat";
-import { RoundCardSkipButton } from "@/ui/components/RoundCard/RoundCardSkipButton";
+import { Button } from '@/ui/components/Button/Button';
+import { formatRewardLine, formatRoundScore } from '@/ui/components/RoundCard/roundCardFormat';
+import { RoundCardSkipButton } from '@/ui/components/RoundCard/RoundCardSkipButton';
 import {
   DEFAULT_ROUND_CARD_HEIGHT,
   DEFAULT_ROUND_CARD_WIDTH,
@@ -27,18 +27,18 @@ import {
   titleTextStyle,
   trailTagTextStyle,
   type RoundCardProps,
-} from "@/ui/components/RoundCard/roundCardTheme";
+} from '@/ui/components/RoundCard/roundCardTheme';
 import {
   drawNeoChipFace,
   drawNeoChipShadow,
   drawPlaceholderCircle,
   drawRoundCardFace,
   drawRoundCardShadow,
-} from "@/ui/components/RoundCard/roundCardVisuals";
-import { useUiPrimary } from "@/ui/theme/UiPrimaryProvider";
+} from '@/ui/components/RoundCard/roundCardVisuals';
+import { useUiPrimary } from '@/ui/theme/UiPrimaryProvider';
 
-export type { RoundCardProps, RoundCardStatus } from "@/ui/components/RoundCard/roundCardTheme";
-export { ROUND_CARD_STATUSES } from "@/ui/components/RoundCard/roundCardTheme";
+export type { RoundCardProps, RoundCardStatus } from '@/ui/components/RoundCard/roundCardTheme';
+export { ROUND_CARD_STATUSES } from '@/ui/components/RoundCard/roundCardTheme';
 
 export function RoundCard({
   status,
@@ -69,21 +69,15 @@ export function RoundCard({
   const formattedScore = formatRoundScore(targetScore);
   const rewardLine = formatRewardLine(rewardAmount);
   const rewardIsNegative = rewardAmount <= 0;
-  const showActions = status === "select";
-  const showSkippedOverlay = status === "skipped";
+  const showActions = status === 'select';
+  const showSkippedOverlay = status === 'skipped';
 
-  const statusStyle = useMemo(
-    () => statusLabelTextStyle(statusTheme.statusLabelColor),
-    [statusTheme.statusLabelColor],
-  );
+  const statusStyle = useMemo(() => statusLabelTextStyle(statusTheme.statusLabelColor), [statusTheme.statusLabelColor]);
   const titleStyle = useMemo(() => titleTextStyle(), []);
   const scoreStyle = useMemo(() => scoreLabelTextStyle(), []);
   const targetStyle = useMemo(() => targetScoreTextStyle(), []);
   const rewardStyle = useMemo(
-    () =>
-      rewardTextStyle(
-        rewardIsNegative ? ROUND_CARD_REWARD_NEGATIVE_COLOR : ROUND_CARD_REWARD_POSITIVE_COLOR,
-      ),
+    () => rewardTextStyle(rewardIsNegative ? ROUND_CARD_REWARD_NEGATIVE_COLOR : ROUND_CARD_REWARD_POSITIVE_COLOR),
     [rewardIsNegative],
   );
   const skippedStyle = useMemo(() => skippedOverlayTextStyle(), []);
@@ -93,8 +87,7 @@ export function RoundCard({
   let trailTagX = 0;
   let skipButtonX = 0;
   if (trailTag) {
-    const rowWidth =
-      ROUND_CARD_TRAIL_TAG_SIZE + skipRowGap + ROUND_CARD_SKIP_BUTTON_WIDTH;
+    const rowWidth = ROUND_CARD_TRAIL_TAG_SIZE + skipRowGap + ROUND_CARD_SKIP_BUTTON_WIDTH;
     trailTagX = -rowWidth / 2 + ROUND_CARD_TRAIL_TAG_SIZE / 2;
     skipButtonX = rowWidth / 2 - ROUND_CARD_SKIP_BUTTON_WIDTH / 2;
   }
@@ -107,20 +100,10 @@ export function RoundCard({
       drawRoundCardFace(faceRef.current, cardWidth, cardHeight, statusTheme);
     }
     if (placeholderRef.current) {
-      drawPlaceholderCircle(
-        placeholderRef.current,
-        0,
-        0,
-        ROUND_CARD_PLACEHOLDER_RADIUS,
-        statusTheme.placeholderColor,
-      );
+      drawPlaceholderCircle(placeholderRef.current, 0, 0, ROUND_CARD_PLACEHOLDER_RADIUS, statusTheme.placeholderColor);
     }
     if (trailTagShadowRef.current) {
-      drawNeoChipShadow(
-        trailTagShadowRef.current,
-        ROUND_CARD_TRAIL_TAG_SIZE,
-        ROUND_CARD_TRAIL_TAG_SIZE,
-      );
+      drawNeoChipShadow(trailTagShadowRef.current, ROUND_CARD_TRAIL_TAG_SIZE, ROUND_CARD_TRAIL_TAG_SIZE);
     }
     if (trailTagFaceRef.current) {
       drawNeoChipFace(
@@ -146,44 +129,15 @@ export function RoundCard({
           eventMode="none"
         />
 
-        <pixiText
-          text={title}
-          style={titleStyle}
-          anchor={0.5}
-          y={layout.titleY}
-          eventMode="none"
-        />
+        <pixiText text={title} style={titleStyle} anchor={0.5} y={layout.titleY} eventMode="none" />
 
-        <pixiGraphics
-          ref={placeholderRef}
-          y={layout.placeholderY}
-          eventMode="none"
-          draw={() => {}}
-        />
+        <pixiGraphics ref={placeholderRef} y={layout.placeholderY} eventMode="none" draw={() => {}} />
 
-        <pixiText
-          text="Score at least"
-          style={scoreStyle}
-          anchor={0.5}
-          y={layout.scoreLabelY}
-          eventMode="none"
-        />
+        <pixiText text="Score at least" style={scoreStyle} anchor={0.5} y={layout.scoreLabelY} eventMode="none" />
 
-        <pixiText
-          text={formattedScore}
-          style={targetStyle}
-          anchor={0.5}
-          y={layout.targetScoreY}
-          eventMode="none"
-        />
+        <pixiText text={formattedScore} style={targetStyle} anchor={0.5} y={layout.targetScoreY} eventMode="none" />
 
-        <pixiText
-          text={rewardLine}
-          style={rewardStyle}
-          anchor={0.5}
-          y={layout.rewardY}
-          eventMode="none"
-        />
+        <pixiText text={rewardLine} style={rewardStyle} anchor={0.5} y={layout.rewardY} eventMode="none" />
 
         {showActions ? (
           <>
@@ -198,30 +152,11 @@ export function RoundCard({
             />
 
             {trailTag ? (
-              <pixiContainer
-                x={trailTagX}
-                y={layout.skipRowY}
-                sortableChildren
-                eventMode="none"
-              >
-                <pixiGraphics
-                  ref={trailTagShadowRef}
-                  zIndex={0}
-                  eventMode="none"
-                  draw={() => {}}
-                />
+              <pixiContainer x={trailTagX} y={layout.skipRowY} sortableChildren eventMode="none">
+                <pixiGraphics ref={trailTagShadowRef} zIndex={0} eventMode="none" draw={() => {}} />
                 <pixiContainer zIndex={1} eventMode="none">
-                  <pixiGraphics
-                    ref={trailTagFaceRef}
-                    eventMode="none"
-                    draw={() => {}}
-                  />
-                  <pixiText
-                    text={trailTag}
-                    style={trailStyle}
-                    anchor={0.5}
-                    eventMode="none"
-                  />
+                  <pixiGraphics ref={trailTagFaceRef} eventMode="none" draw={() => {}} />
+                  <pixiText text={trailTag} style={trailStyle} anchor={0.5} eventMode="none" />
                 </pixiContainer>
               </pixiContainer>
             ) : null}

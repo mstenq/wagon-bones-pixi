@@ -1,5 +1,5 @@
-import type { DiceType } from "@/data/dice";
-import { getRunState } from "@/game/store/runStore";
+import type { DiceType } from '@/data/dice';
+import { getRunState } from '@/game/store/runStore';
 
 export const gameFacade = {
   dice: {

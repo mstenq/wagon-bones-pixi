@@ -1,10 +1,10 @@
-import type { Container } from "pixi.js";
-import { useCallback, useRef, type RefObject } from "react";
+import type { Container } from 'pixi.js';
+import { useCallback, useRef, type RefObject } from 'react';
 
-import { getEffectTexture } from "@/assets/effects/textures";
-import type { BurnDissolveFilter } from "@/ui/actionEffects/burnDissolveFilter";
-import type { ActionEffectComplete } from "@/ui/actionEffects/types";
-import type { SquishTargets } from "@/ui/interaction/spring";
+import { getEffectTexture } from '@/assets/effects/textures';
+import type { BurnDissolveFilter } from '@/ui/actionEffects/burnDissolveFilter';
+import type { ActionEffectComplete } from '@/ui/actionEffects/types';
+import type { SquishTargets } from '@/ui/interaction/spring';
 
 import {
   createItemAnimationRuntime,
@@ -17,7 +17,7 @@ import {
   type ItemAnimationConfig,
   type ItemAnimationHostContext,
   type ItemAnimationRuntime,
-} from "@/ui/animation/itemAnimations";
+} from '@/ui/animation/itemAnimations';
 
 export type ItemAnimationRefs = {
   root: RefObject<Container | null>;
@@ -27,7 +27,7 @@ export type ItemAnimationRefs = {
 
 export type UseItemAnimationsOptions = {
   hostExtent: number;
-  textPlacement: "above" | "below";
+  textPlacement: 'above' | 'below';
   beforeDestroy?: () => void;
   refs: ItemAnimationRefs;
 };
@@ -47,19 +47,11 @@ export function applyItemAnimationSquish(
   if (!squishNode) {
     return;
   }
-  squishNode.scale.set(
-    baseScale.scaleX * growPopMul.scaleX,
-    baseScale.scaleY * growPopMul.scaleY,
-  );
+  squishNode.scale.set(baseScale.scaleX * growPopMul.scaleX, baseScale.scaleY * growPopMul.scaleY);
   squishNode.x = shakeX;
 }
 
-export function useItemAnimations({
-  hostExtent,
-  textPlacement,
-  beforeDestroy,
-  refs,
-}: UseItemAnimationsOptions) {
+export function useItemAnimations({ hostExtent, textPlacement, beforeDestroy, refs }: UseItemAnimationsOptions) {
   const runtimeRef = useRef<ItemAnimationRuntime>(createItemAnimationRuntime());
   const burnDissolveRef = useRef<BurnDissolveFilter | null>(null);
   const beforeDestroyRef = useRef(beforeDestroy);
@@ -72,7 +64,7 @@ export function useItemAnimations({
     hostExtent,
     textPlacement,
     beforeDestroy: () => beforeDestroyRef.current?.(),
-    getBurnTexture: () => getEffectTexture("burn"),
+    getBurnTexture: () => getEffectTexture('burn'),
     burnDissolve: null,
     setBurnDissolve: (filter) => {
       burnDissolveRef.current = filter;

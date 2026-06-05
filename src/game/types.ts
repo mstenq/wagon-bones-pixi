@@ -1,5 +1,5 @@
-import type { DiceType } from "@/data/dice";
-import type { ItemType } from "@/data/items";
+import type { DiceType } from '@/data/dice';
+import type { ItemType } from '@/data/items';
 
 /** Minimal die model — will grow when the full engine lands. */
 export type Die = {

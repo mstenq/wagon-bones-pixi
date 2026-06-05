@@ -1,10 +1,6 @@
-import { Rectangle } from "pixi.js";
+import { Rectangle } from 'pixi.js';
 
-import {
-  CARD_OWNED_ENLARGED_SCALE,
-  SELL_TAB_ATTACH_OVERLAP,
-  SELL_TAB_WIDTH,
-} from "@/ui/components/Card/config";
+import { CARD_OWNED_ENLARGED_SCALE, SELL_TAB_ATTACH_OVERLAP, SELL_TAB_WIDTH } from '@/ui/components/Card/config';
 
 /**
  * Row hit box: card body, plus sell tab overhang on the right only (not into the left neighbor).

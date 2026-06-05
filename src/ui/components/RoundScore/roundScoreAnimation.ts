@@ -22,8 +22,7 @@ export function buildRoundScoreAnimationFrames(from: number, to: number): number
   const frames: number[] = [];
 
   for (let step = 1; step <= stepCount; step += 1) {
-    const value =
-      step === stepCount ? end : Math.round(start + (diff * step) / stepCount);
+    const value = step === stepCount ? end : Math.round(start + (diff * step) / stepCount);
     const last = frames[frames.length - 1];
     if (value !== last) {
       frames.push(value);

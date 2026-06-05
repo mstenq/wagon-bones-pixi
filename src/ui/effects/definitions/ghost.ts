@@ -1,11 +1,11 @@
-import { applyArtFilters, makeRuntime, noopDestroy } from "@/ui/effects/effectHelpers";
-import { createGhostAuraFilter } from "@/ui/effects/filters/ghostAuraFilter";
-import { burstTimer } from "@/ui/effects/shared/pseudoRandom";
-import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
+import { applyArtFilters, makeRuntime, noopDestroy } from '@/ui/effects/effectHelpers';
+import { createGhostAuraFilter } from '@/ui/effects/filters/ghostAuraFilter';
+import { burstTimer } from '@/ui/effects/shared/pseudoRandom';
+import type { EffectDefinition, EffectFrameContext } from '@/ui/effects/types';
 
 export const ghostEffect: EffectDefinition = {
-  id: "ghost",
-  label: "Ghost",
+  id: 'ghost',
+  label: 'Ghost',
   create(_layers, _mount, art) {
     const aura = createGhostAuraFilter();
     applyArtFilters(art, [aura.filter]);
@@ -28,6 +28,10 @@ export const ghostEffect: EffectDefinition = {
       });
     };
 
-    return makeRuntime("ghost", step, noopDestroy(() => applyArtFilters(art, null)));
+    return makeRuntime(
+      'ghost',
+      step,
+      noopDestroy(() => applyArtFilters(art, null)),
+    );
   },
 };

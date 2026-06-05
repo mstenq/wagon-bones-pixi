@@ -1,9 +1,9 @@
-import { DEFAULT_CARD_HEIGHT, DEFAULT_CARD_WIDTH } from "@/ui/components/Card/Card";
-import { DEFAULT_DIE_SIZE } from "@/ui/components/Dice/Die";
-import { CARD_COUNT } from "@/data/items";
-import { DICE_COUNT } from "@/data/dice";
-import { rowMetrics } from "@/ui/interaction/rowLayout";
-import type { ReorderableRowLayout } from "@/ui/interaction/useReorderableRow";
+import { DEFAULT_CARD_HEIGHT, DEFAULT_CARD_WIDTH } from '@/ui/components/Card/Card';
+import { DEFAULT_DIE_SIZE } from '@/ui/components/Dice/Die';
+import { CARD_COUNT } from '@/data/items';
+import { DICE_COUNT } from '@/data/dice';
+import { rowMetrics } from '@/ui/interaction/rowLayout';
+import type { ReorderableRowLayout } from '@/ui/interaction/useReorderableRow';
 
 export const DESIGN_WIDTH = 880;
 

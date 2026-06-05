@@ -1,9 +1,9 @@
-import { createStore } from "zustand/vanilla";
-import { useStore } from "zustand";
+import { createStore } from 'zustand/vanilla';
+import { useStore } from 'zustand';
 
-import { DICE_COUNT, type DiceType } from "@/data/dice";
-import { rollD12, rollMany } from "@/game/dice/roll";
-import { createInitialRunState, type RunState } from "@/game/store/types";
+import { DICE_COUNT, type DiceType } from '@/data/dice';
+import { rollD12, rollMany } from '@/game/dice/roll';
+import { createInitialRunState, type RunState } from '@/game/store/types';
 
 type RunActions = {
   setDiceType: (type: DiceType) => void;
@@ -57,7 +57,7 @@ export const runStore = createStore<RunStore>((set, get) => ({
 
   sellCard(cardId) {
     // Placeholder until full economy/equipment systems land.
-    console.log("sell card", cardId);
+    console.log('sell card', cardId);
     set({ selectedCardId: null });
   },
 }));

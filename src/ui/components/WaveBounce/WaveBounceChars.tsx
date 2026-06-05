@@ -1,6 +1,6 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties, ReactNode } from 'react';
 
-import { WAVE_IDLE_STAGGER_S } from "@/ui/components/WaveBounce/waveBounce";
+import { WAVE_IDLE_STAGGER_S } from '@/ui/components/WaveBounce/waveBounce';
 
 export type WaveBounceCharRenderProps = {
   char: string;
@@ -18,12 +18,11 @@ export type WaveBounceCharsProps = {
   renderChar: (props: WaveBounceCharRenderProps) => ReactNode;
 };
 
-const waveOuterClass =
-  "inline-block origin-bottom will-change-transform animate-score-idle";
+const waveOuterClass = 'inline-block origin-bottom will-change-transform animate-score-idle';
 
 /** Spaces collapse inside per-char `inline-block` wrappers — use nbsp for display. */
 function waveDisplayChar(char: string): string {
-  return char === " " ? "\u00A0" : char;
+  return char === ' ' ? '\u00A0' : char;
 }
 
 export function WaveBounceChars({

@@ -1,9 +1,9 @@
-import type { EffectFrameContext, EffectHostKind } from "@/ui/effects/types";
+import type { EffectFrameContext, EffectHostKind } from '@/ui/effects/types';
 
 export const DEFAULT_EFFECT_PADDING = 18;
 
 /** Re-export — see dieTuning.ts */
-export { CARD_EFFECT_PADDING, DIE_EFFECT_PADDING } from "@/ui/effects/dieTuning";
+export { CARD_EFFECT_PADDING, DIE_EFFECT_PADDING } from '@/ui/effects/dieTuning';
 
 export function createDefaultEffectFrame(
   hostKind: EffectHostKind,

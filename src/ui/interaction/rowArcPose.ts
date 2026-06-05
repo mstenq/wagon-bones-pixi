@@ -1,7 +1,4 @@
-import {
-  DIE_ROW_ARC_DROP_PX,
-  DIE_ROW_SCALE_BOOST,
-} from "@/ui/components/Dice/config";
+import { DIE_ROW_ARC_DROP_PX, DIE_ROW_SCALE_BOOST } from '@/ui/components/Dice/config';
 
 export type RowArcPose = {
   yOffset: number;
@@ -20,11 +17,7 @@ export function rowSlotT(slotIndex: number, count: number): number {
  * Arc pose for a slot in a horizontal row (Y offset and scale).
  * @param strength 0 = flat (e.g. while dragging), 1 = full arc.
  */
-export function rowArcPose(
-  slotIndex: number,
-  count: number,
-  strength = 1,
-): RowArcPose {
+export function rowArcPose(slotIndex: number, count: number, strength = 1): RowArcPose {
   const t = rowSlotT(slotIndex, count);
   const centerWeight = 1 - t * t;
   const endWeight = 1 - centerWeight;

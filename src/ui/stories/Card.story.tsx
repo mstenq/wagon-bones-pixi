@@ -1,18 +1,18 @@
-import { Application } from "@pixi/react";
-import { use, useCallback, useRef, useState } from "react";
+import { Application } from '@pixi/react';
+import { use, useCallback, useRef, useState } from 'react';
 
-import { effectsTexturesReady } from "@/assets/effects/textures";
-import { getCardTexture, itemTexturesReady } from "@/assets/items/textures";
-import type { CardDisplayMode } from "@/ui/components/Card/config";
-import { Card, type CardHandle } from "@/ui/components/Card/Card";
-import { itemShakeAnim, itemTextAnim } from "@/ui/animation/itemAnimations";
-import { EFFECT_OPTIONS } from "@/ui/effects/effectOptions";
-import type { EffectId } from "@/ui/effects/types";
-import { useQueryParam } from "@/ui/hooks/useQueryParam";
-import { PIXI_RENDERER_PREFERENCE } from "@/ui/pixi/appDefaults";
-import type { StoryDefinition } from "@/ui/types/storyTypes";
-import { panelButtonClass, panelLabelClass, panelSelectClass } from "@/ui/styles/panelControls";
-import { UI_BACKGROUND_COLOR } from "../uiConstants";
+import { effectsTexturesReady } from '@/assets/effects/textures';
+import { getCardTexture, itemTexturesReady } from '@/assets/items/textures';
+import type { CardDisplayMode } from '@/ui/components/Card/config';
+import { Card, type CardHandle } from '@/ui/components/Card/Card';
+import { itemShakeAnim, itemTextAnim } from '@/ui/animation/itemAnimations';
+import { EFFECT_OPTIONS } from '@/ui/effects/effectOptions';
+import type { EffectId } from '@/ui/effects/types';
+import { useQueryParam } from '@/ui/hooks/useQueryParam';
+import { PIXI_RENDERER_PREFERENCE } from '@/ui/pixi/appDefaults';
+import type { StoryDefinition } from '@/ui/types/storyTypes';
+import { panelButtonClass, panelLabelClass, panelSelectClass } from '@/ui/styles/panelControls';
+import { UI_BACKGROUND_COLOR } from '../uiConstants';
 
 const RESTORE_DELAY_MS = 700;
 
@@ -25,14 +25,13 @@ function CardStory() {
   const [cardVisible, setCardVisible] = useState(true);
   const [busy, setBusy] = useState(false);
 
-  const [displayMode, setDisplayMode] = useQueryParam<CardDisplayMode>("mode", {
-    default: "shop",
-    parse: (raw) => (raw === "shop" || raw === "pack" || raw === "owned" ? raw : undefined),
+  const [displayMode, setDisplayMode] = useQueryParam<CardDisplayMode>('mode', {
+    default: 'shop',
+    parse: (raw) => (raw === 'shop' || raw === 'pack' || raw === 'owned' ? raw : undefined),
   });
-  const [effect, setEffect] = useQueryParam<EffectId>("effect", {
-    default: "none",
-    parse: (raw) =>
-      EFFECT_OPTIONS.some((option) => option.id === raw) ? (raw as EffectId) : undefined,
+  const [effect, setEffect] = useQueryParam<EffectId>('effect', {
+    default: 'none',
+    parse: (raw) => (EFFECT_OPTIONS.some((option) => option.id === raw) ? (raw as EffectId) : undefined),
   });
 
   const finishAnim = useCallback((started: boolean) => {
@@ -42,18 +41,23 @@ function CardStory() {
     setBusy(true);
   }, []);
 
-  const runAnim = useCallback((config: Parameters<CardHandle["animate"]>[0]) => {
-    const card = cardRef.current;
-    if (!card) {
-      return;
-    }
-    finishAnim(card.animate(config, () => {
-      setBusy(cardRef.current?.isPlayingAnimation() ?? false);
-    }));
-  }, [finishAnim]);
+  const runAnim = useCallback(
+    (config: Parameters<CardHandle['animate']>[0]) => {
+      const card = cardRef.current;
+      if (!card) {
+        return;
+      }
+      finishAnim(
+        card.animate(config, () => {
+          setBusy(cardRef.current?.isPlayingAnimation() ?? false);
+        }),
+      );
+    },
+    [finishAnim],
+  );
 
   const handleAppear = useCallback(() => {
-    runAnim({ type: "appear" });
+    runAnim({ type: 'appear' });
   }, [runAnim]);
 
   const handleDestroy = useCallback(() => {
@@ -62,15 +66,17 @@ function CardStory() {
       return;
     }
 
-    finishAnim(card.animate({ type: "destroy" }, () => {
-      console.log("destroy completed");
-      setCardVisible(false);
-      window.setTimeout(() => {
-        setCardKey((key) => key + 1);
-        setCardVisible(true);
-        setBusy(false);
-      }, RESTORE_DELAY_MS);
-    }));
+    finishAnim(
+      card.animate({ type: 'destroy' }, () => {
+        console.log('destroy completed');
+        setCardVisible(false);
+        window.setTimeout(() => {
+          setCardKey((key) => key + 1);
+          setCardVisible(true);
+          setBusy(false);
+        }, RESTORE_DELAY_MS);
+      }),
+    );
   }, [cardVisible, finishAnim]);
 
   const animDisabled = !cardVisible || busy;
@@ -108,20 +114,10 @@ function CardStory() {
 
       <div className="flex flex-wrap justify-center gap-2">
         <span className={panelLabelClass}>Animations</span>
-        <button
-          type="button"
-          className={panelButtonClass}
-          disabled={animDisabled}
-          onClick={handleAppear}
-        >
+        <button type="button" className={panelButtonClass} disabled={animDisabled} onClick={handleAppear}>
           Appear
         </button>
-        <button
-          type="button"
-          className={panelButtonClass}
-          disabled={animDisabled}
-          onClick={handleDestroy}
-        >
+        <button type="button" className={panelButtonClass} disabled={animDisabled} onClick={handleDestroy}>
           Destroy
         </button>
         <button
@@ -194,9 +190,9 @@ function CardStory() {
               effect={effect}
               price={5}
               sellPrice={4}
-              onBuy={() => console.log("BUY")}
-              onSelect={() => console.log("SELECT")}
-              onSell={() => console.log("SELL")}
+              onBuy={() => console.log('BUY')}
+              onSelect={() => console.log('SELECT')}
+              onSell={() => console.log('SELL')}
             />
           </pixiContainer>
         ) : null}
@@ -206,7 +202,7 @@ function CardStory() {
 }
 
 const cardStory: StoryDefinition = {
-  name: "Card",
+  name: 'Card',
   component: <CardStory />,
 };
 

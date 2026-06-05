@@ -1,7 +1,7 @@
-import { useApplication } from "@pixi/react";
-import type { Container, FederatedPointerEvent } from "pixi.js";
-import { flushSync } from "react-dom";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useApplication } from '@pixi/react';
+import type { Container, FederatedPointerEvent } from 'pixi.js';
+import { flushSync } from 'react-dom';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
   createSquishState,
@@ -14,20 +14,15 @@ import {
   stepSquish,
   type SquishState,
   type SquishTargets,
-} from "@/ui/interaction/spring";
+} from '@/ui/interaction/spring';
 import {
   decaySwing,
   smoothVelocity,
   stepSwing,
   swingFromVelocity,
   type DragSwingConfig,
-} from "@/ui/interaction/dragSwing";
-import {
-  moveInArray,
-  rowSlotCenter,
-  slotIndexFromX,
-  type rowMetrics,
-} from "@/ui/interaction/rowLayout";
+} from '@/ui/interaction/dragSwing';
+import { moveInArray, rowSlotCenter, slotIndexFromX, type rowMetrics } from '@/ui/interaction/rowLayout';
 
 export type ReorderableRowLayout = ReturnType<typeof rowMetrics> & {
   rowY: number;
@@ -130,8 +125,7 @@ export function useReorderableRow({
   }, [order]);
 
   const slotHome = useCallback(
-    (slotIndex: number) =>
-      rowSlotCenter(slotIndex, layout.pitch, layout.originX, layout.rowY),
+    (slotIndex: number) => rowSlotCenter(slotIndex, layout.pitch, layout.originX, layout.rowY),
     [layout.originX, layout.pitch, layout.rowY],
   );
 
@@ -245,7 +239,7 @@ export function useReorderableRow({
         }
         session.activated = true;
         setDraggingSlot(slotIndex);
-        target.cursor = "grabbing";
+        target.cursor = 'grabbing';
 
         if (!lifted) {
           const state = squishRef.current.get(itemId);
@@ -257,10 +251,7 @@ export function useReorderableRow({
       };
 
       const onMove = (moveEvent: FederatedPointerEvent) => {
-        if (
-          moveEvent.pointerId !== session.pointerId ||
-          dragRef.current !== session
-        ) {
+        if (moveEvent.pointerId !== session.pointerId || dragRef.current !== session) {
           return;
         }
 
@@ -282,12 +273,7 @@ export function useReorderableRow({
         session.x = moveLocal.x - session.offsetX;
         session.y = moveLocal.y - session.offsetY;
 
-        session.previewSlot = slotIndexFromX(
-          session.x,
-          layout.count,
-          layout.pitch,
-          layout.originX,
-        );
+        session.previewSlot = slotIndexFromX(session.x, layout.count, layout.pitch, layout.originX);
 
         if (!lifted) {
           lifted = true;
@@ -304,19 +290,16 @@ export function useReorderableRow({
         if (liftTimer !== undefined) {
           window.clearTimeout(liftTimer);
         }
-        app.stage.off("globalpointermove", onMove);
-        app.stage.off("pointerup", onUp);
-        app.stage.off("pointerupoutside", onUp);
-        target.off("globalpointermove", onMove);
-        target.off("pointerup", onUp);
-        target.off("pointerupoutside", onUp);
+        app.stage.off('globalpointermove', onMove);
+        app.stage.off('pointerup', onUp);
+        app.stage.off('pointerupoutside', onUp);
+        target.off('globalpointermove', onMove);
+        target.off('pointerup', onUp);
+        target.off('pointerupoutside', onUp);
       };
 
       const onUp = (upEvent: FederatedPointerEvent) => {
-        if (
-          upEvent.pointerId !== session.pointerId ||
-          dragRef.current !== session
-        ) {
+        if (upEvent.pointerId !== session.pointerId || dragRef.current !== session) {
           return;
         }
 
@@ -333,16 +316,16 @@ export function useReorderableRow({
           return;
         }
 
-        target.cursor = "grab";
+        target.cursor = 'grab';
         endDrag(session);
       };
 
-      app.stage.on("globalpointermove", onMove);
-      app.stage.on("pointerup", onUp);
-      app.stage.on("pointerupoutside", onUp);
-      target.on("globalpointermove", onMove);
-      target.on("pointerup", onUp);
-      target.on("pointerupoutside", onUp);
+      app.stage.on('globalpointermove', onMove);
+      app.stage.on('pointerup', onUp);
+      app.stage.on('pointerupoutside', onUp);
+      target.on('globalpointermove', onMove);
+      target.on('pointerup', onUp);
+      target.on('pointerupoutside', onUp);
     },
     [
       app.stage,
@@ -360,20 +343,10 @@ export function useReorderableRow({
   );
 
   const tickLayout = useCallback(
-    (
-      apply: (
-        slotIndex: number,
-        itemId: number,
-        visual: ItemVisual,
-        meta: RowLayoutMeta,
-      ) => void,
-    ) => {
+    (apply: (slotIndex: number, itemId: number, visual: ItemVisual, meta: RowLayoutMeta) => void) => {
       const session = dragRef.current?.activated ? dragRef.current : null;
-      const activeOrder = session
-        ? getPreviewOrder(session.fromSlot, session.previewSlot)
-        : orderRef.current;
-      const timeSettling =
-        !session && performance.now() < dropSettlingUntilRef.current;
+      const activeOrder = session ? getPreviewOrder(session.fromSlot, session.previewSlot) : orderRef.current;
+      const timeSettling = !session && performance.now() < dropSettlingUntilRef.current;
 
       let dropPositionSettling = false;
       const settlingItemId = dropSettlingItemIdRef.current;
@@ -384,10 +357,7 @@ export function useReorderableRow({
         } else {
           const settleHome = slotHome(settlingSlot);
           const settlePos = getPosition(settlingItemId, settleHome);
-          const settleDist = Math.hypot(
-            settlePos.x - settleHome.x,
-            settlePos.y - settleHome.y,
-          );
+          const settleDist = Math.hypot(settlePos.x - settleHome.x, settlePos.y - settleHome.y);
           if (settleDist < DROP_SETTLE_POSITION_EPS) {
             dropSettlingItemIdRef.current = null;
             positionsRef.current.set(settlingItemId, settleHome);
@@ -408,9 +378,7 @@ export function useReorderableRow({
       }
 
       const layoutMeta: RowLayoutMeta = {
-        dragSession: session
-          ? { itemId: session.itemId, fromSlot: session.fromSlot }
-          : null,
+        dragSession: session ? { itemId: session.itemId, fromSlot: session.fromSlot } : null,
         dropSettlingItemId: dropSettlingItemIdRef.current,
       };
 
@@ -422,9 +390,7 @@ export function useReorderableRow({
         if (squish) {
           stepSquish(squish, dt);
           const settledToIdle =
-            isSquishSettled(squish) &&
-            squish.targetX === SQUISH_IDLE.scaleX &&
-            squish.targetY === SQUISH_IDLE.scaleY;
+            isSquishSettled(squish) && squish.targetX === SQUISH_IDLE.scaleX && squish.targetY === SQUISH_IDLE.scaleY;
           if (!session && settledToIdle) {
             squishRef.current.delete(itemId);
             squish = undefined;
@@ -462,12 +428,8 @@ export function useReorderableRow({
           rotation = 0;
         }
 
-        const x = isSettled
-          ? home.x
-          : current.x + (home.x - current.x) * lerp;
-        const y = isSettled
-          ? home.y
-          : current.y + (home.y - current.y) * lerp;
+        const x = isSettled ? home.x : current.x + (home.x - current.x) * lerp;
+        const y = isSettled ? home.y : current.y + (home.y - current.y) * lerp;
 
         positionsRef.current.set(itemId, { x, y });
 
@@ -490,21 +452,10 @@ export function useReorderableRow({
         );
       }
     },
-    [
-      dragSnapLerp,
-      getPosition,
-      getPreviewOrder,
-      layout.count,
-      slotHome,
-      snapLerp,
-      swing,
-    ],
+    [dragSnapLerp, getPosition, getPreviewOrder, layout.count, slotHome, snapLerp, swing],
   );
 
-  const slotHomeForOrder = useCallback(
-    (slotIndex: number) => slotHome(slotIndex),
-    [slotHome],
-  );
+  const slotHomeForOrder = useCallback((slotIndex: number) => slotHome(slotIndex), [slotHome]);
 
   return {
     onPointerDown,

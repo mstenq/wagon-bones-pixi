@@ -1,5 +1,5 @@
-import { CARD_COUNT } from "@/data/items";
-import { DICE_COUNT, type DiceType } from "@/data/dice";
+import { CARD_COUNT } from '@/data/items';
+import { DICE_COUNT, type DiceType } from '@/data/dice';
 
 export type RunState = {
   diceType: DiceType;
@@ -17,7 +17,7 @@ export type RunState = {
 
 export function createInitialRunState(): RunState {
   return {
-    diceType: "standard",
+    diceType: 'standard',
     dieValues: Array(DICE_COUNT).fill(1),
     diceOrder: Array.from({ length: DICE_COUNT }, (_, index) => index),
     isRolling: false,

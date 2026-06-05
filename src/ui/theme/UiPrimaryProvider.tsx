@@ -1,21 +1,13 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-  type CSSProperties,
-  type ReactNode,
-} from "react";
+import { createContext, useCallback, useContext, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
 
-import { primaryPaletteCssProperties } from "@/ui/theme/primaryPalette";
+import { primaryPaletteCssProperties } from '@/ui/theme/primaryPalette';
 import {
   DEFAULT_UI_PRIMARY_COLOR,
   getPrimaryHex,
   setPixiPrimaryFaceHex,
   UI_PRIMARY_COLORS,
   type UiPrimaryColor,
-} from "@/ui/theme/uiTokens";
+} from '@/ui/theme/uiTokens';
 
 type UiPrimaryContextValue = {
   primaryColor: UiPrimaryColor;
@@ -51,10 +43,7 @@ export function UiPrimaryProvider({
     setPixiPrimaryFaceHex(getPrimaryHex(color));
   }, []);
 
-  const value = useMemo(
-    () => ({ primaryColor, setPrimaryColor }),
-    [primaryColor, setPrimaryColor],
-  );
+  const value = useMemo(() => ({ primaryColor, setPrimaryColor }), [primaryColor, setPrimaryColor]);
 
   const wrapperStyle: CSSProperties = {
     ...style,

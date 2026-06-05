@@ -1,11 +1,5 @@
-import type {
-  EffectArtTarget,
-  EffectId,
-  EffectLayers,
-  EffectMountContext,
-  EffectRuntime,
-} from "@/ui/effects/types";
-import { getEffectDefinition } from "@/ui/effects/registry";
+import type { EffectArtTarget, EffectId, EffectLayers, EffectMountContext, EffectRuntime } from '@/ui/effects/types';
+import { getEffectDefinition } from '@/ui/effects/registry';
 
 export function createEffectRuntime(
   id: EffectId,
@@ -13,7 +7,7 @@ export function createEffectRuntime(
   ctx: EffectMountContext,
   art: EffectArtTarget,
 ): EffectRuntime | null {
-  if (id === "none") {
+  if (id === 'none') {
     return null;
   }
   const def = getEffectDefinition(id);
@@ -23,7 +17,7 @@ export function createEffectRuntime(
   return def.create(layers, ctx, art);
 }
 
-export function stepEffect(runtime: EffectRuntime, frame: import("@/ui/effects/types").EffectFrameContext): void {
+export function stepEffect(runtime: EffectRuntime, frame: import('@/ui/effects/types').EffectFrameContext): void {
   runtime.step(frame);
 }
 

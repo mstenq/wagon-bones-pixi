@@ -1,10 +1,10 @@
-import { Assets, Spritesheet, type SpritesheetData, type Texture } from "pixi.js";
+import { Assets, Spritesheet, type SpritesheetData, type Texture } from 'pixi.js';
 
-import type { DiceType } from "@/data/dice";
-import diceAtlasData from "@/assets/dice/dice.json";
-import diceAtlasImage from "@/assets/dice/dice.png";
+import type { DiceType } from '@/data/dice';
+import diceAtlasData from '@/assets/dice/dice.json';
+import diceAtlasImage from '@/assets/dice/dice.png';
 
-const STONE_FACE_FRAME = "stone.png";
+const STONE_FACE_FRAME = 'stone.png';
 
 let diceSheet: Spritesheet | null = null;
 let preloadPromise: Promise<void> | null = null;
@@ -20,7 +20,7 @@ export function preloadDiceTextures(): Promise<void> {
     }
 
     const texture = await Assets.load<Texture>({
-      alias: "dice-atlas-image",
+      alias: 'dice-atlas-image',
       src: diceAtlasImage,
     });
     const sheet = new Spritesheet(texture, diceAtlasData as SpritesheetData);
@@ -36,18 +36,18 @@ export const texturesReady = preloadDiceTextures();
 
 function getDiceSheet(): Spritesheet {
   if (!diceSheet) {
-    throw new Error("Dice spritesheet not loaded — await texturesReady first");
+    throw new Error('Dice spritesheet not loaded — await texturesReady first');
   }
   return diceSheet;
 }
 
 export function getDiceFaceTexture(type: DiceType, face: number): Texture {
   const sheet = getDiceSheet();
-  if (type === "stone") {
+  if (type === 'stone') {
     return sheet.textures[STONE_FACE_FRAME]!;
   }
   const clamped = Math.min(12, Math.max(1, Math.round(face)));
-  const frame = `${type}-${String(clamped).padStart(2, "0")}.png`;
+  const frame = `${type}-${String(clamped).padStart(2, '0')}.png`;
   return sheet.textures[frame]!;
 }
 

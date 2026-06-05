@@ -1,4 +1,4 @@
-import { Graphics, Sprite, type Container, type Filter, type Texture } from "pixi.js";
+import { Graphics, Sprite, type Container, type Filter, type Texture } from 'pixi.js';
 
 import type {
   EffectArtTarget,
@@ -7,9 +7,9 @@ import type {
   EffectLayers,
   EffectMountContext,
   EffectRuntime,
-} from "@/ui/effects/types";
-import { effectRadius, isDieMount } from "@/ui/effects/dieTuning";
-import { effectVisualBounds, borderBoundsFromSize, type BorderBounds } from "@/ui/effects/shared/borderFrame";
+} from '@/ui/effects/types';
+import { effectRadius, isDieMount } from '@/ui/effects/dieTuning';
+import { effectVisualBounds, borderBoundsFromSize, type BorderBounds } from '@/ui/effects/shared/borderFrame';
 
 export { effectRadius };
 
@@ -37,7 +37,7 @@ export function randomInteriorPoint(bounds: BorderBounds, margin = 0.12): { x: n
 }
 
 export function makeRuntime(
-  id: EffectDefinition["id"],
+  id: EffectDefinition['id'],
   step: (frame: EffectFrameContext) => void,
   destroy: () => void,
 ): EffectRuntime {
@@ -47,8 +47,8 @@ export function makeRuntime(
 export function addGlowLayer(parent: Container, zIndex = 0): Graphics {
   const g = new Graphics();
   g.zIndex = zIndex;
-  g.eventMode = "none";
-  g.blendMode = "add";
+  g.eventMode = 'none';
+  g.blendMode = 'add';
   parent.addChild(g);
   return g;
 }
@@ -57,12 +57,12 @@ export function addSpriteLayer(
   parent: Container,
   texture: Texture | null,
   zIndex = 1,
-  blend: "add" | "normal" | "screen" = "add",
+  blend: 'add' | 'normal' | 'screen' = 'add',
 ): Sprite | null {
   if (!texture) {
     return null;
   }
-  const s = new Sprite({ texture, anchor: 0.5, eventMode: "none" });
+  const s = new Sprite({ texture, anchor: 0.5, eventMode: 'none' });
   s.zIndex = zIndex;
   s.blendMode = blend;
   parent.addChild(s);

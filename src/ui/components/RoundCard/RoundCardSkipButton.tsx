@@ -1,24 +1,10 @@
-import { useTick } from "@pixi/react";
-import {
-  Rectangle,
-  type Container,
-  type FederatedPointerEvent,
-  type Graphics,
-} from "pixi.js";
-import { useCallback, useMemo, useRef } from "react";
+import { useTick } from '@pixi/react';
+import { Rectangle, type Container, type FederatedPointerEvent, type Graphics } from 'pixi.js';
+import { useCallback, useMemo, useRef } from 'react';
 
-import {
-  BUTTON_PRESS_TRANSITION_MS,
-  buttonFaceOffset,
-} from "@/ui/components/Button/buttonTheme";
-import {
-  ROUND_CARD_SKIP_FACE_COLOR,
-  skipButtonLabelTextStyle,
-} from "@/ui/components/RoundCard/roundCardTheme";
-import {
-  drawSkipButtonFace,
-  drawSkipButtonShadow,
-} from "@/ui/components/RoundCard/roundCardVisuals";
+import { BUTTON_PRESS_TRANSITION_MS, buttonFaceOffset } from '@/ui/components/Button/buttonTheme';
+import { ROUND_CARD_SKIP_FACE_COLOR, skipButtonLabelTextStyle } from '@/ui/components/RoundCard/roundCardTheme';
+import { drawSkipButtonFace, drawSkipButtonShadow } from '@/ui/components/RoundCard/roundCardVisuals';
 
 type RoundCardSkipButtonProps = {
   label: string;
@@ -38,20 +24,10 @@ type OffsetAnim = {
 };
 
 function prefersReducedMotion(): boolean {
-  return (
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  );
+  return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-export function RoundCardSkipButton({
-  label,
-  x,
-  y,
-  width,
-  height,
-  onClick,
-}: RoundCardSkipButtonProps) {
+export function RoundCardSkipButton({ label, x, y, width, height, onClick }: RoundCardSkipButtonProps) {
   const reducedMotion = prefersReducedMotion();
   const shadowRef = useRef<Graphics | null>(null);
   const faceRef = useRef<Graphics | null>(null);
@@ -62,10 +38,7 @@ export function RoundCardSkipButton({
   const onClickRef = useRef(onClick);
   onClickRef.current = onClick;
 
-  const hitArea = useMemo(
-    () => new Rectangle(-width / 2, -height / 2, width, height),
-    [height, width],
-  );
+  const hitArea = useMemo(() => new Rectangle(-width / 2, -height / 2, width, height), [height, width]);
 
   const labelStyle = useMemo(() => skipButtonLabelTextStyle(), []);
 
@@ -101,10 +74,7 @@ export function RoundCardSkipButton({
   );
 
   const applyFaceOffset = useCallback(() => {
-    const { x: offsetX, y: offsetY } = buttonFaceOffset(
-      hoveredRef.current,
-      pressedRef.current,
-    );
+    const { x: offsetX, y: offsetY } = buttonFaceOffset(hoveredRef.current, pressedRef.current);
     animateContentOffset(offsetX, offsetY);
   }, [animateContentOffset]);
 
@@ -115,14 +85,8 @@ export function RoundCardSkipButton({
       return;
     }
 
-    const t = Math.min(
-      1,
-      (performance.now() - anim.startMs) / BUTTON_PRESS_TRANSITION_MS,
-    );
-    content.position.set(
-      anim.fromX + (anim.toX - anim.fromX) * t,
-      anim.fromY + (anim.toY - anim.fromY) * t,
-    );
+    const t = Math.min(1, (performance.now() - anim.startMs) / BUTTON_PRESS_TRANSITION_MS);
+    content.position.set(anim.fromX + (anim.toX - anim.fromX) * t, anim.fromY + (anim.toY - anim.fromY) * t);
 
     if (t >= 1) {
       snapContentOffset(anim.toX, anim.toY);
@@ -135,8 +99,8 @@ export function RoundCardSkipButton({
         return;
       }
       node.hitArea = hitArea;
-      node.eventMode = "static";
-      node.cursor = "pointer";
+      node.eventMode = 'static';
+      node.cursor = 'pointer';
     },
     [hitArea],
   );
@@ -157,11 +121,7 @@ export function RoundCardSkipButton({
 
       const target = event.currentTarget as Container;
       const local = target.toLocal(event.global);
-      const inside =
-        local.x >= -width / 2 &&
-        local.x <= width / 2 &&
-        local.y >= -height / 2 &&
-        local.y <= height / 2;
+      const inside = local.x >= -width / 2 && local.x <= width / 2 && local.y >= -height / 2 && local.y <= height / 2;
 
       if (wasPressed && inside) {
         onClickRef.current?.();

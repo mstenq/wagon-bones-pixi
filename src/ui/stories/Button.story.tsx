@@ -1,23 +1,23 @@
-import { Application } from "@pixi/react";
+import { Application } from '@pixi/react';
 
-import { Button, BUTTON_VARIANTS, type ButtonVariant } from "@/ui/components/Button/Button";
-import { ButtonElement } from "@/ui/components/Button/ButtonElement";
-import { useQueryParam } from "@/ui/hooks/useQueryParam";
-import { PIXI_RENDERER_PREFERENCE } from "@/ui/pixi/appDefaults";
-import type { StoryDefinition } from "@/ui/types/storyTypes";
-import { panelButtonClass, panelLabelClass, panelSelectClass } from "@/ui/styles/panelControls";
-import { UiPrimaryProvider, useUiPrimary } from "@/ui/theme/UiPrimaryProvider";
-import { UI_PRIMARY_COLORS, type UiPrimaryColor } from "@/ui/theme/uiTokens";
-import { UI_BACKGROUND_COLOR } from "../uiConstants";
+import { Button, BUTTON_VARIANTS, type ButtonVariant } from '@/ui/components/Button/Button';
+import { ButtonElement } from '@/ui/components/Button/ButtonElement';
+import { useQueryParam } from '@/ui/hooks/useQueryParam';
+import { PIXI_RENDERER_PREFERENCE } from '@/ui/pixi/appDefaults';
+import type { StoryDefinition } from '@/ui/types/storyTypes';
+import { panelButtonClass, panelLabelClass, panelSelectClass } from '@/ui/styles/panelControls';
+import { UiPrimaryProvider, useUiPrimary } from '@/ui/theme/UiPrimaryProvider';
+import { UI_PRIMARY_COLORS, type UiPrimaryColor } from '@/ui/theme/uiTokens';
+import { UI_BACKGROUND_COLOR } from '../uiConstants';
 
 const DOM_LABELS: Record<ButtonVariant, string> = {
-  primary: "Play",
-  neutral: "Cancel",
+  primary: 'Play',
+  neutral: 'Cancel',
 };
 
 const PIXI_GRID: { variant: ButtonVariant; label: string; x: number; y: number }[] = [
-  { variant: "primary", label: "Play", x: 180, y: 160 },
-  { variant: "neutral", label: "Cancel", x: 380, y: 160 },
+  { variant: 'primary', label: 'Play', x: 180, y: 160 },
+  { variant: 'neutral', label: 'Cancel', x: 380, y: 160 },
 ];
 
 function parseVariant(raw: string): ButtonVariant | undefined {
@@ -25,10 +25,10 @@ function parseVariant(raw: string): ButtonVariant | undefined {
 }
 
 function parseDisabled(raw: string): boolean | undefined {
-  if (raw === "1" || raw === "true") {
+  if (raw === '1' || raw === 'true') {
     return true;
   }
-  if (raw === "0" || raw === "false") {
+  if (raw === '0' || raw === 'false') {
     return false;
   }
   return undefined;
@@ -39,18 +39,18 @@ function isUiPrimaryColor(value: string): value is UiPrimaryColor {
 }
 
 function ButtonStoryControls() {
-  const [focusVariant, setFocusVariant] = useQueryParam<ButtonVariant>("variant", {
-    default: "primary",
+  const [focusVariant, setFocusVariant] = useQueryParam<ButtonVariant>('variant', {
+    default: 'primary',
     parse: parseVariant,
   });
-  const [customLabel, setCustomLabel] = useQueryParam("label", {
-    default: "Roll Dice",
+  const [customLabel, setCustomLabel] = useQueryParam('label', {
+    default: 'Roll Dice',
     parse: (raw) => (raw.length > 0 && raw.length <= 24 ? raw : undefined),
   });
-  const [disabled, setDisabled] = useQueryParam("disabled", {
+  const [disabled, setDisabled] = useQueryParam('disabled', {
     default: false,
     parse: parseDisabled,
-    serialize: (value) => (value ? "1" : "0"),
+    serialize: (value) => (value ? '1' : '0'),
   });
   const { primaryColor, setPrimaryColor } = useUiPrimary();
 
@@ -100,12 +100,8 @@ function ButtonStoryControls() {
             onChange={(event) => setCustomLabel(event.target.value)}
           />
         </label>
-        <button
-          type="button"
-          className={panelButtonClass}
-          onClick={() => setDisabled(!disabled)}
-        >
-          {disabled ? "Enable buttons" : "Disable buttons"}
+        <button type="button" className={panelButtonClass} onClick={() => setDisabled(!disabled)}>
+          {disabled ? 'Enable buttons' : 'Disable buttons'}
         </button>
       </div>
 
@@ -158,7 +154,7 @@ function ButtonStory() {
 }
 
 const buttonStory: StoryDefinition = {
-  name: "Button",
+  name: 'Button',
   component: <ButtonStory />,
 };
 

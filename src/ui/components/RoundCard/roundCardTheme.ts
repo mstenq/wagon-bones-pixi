@@ -1,4 +1,4 @@
-import { TextStyle } from "pixi.js";
+import { TextStyle } from 'pixi.js';
 
 import {
   NEO_BORDER_COLOR,
@@ -9,15 +9,10 @@ import {
   TAILWIND_500_HEX,
   UI_FONT_BODY,
   UI_FONT_HEADER,
-} from "@/ui/theme/uiTokens";
-import { hexToPixiColor } from "@/ui/pixi/color";
+} from '@/ui/theme/uiTokens';
+import { hexToPixiColor } from '@/ui/pixi/color';
 
-export const ROUND_CARD_STATUSES = [
-  "complete",
-  "select",
-  "upcoming",
-  "skipped",
-] as const;
+export const ROUND_CARD_STATUSES = ['complete', 'select', 'upcoming', 'skipped'] as const;
 
 export type RoundCardStatus = (typeof ROUND_CARD_STATUSES)[number];
 
@@ -59,10 +54,10 @@ export const ROUND_CARD_TRAIL_TAG_SIZE = 36;
 
 export const ROUND_CARD_PLACEHOLDER_RADIUS = 36;
 
-const FACE_DEFAULT_HEX = "#1a1f21";
-const FACE_SELECT_HEX = "#1a2a1f";
-const TEXT_MUTED_HEX = "#9ca3af";
-const TEXT_ON_DARK_HEX = "#f3f4f6";
+const FACE_DEFAULT_HEX = '#1a1f21';
+const FACE_SELECT_HEX = '#1a2a1f';
+const TEXT_MUTED_HEX = '#9ca3af';
+const TEXT_ON_DARK_HEX = '#f3f4f6';
 
 export const ROUND_CARD_TITLE_COLOR = hexToPixiColor(TEXT_ON_DARK_HEX);
 export const ROUND_CARD_SCORE_LABEL_COLOR = hexToPixiColor(TEXT_MUTED_HEX);
@@ -75,32 +70,32 @@ export const ROUND_CARD_TRAIL_TAG_FACE_COLOR = hexToPixiColor(TAILWIND_500_HEX.c
 
 const STATUS_THEMES: Record<RoundCardStatus, RoundCardStatusTheme> = {
   complete: {
-    statusLabel: "Complete",
+    statusLabel: 'Complete',
     statusLabelColor: hexToPixiColor(TAILWIND_500_HEX.green),
     faceColor: hexToPixiColor(FACE_DEFAULT_HEX),
     accentStrokeColor: null,
     placeholderColor: hexToPixiColor(TAILWIND_500_HEX.purple),
   },
   select: {
-    statusLabel: "Select",
+    statusLabel: 'Select',
     statusLabelColor: hexToPixiColor(TAILWIND_500_HEX.orange),
     faceColor: hexToPixiColor(FACE_SELECT_HEX),
     accentStrokeColor: hexToPixiColor(TAILWIND_500_HEX.orange),
     placeholderColor: hexToPixiColor(TAILWIND_500_HEX.green),
   },
   upcoming: {
-    statusLabel: "Upcoming",
+    statusLabel: 'Upcoming',
     statusLabelColor: hexToPixiColor(TEXT_MUTED_HEX),
     faceColor: hexToPixiColor(FACE_DEFAULT_HEX),
     accentStrokeColor: null,
     placeholderColor: hexToPixiColor(TAILWIND_500_HEX.sky),
   },
   skipped: {
-    statusLabel: "Skipped",
+    statusLabel: 'Skipped',
     statusLabelColor: hexToPixiColor(TAILWIND_500_HEX.red),
     faceColor: hexToPixiColor(FACE_DEFAULT_HEX),
     accentStrokeColor: null,
-    placeholderColor: hexToPixiColor("#6b7280"),
+    placeholderColor: hexToPixiColor('#6b7280'),
   },
 };
 
@@ -131,7 +126,7 @@ export function statusLabelTextStyle(color: number): TextStyle {
     fontFamily: UI_FONT_BODY,
     fontSize: 14,
     fill: color,
-    align: "center",
+    align: 'center',
   });
 }
 
@@ -140,7 +135,7 @@ export function titleTextStyle(): TextStyle {
     fontFamily: UI_FONT_HEADER,
     fontSize: 22,
     fill: ROUND_CARD_TITLE_COLOR,
-    align: "center",
+    align: 'center',
     wordWrap: true,
     wordWrapWidth: DEFAULT_ROUND_CARD_WIDTH - ROUND_CARD_PADDING_X * 2,
   });
@@ -151,7 +146,7 @@ export function scoreLabelTextStyle(): TextStyle {
     fontFamily: UI_FONT_BODY,
     fontSize: 13,
     fill: ROUND_CARD_SCORE_LABEL_COLOR,
-    align: "center",
+    align: 'center',
   });
 }
 
@@ -160,7 +155,7 @@ export function targetScoreTextStyle(): TextStyle {
     fontFamily: UI_FONT_HEADER,
     fontSize: 26,
     fill: ROUND_CARD_TARGET_SCORE_COLOR,
-    align: "center",
+    align: 'center',
   });
 }
 
@@ -169,7 +164,7 @@ export function rewardTextStyle(color: number): TextStyle {
     fontFamily: UI_FONT_BODY,
     fontSize: 13,
     fill: color,
-    align: "center",
+    align: 'center',
     wordWrap: true,
     wordWrapWidth: DEFAULT_ROUND_CARD_WIDTH - ROUND_CARD_PADDING_X * 2,
   });
@@ -180,8 +175,8 @@ export function skippedOverlayTextStyle(): TextStyle {
     fontFamily: UI_FONT_HEADER,
     fontSize: 36,
     fill: ROUND_CARD_SKIPPED_OVERLAY_COLOR,
-    align: "center",
-    fontWeight: "700",
+    align: 'center',
+    fontWeight: '700',
   });
 }
 
@@ -190,7 +185,7 @@ export function trailTagTextStyle(): TextStyle {
     fontFamily: UI_FONT_BODY,
     fontSize: 14,
     fill: 0x000000,
-    align: "center",
+    align: 'center',
   });
 }
 
@@ -199,6 +194,6 @@ export function skipButtonLabelTextStyle(): TextStyle {
     fontFamily: UI_FONT_BODY,
     fontSize: 14,
     fill: 0xffffff,
-    align: "center",
+    align: 'center',
   });
 }

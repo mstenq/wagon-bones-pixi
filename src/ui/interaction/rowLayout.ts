@@ -1,10 +1,5 @@
 /** Center of item `index` in a horizontal row. */
-export function rowSlotCenter(
-  index: number,
-  pitch: number,
-  originX: number,
-  y: number,
-): { x: number; y: number } {
+export function rowSlotCenter(index: number, pitch: number, originX: number, y: number): { x: number; y: number } {
   return {
     x: originX + index * pitch,
     y,
@@ -20,12 +15,7 @@ export function rowMetrics(count: number, itemSize: number, gap: number, canvasW
 }
 
 /** Visual slot index from a local x coordinate in the row. */
-export function slotIndexFromX(
-  x: number,
-  count: number,
-  pitch: number,
-  originX: number,
-): number {
+export function slotIndexFromX(x: number, count: number, pitch: number, originX: number): number {
   const raw = Math.round((x - originX) / pitch);
   return Math.max(0, Math.min(count - 1, raw));
 }

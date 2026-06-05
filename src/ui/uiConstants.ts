@@ -1,1 +1,1 @@
-export const UI_BACKGROUND_COLOR = "#f8f3eb";
+export const UI_BACKGROUND_COLOR = '#f8f3eb';

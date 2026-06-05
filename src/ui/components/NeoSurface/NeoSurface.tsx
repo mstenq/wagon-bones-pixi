@@ -1,6 +1,6 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 
-export type NeoSurfaceFaceTone = "panel" | "primary" | "none";
+export type NeoSurfaceFaceTone = 'panel' | 'primary' | 'none';
 
 export type NeoSurfaceProps = {
   children: ReactNode;
@@ -13,43 +13,32 @@ export type NeoSurfaceProps = {
 };
 
 function faceToneClass(tone: NeoSurfaceFaceTone): string {
-  if (tone === "primary") {
-    return "bg-primary";
+  if (tone === 'primary') {
+    return 'bg-primary';
   }
-  if (tone === "panel") {
-    return "bg-ui-panel text-ui-panel-text";
+  if (tone === 'panel') {
+    return 'bg-ui-panel text-ui-panel-text';
   }
-  return "";
+  return '';
 }
 
 /** Panel surfaces — shadow hidden below xl where layouts pack tightly. */
-const panelShadowClass = "neo-surface-shadow hidden xl:block";
+const panelShadowClass = 'neo-surface-shadow hidden xl:block';
 
 export function NeoSurface({
   children,
   className,
   faceClassName,
-  faceTone = "panel",
+  faceTone = 'panel',
   fullWidth = false,
 }: NeoSurfaceProps) {
-  const shellClassName = [
-    "min-h-0 min-w-0",
-    fullWidth ? "w-full" : "",
-    className,
-  ]
-    .filter(Boolean)
-    .join(" ");
+  const shellClassName = ['min-h-0 min-w-0', fullWidth ? 'w-full' : '', className].filter(Boolean).join(' ');
 
-  const neoRootClassName = [
-    "neo-surface-root w-full min-h-0",
-    className?.includes("h-full") ? "h-full" : "",
-  ]
+  const neoRootClassName = ['neo-surface-root w-full min-h-0', className?.includes('h-full') ? 'h-full' : '']
     .filter(Boolean)
-    .join(" ");
+    .join(' ');
 
-  const faceClasses = ["neo-surface-face", faceToneClass(faceTone), faceClassName]
-    .filter(Boolean)
-    .join(" ");
+  const faceClasses = ['neo-surface-face', faceToneClass(faceTone), faceClassName].filter(Boolean).join(' ');
 
   return (
     <div className={shellClassName}>
@@ -79,29 +68,17 @@ export function NeoSurfacePrimaryHeader({
   bodyClassName,
   fullWidth = false,
 }: NeoSurfacePrimaryHeaderProps) {
-  const shellClassName = [
-    "min-h-0 min-w-0",
-    fullWidth ? "w-full" : "",
-    className,
-  ]
-    .filter(Boolean)
-    .join(" ");
+  const shellClassName = ['min-h-0 min-w-0', fullWidth ? 'w-full' : '', className].filter(Boolean).join(' ');
 
-  const neoRootClassName = [
-    "neo-surface-root w-full min-h-0",
-    className?.includes("h-full") ? "h-full" : "",
-  ]
+  const neoRootClassName = ['neo-surface-root w-full min-h-0', className?.includes('h-full') ? 'h-full' : '']
     .filter(Boolean)
-    .join(" ");
+    .join(' ');
 
-  const headerClasses = [
-    "bg-primary px-4 py-4 text-white font-header md:px-5",
-    headerClassName,
-  ]
+  const headerClasses = ['bg-primary px-4 py-4 text-white font-header md:px-5', headerClassName]
     .filter(Boolean)
-    .join(" ");
+    .join(' ');
 
-  const bodyClasses = ["font-body", bodyClassName].filter(Boolean).join(" ");
+  const bodyClasses = ['font-body', bodyClassName].filter(Boolean).join(' ');
 
   return (
     <div className={shellClassName}>

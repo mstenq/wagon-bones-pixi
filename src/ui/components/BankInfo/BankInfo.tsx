@@ -1,5 +1,5 @@
-import { NeoSurface } from "@/ui/components/NeoSurface/NeoSurface";
-import { ScoreBox } from "@/ui/components/ScoreBox/ScoreBox";
+import { NeoSurface } from '@/ui/components/NeoSurface/NeoSurface';
+import { ScoreBox } from '@/ui/components/ScoreBox/ScoreBox';
 
 export type BankInfoProps = {
   balance: number;
@@ -11,26 +11,14 @@ export type BankInfoProps = {
   className?: string;
 };
 
-export function BankInfo({
-  balance,
-  fill = false,
-  growInRow = false,
-  compact = false,
-  className,
-}: BankInfoProps) {
-  const facePadding = compact ? "p-0.5" : "p-1 lg:p-1.5 xl:p-3";
+export function BankInfo({ balance, fill = false, growInRow = false, compact = false, className }: BankInfoProps) {
+  const facePadding = compact ? 'p-0.5' : 'p-1 lg:p-1.5 xl:p-3';
 
   return (
     <NeoSurface
       fullWidth
-      className={[
-        "w-full min-w-0",
-        growInRow ? "flex-[1.6]" : "",
-        className,
-      ]
-        .filter(Boolean)
-        .join(" ")}
-      faceClassName={["flex h-full min-h-0 w-full min-w-0", facePadding].join(" ")}
+      className={['w-full min-w-0', growInRow ? 'flex-[1.6]' : '', className].filter(Boolean).join(' ')}
+      faceClassName={['flex h-full min-h-0 w-full min-w-0', facePadding].join(' ')}
     >
       <ScoreBox variant="bank" value={balance} fill={fill} compact={compact} className="w-full" />
     </NeoSurface>

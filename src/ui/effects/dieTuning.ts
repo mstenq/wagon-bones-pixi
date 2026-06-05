@@ -1,6 +1,6 @@
-import type { EffectMountContext } from "@/ui/effects/types";
-import type { BorderBounds } from "@/ui/effects/shared/borderFrame";
-import { hostIsDie } from "@/ui/effects/shared/borderFrame";
+import type { EffectMountContext } from '@/ui/effects/types';
+import type { BorderBounds } from '@/ui/effects/shared/borderFrame';
+import { hostIsDie } from '@/ui/effects/shared/borderFrame';
 
 export const DIE_EFFECT_PADDING = 12;
 export const CARD_EFFECT_PADDING = 18;

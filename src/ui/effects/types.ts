@@ -1,16 +1,10 @@
-import type { Filter } from "pixi.js";
+import type { Filter } from 'pixi.js';
 
-export const EFFECT_IDS = [
-  "none",
-  "holy",
-  "fire",
-  "arcane",
-  "ghost",
-] as const;
+export const EFFECT_IDS = ['none', 'holy', 'fire', 'arcane', 'ghost'] as const;
 
 export type EffectId = (typeof EFFECT_IDS)[number];
 
-export type EffectHostKind = "card" | "die";
+export type EffectHostKind = 'card' | 'die';
 
 export type EffectFrameContext = {
   dt: number;
@@ -44,8 +38,8 @@ export type EffectMountContext = {
 };
 
 export type EffectLayers = {
-  back: import("pixi.js").Container;
-  front: import("pixi.js").Container;
+  back: import('pixi.js').Container;
+  front: import('pixi.js').Container;
 };
 
 export type EffectArtRef = {
@@ -61,7 +55,7 @@ export type EffectRuntime = {
 };
 
 export type EffectDefinition = {
-  id: Exclude<EffectId, "none">;
+  id: Exclude<EffectId, 'none'>;
   label: string;
   create: (layers: EffectLayers, ctx: EffectMountContext, art: EffectArtTarget) => EffectRuntime;
 };

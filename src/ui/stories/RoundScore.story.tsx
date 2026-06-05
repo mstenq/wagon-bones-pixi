@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState } from 'react';
 
-import { RoundScore } from "@/ui/components/RoundScore/RoundScore";
-import type { StoryDefinition } from "@/ui/types/storyTypes";
-import { panelButtonClass } from "@/ui/styles/panelControls";
+import { RoundScore } from '@/ui/components/RoundScore/RoundScore';
+import type { StoryDefinition } from '@/ui/types/storyTypes';
+import { panelButtonClass } from '@/ui/styles/panelControls';
 
 const SMALL_ADD = 150;
 const MEDIUM_ADD = 250_000;
@@ -17,25 +17,13 @@ function RoundScoreStory() {
         <button type="button" className={panelButtonClass} onClick={() => setScore(0)}>
           Reset score
         </button>
-        <button
-          type="button"
-          className={panelButtonClass}
-          onClick={() => setScore((value) => value + SMALL_ADD)}
-        >
+        <button type="button" className={panelButtonClass} onClick={() => setScore((value) => value + SMALL_ADD)}>
           Small score
         </button>
-        <button
-          type="button"
-          className={panelButtonClass}
-          onClick={() => setScore((value) => value + MEDIUM_ADD)}
-        >
+        <button type="button" className={panelButtonClass} onClick={() => setScore((value) => value + MEDIUM_ADD)}>
           Medium score
         </button>
-        <button
-          type="button"
-          className={panelButtonClass}
-          onClick={() => setScore((value) => value + LARGE_ADD)}
-        >
+        <button type="button" className={panelButtonClass} onClick={() => setScore((value) => value + LARGE_ADD)}>
           Large score
         </button>
       </div>
@@ -46,7 +34,7 @@ function RoundScoreStory() {
 }
 
 const roundScoreStory: StoryDefinition = {
-  name: "RoundScore",
+  name: 'RoundScore',
   component: <RoundScoreStory />,
 };
 

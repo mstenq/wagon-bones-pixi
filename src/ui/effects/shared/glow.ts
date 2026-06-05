@@ -1,7 +1,7 @@
-import { BlurFilter, Graphics, Rectangle } from "pixi.js";
+import { BlurFilter, Graphics, Rectangle } from 'pixi.js';
 
-import { dieBlurPadding, dieBlurStrength } from "@/ui/effects/dieTuning";
-import type { EffectHostKind, EffectMountContext } from "@/ui/effects/types";
+import { dieBlurPadding, dieBlurStrength } from '@/ui/effects/dieTuning';
+import type { EffectHostKind, EffectMountContext } from '@/ui/effects/types';
 
 export function createGlowGraphics(): Graphics {
   return new Graphics();
@@ -14,10 +14,10 @@ export function drawSoftGlow(
   color: number,
   alpha: number,
   inset = 8,
-  hostKind: EffectHostKind = "card",
+  hostKind: EffectHostKind = 'card',
 ): void {
   g.clear();
-  if (hostKind === "die") {
+  if (hostKind === 'die') {
     const r = Math.min(halfW, halfH) * 0.88 - inset * 0.25;
     g.circle(0, 0, r);
     g.fill({ color, alpha });
@@ -29,13 +29,7 @@ export function drawSoftGlow(
   g.fill({ color, alpha });
 }
 
-export function drawRadialBloom(
-  g: Graphics,
-  radius: number,
-  color: number,
-  alpha: number,
-  rings = 3,
-): void {
+export function drawRadialBloom(g: Graphics, radius: number, color: number, alpha: number, rings = 3): void {
   g.clear();
   for (let i = rings; i >= 1; i--) {
     const t = i / rings;
@@ -68,24 +62,12 @@ export function applyBlurredGlow(
   return blur;
 }
 
-export function applyBlurredGlowForMount(
-  g: Graphics,
-  mount: EffectMountContext,
-  strength: number,
-): BlurFilter {
+export function applyBlurredGlowForMount(g: Graphics, mount: EffectMountContext, strength: number): BlurFilter {
   const pad = dieBlurPadding(mount);
   const str = dieBlurStrength(mount, strength);
   return applyBlurredGlow(g, mount.width, mount.height, pad, str);
 }
 
-export function setGlowFilterAreaForMount(
-  g: Graphics,
-  mount: EffectMountContext,
-  extraPadding = 0,
-): void {
-  g.filterArea = filterAreaForBounds(
-    mount.width,
-    mount.height,
-    dieBlurPadding(mount) + extraPadding,
-  );
+export function setGlowFilterAreaForMount(g: Graphics, mount: EffectMountContext, extraPadding = 0): void {
+  g.filterArea = filterAreaForBounds(mount.width, mount.height, dieBlurPadding(mount) + extraPadding);
 }

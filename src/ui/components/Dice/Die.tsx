@@ -1,31 +1,15 @@
-import { useApplication } from "@pixi/react";
-import { useTick } from "@pixi/react";
-import { BlurFilter, Sprite, TextStyle, type Container, type Filter, type Graphics, Rectangle } from "pixi.js";
-import {
-  forwardRef,
-  use,
-  useCallback,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useApplication } from '@pixi/react';
+import { useTick } from '@pixi/react';
+import { BlurFilter, Sprite, TextStyle, type Container, type Filter, type Graphics, Rectangle } from 'pixi.js';
+import { forwardRef, use, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
 
-import { getDiceFaceTexture, texturesReady } from "@/assets/dice/textures";
-import type { DiceType } from "@/data/dice";
-import { effectsTexturesReady } from "@/assets/effects/textures";
-import type { ActionEffectComplete } from "@/ui/actionEffects/types";
-import type { ItemAnimationConfig } from "@/ui/animation/itemAnimations";
-import {
-  applyItemAnimationSquish,
-  useItemAnimations,
-  type ItemAnimationRefs,
-} from "@/ui/animation/useItemAnimations";
-import {
-  DIE_SELECTED_LIFT_PX,
-  dieModeAlpha,
-  type DieMode,
-} from "@/ui/components/Dice/config";
+import { getDiceFaceTexture, texturesReady } from '@/assets/dice/textures';
+import type { DiceType } from '@/data/dice';
+import { effectsTexturesReady } from '@/assets/effects/textures';
+import type { ActionEffectComplete } from '@/ui/actionEffects/types';
+import type { ItemAnimationConfig } from '@/ui/animation/itemAnimations';
+import { applyItemAnimationSquish, useItemAnimations, type ItemAnimationRefs } from '@/ui/animation/useItemAnimations';
+import { DIE_SELECTED_LIFT_PX, dieModeAlpha, type DieMode } from '@/ui/components/Dice/config';
 import {
   DIE_SHADOW_BLUR_BASE,
   DIE_SHADOW_BLUR_QUALITY,
@@ -33,16 +17,11 @@ import {
   dieShadowLocalPose,
   syncDieGroundShadow,
   type DieShadowDragState,
-} from "@/ui/components/Dice/dieGroundShadow";
-import { EffectMount } from "@/ui/effects/EffectMount";
-import { createDefaultEffectFrame } from "@/ui/effects/context";
-import type { EffectArtRef, EffectFrameContext, EffectId } from "@/ui/effects/types";
-import {
-  createScalarSpring,
-  setScalarTarget,
-  stepScalarSpring,
-  type ScalarSpringState,
-} from "@/ui/interaction/spring";
+} from '@/ui/components/Dice/dieGroundShadow';
+import { EffectMount } from '@/ui/effects/EffectMount';
+import { createDefaultEffectFrame } from '@/ui/effects/context';
+import type { EffectArtRef, EffectFrameContext, EffectId } from '@/ui/effects/types';
+import { createScalarSpring, setScalarTarget, stepScalarSpring, type ScalarSpringState } from '@/ui/interaction/spring';
 
 export const DEFAULT_DIE_SIZE = 88;
 
@@ -63,7 +42,7 @@ export type DieFrame = {
 
 export type DieAnimationConfig = ItemAnimationConfig;
 
-export type { DieShadowDragState } from "@/ui/components/Dice/dieGroundShadow";
+export type { DieShadowDragState } from '@/ui/components/Dice/dieGroundShadow';
 
 export type DieHandle = {
   setFrame: (frame: DieFrame) => void;
@@ -76,14 +55,7 @@ export type DieHandle = {
 
 /** Visual die only — position via parent `DraggableItem` or any container. */
 export const Die = forwardRef<DieHandle, DieProps>(function Die(
-  {
-    diceType,
-    size = DEFAULT_DIE_SIZE,
-    value = 1,
-    effect = "none",
-    phase = 0,
-    mode = "base",
-  },
+  { diceType, size = DEFAULT_DIE_SIZE, value = 1, effect = 'none', phase = 0, mode = 'base' },
   ref,
 ) {
   const { app } = useApplication();
@@ -104,9 +76,7 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
   const rollRef = useRef<Container | null>(null);
   const spriteRef = useRef<Sprite | null>(null);
   const liftSpringRef = useRef<ScalarSpringState>(createScalarSpring(0, 0));
-  const effectFrameRef = useRef<EffectFrameContext>(
-    createDefaultEffectFrame("die", size, size, phase),
-  );
+  const effectFrameRef = useRef<EffectFrameContext>(createDefaultEffectFrame('die', size, size, phase));
   const effectArtRef = useRef<EffectArtRef>({
     applyFilters(filters) {
       const sprite = spriteRef.current;
@@ -125,20 +95,17 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
   const [prevMode, setPrevMode] = useState(mode);
   if (mode !== prevMode) {
     setPrevMode(mode);
-    setScalarTarget(
-      liftSpringRef.current,
-      mode === "selected" ? DIE_SELECTED_LIFT_PX : 0,
-    );
+    setScalarTarget(liftSpringRef.current, mode === 'selected' ? DIE_SELECTED_LIFT_PX : 0);
   }
 
   const debuffXStyle = useMemo(
     () =>
       new TextStyle({
-        fontFamily: "Inter, system-ui, sans-serif",
+        fontFamily: 'Inter, system-ui, sans-serif',
         fontSize: size * 0.5,
-        fontWeight: "100",
-        fill: "#dc2626",
-        align: "center",
+        fontWeight: '100',
+        fill: '#dc2626',
+        align: 'center',
       }),
     [size],
   );
@@ -146,9 +113,9 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
   const lockStyle = useMemo(
     () =>
       new TextStyle({
-        fontFamily: "Inter, system-ui, sans-serif",
+        fontFamily: 'Inter, system-ui, sans-serif',
         fontSize: size * 0.28,
-        align: "center",
+        align: 'center',
       }),
     [size],
   );
@@ -164,7 +131,7 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
 
   const { runAnimate, isPlayingAnimation, stepAnimations } = useItemAnimations({
     hostExtent: size,
-    textPlacement: "above",
+    textPlacement: 'above',
     refs: itemAnimRefs,
   });
 
@@ -179,11 +146,7 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
     const dragRotation = rootRef.current?.parent?.rotation ?? 0;
     const liftPx = liftSpringRef.current.value;
     const totalLiftPx = liftPx + extraLiftPx;
-    const shadowPose = dieShadowLocalPose(
-      dieShadowGroundY(size),
-      floorOffsetY,
-      dragRotation,
-    );
+    const shadowPose = dieShadowLocalPose(dieShadowGroundY(size), floorOffsetY, dragRotation);
     shadow.position.set(shadowPose.x, shadowPose.y);
     shadow.rotation = shadowPose.rotation;
     if (visibility > 0.01) {
@@ -209,12 +172,7 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
       return;
     }
 
-    applyItemAnimationSquish(
-      squishRef.current,
-      externalSquishRef.current,
-      growPopMul,
-      shakeX,
-    );
+    applyItemAnimationSquish(squishRef.current, externalSquishRef.current, growPopMul, shakeX);
 
     stepScalarSpring(liftSpringRef.current, dt);
     const liftPx = liftSpringRef.current.value;
@@ -230,7 +188,7 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
     frame.time = performance.now() / 1000;
     frame.width = size;
     frame.height = size;
-    frame.hostKind = "die";
+    frame.hostKind = 'die';
     frame.phase = phase;
   });
 
@@ -270,12 +228,7 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
 
   return (
     <pixiContainer ref={rootRef} sortableChildren eventMode="none">
-      <pixiGraphics
-        ref={shadowRef}
-        zIndex={0}
-        eventMode="none"
-        draw={() => {}}
-      />
+      <pixiGraphics ref={shadowRef} zIndex={0} eventMode="none" draw={() => {}} />
       <pixiContainer ref={animOverlayRef} zIndex={10} eventMode="none" />
       <pixiContainer ref={liftRef} zIndex={2} eventMode="none">
         <pixiContainer ref={squishRef} alpha={artAlpha} eventMode="none">
@@ -299,16 +252,10 @@ export const Die = forwardRef<DieHandle, DieProps>(function Die(
             </pixiContainer>
           </EffectMount>
         </pixiContainer>
-        {mode === "debuffed" ? (
-          <pixiText
-            text="✕"
-            anchor={0.5}
-            zIndex={5}
-            style={debuffXStyle}
-            eventMode="none"
-          />
+        {mode === 'debuffed' ? (
+          <pixiText text="✕" anchor={0.5} zIndex={5} style={debuffXStyle} eventMode="none" />
         ) : null}
-        {mode === "locked" ? (
+        {mode === 'locked' ? (
           <pixiText
             text="🔒"
             anchor={{ x: 0.5, y: 0 }}

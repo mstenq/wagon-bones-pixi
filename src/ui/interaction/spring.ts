@@ -27,10 +27,7 @@ export function stepScalarSpring(state: ScalarSpringState, dt: number): void {
 }
 
 export function isScalarSettled(state: ScalarSpringState, epsilon = 0.004): boolean {
-  return (
-    Math.abs(state.target - state.value) < epsilon &&
-    Math.abs(state.velocity) < epsilon
-  );
+  return Math.abs(state.target - state.value) < epsilon && Math.abs(state.velocity) < epsilon;
 }
 
 /** 2D scale spring (asymmetric rubber-band squash). */

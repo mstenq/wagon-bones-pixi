@@ -7,20 +7,15 @@ export const DIE_EDGE_POINTS: DieOutlinePoint[] = [
   { x: 0.6, y: -0.8 }, // 2pm
   { x: 0.95, y: -0.2 }, // 3pm
   { x: 1, y: 0.12 }, // 4pm
-  { x: .6, y: 0.8 }, // 5pm
+  { x: 0.6, y: 0.8 }, // 5pm
   { x: 0.0, y: 1.0 }, // 6pm
   { x: -0.6, y: 0.8 }, // 7pm
   { x: -0.95, y: 0.25 }, // 8pm
   { x: -0.95, y: -0.12 }, // 9pm
-  { x: -0.60, y: -0.78 }, // 11pm
+  { x: -0.6, y: -0.78 }, // 11pm
 ];
 
-export function createDieEdgeLoop(
-  halfW: number,
-  halfH: number,
-  samples: number,
-  insetScale = 1,
-): DieOutlinePoint[] {
+export function createDieEdgeLoop(halfW: number, halfH: number, samples: number, insetScale = 1): DieOutlinePoint[] {
   const points: DieOutlinePoint[] = [];
   const vertices = DIE_EDGE_POINTS.map((p) => ({
     x: p.x * halfW * insetScale,

@@ -1,11 +1,11 @@
-import { useRef, type CSSProperties } from "react";
+import { useRef, type CSSProperties } from 'react';
 
-import { ScoreFlame } from "@/ui/components/ScoreBox/ScoreFlame";
-import type { ScoreBoxVariant } from "@/ui/components/ScoreBox/scoreBoxTypes";
-import { scoreBoxVariantTheme } from "@/ui/components/ScoreBox/scoreBoxTheme";
-import { WaveBounceChars } from "@/ui/components/WaveBounce/WaveBounceChars";
+import { ScoreFlame } from '@/ui/components/ScoreBox/ScoreFlame';
+import type { ScoreBoxVariant } from '@/ui/components/ScoreBox/scoreBoxTypes';
+import { scoreBoxVariantTheme } from '@/ui/components/ScoreBox/scoreBoxTheme';
+import { WaveBounceChars } from '@/ui/components/WaveBounce/WaveBounceChars';
 
-export type { ScoreBoxVariant } from "@/ui/components/ScoreBox/scoreBoxTypes";
+export type { ScoreBoxVariant } from '@/ui/components/ScoreBox/scoreBoxTypes';
 
 export type ScoreBoxProps = {
   variant: ScoreBoxVariant;
@@ -20,43 +20,38 @@ export type ScoreBoxProps = {
 };
 
 const chipFaceClass =
-  "min-h-5 items-center px-1.5 pt-0.5 pb-0.5 font-header text-2xl leading-none tabular-nums select-none lg:min-h-6 lg:text-3xl xl:min-h-8 xl:px-2.5 xl:pt-1.5 xl:pb-1 xl:text-5xl";
+  'min-h-5 items-center px-1.5 pt-0.5 pb-0.5 font-header text-2xl leading-none tabular-nums select-none lg:min-h-6 lg:text-3xl xl:min-h-8 xl:px-2.5 xl:pt-1.5 xl:pb-1 xl:text-5xl';
 const chipFaceCompactClass =
-  "min-h-5 items-center px-1.5 py-0.5 font-header text-base leading-none tabular-nums select-none";
+  'min-h-5 items-center px-1.5 py-0.5 font-header text-base leading-none tabular-nums select-none';
 const bankFaceClass =
-  "min-h-5 items-center px-1.5 py-1 font-header text-2xl leading-none tabular-nums select-none lg:min-h-6 lg:text-3xl xl:min-h-8 xl:px-3 xl:py-2 xl:text-5xl";
+  'min-h-5 items-center px-1.5 py-1 font-header text-2xl leading-none tabular-nums select-none lg:min-h-6 lg:text-3xl xl:min-h-8 xl:px-3 xl:py-2 xl:text-5xl';
 const bankFaceCompactClass =
-  "min-h-4 items-center px-1 py-0.5 font-header text-base leading-none tabular-nums select-none";
-const shrinkClass = "inline-flex min-w-14";
-const fillClass = "flex w-full min-w-0 flex-1";
+  'min-h-4 items-center px-1 py-0.5 font-header text-base leading-none tabular-nums select-none';
+const shrinkClass = 'inline-flex min-w-14';
+const fillClass = 'flex w-full min-w-0 flex-1';
 
 function variantFaceClass(variant: ScoreBoxVariant, compact: boolean): string {
   const theme = scoreBoxVariantTheme[variant];
-  const justify =
-    variant === "points"
-      ? "justify-end"
-      : variant === "mult"
-        ? "justify-start"
-        : "justify-center";
+  const justify = variant === 'points' ? 'justify-end' : variant === 'mult' ? 'justify-start' : 'justify-center';
   const chipFace = compact ? chipFaceCompactClass : chipFaceClass;
   const bankFace = compact ? bankFaceCompactClass : bankFaceClass;
   const face =
-    variant === "bank"
+    variant === 'bank'
       ? [bankFace, justify, theme.borderClass, theme.surfaceClass]
       : [chipFace, justify, theme.borderClass, theme.surfaceClass];
-  return ["score-box__face", ...face].join(" ");
+  return ['score-box__face', ...face].join(' ');
 }
 
 const variantDigitsClass: Record<ScoreBoxVariant, string> = {
-  points: "pt-2 pb-1  xl:pt-3 inline-flex items-baseline justify-end gap-[0.04em]",
-  mult: "pt-2 pb-1  xl:pt-3 inline-flex items-baseline justify-start gap-[0.04em]",
-  bank: "pt-2 pb-1 xl:pt-3 inline-flex items-baseline justify-center gap-[0.04em]",
+  points: 'pt-2 pb-1  xl:pt-3 inline-flex items-baseline justify-end gap-[0.04em]',
+  mult: 'pt-2 pb-1  xl:pt-3 inline-flex items-baseline justify-start gap-[0.04em]',
+  bank: 'pt-2 pb-1 xl:pt-3 inline-flex items-baseline justify-center gap-[0.04em]',
 };
 
 const variantDigitsCompactClass: Record<ScoreBoxVariant, string> = {
-  points: "pt-1.5 pb-1 inline-flex items-baseline justify-end gap-[0.04em]",
-  mult: "pt-1.5 pb-1 inline-flex items-baseline justify-start gap-[0.04em]",
-  bank: "pt-1.5 pb-1 inline-flex items-baseline justify-center gap-[0.04em]",
+  points: 'pt-1.5 pb-1 inline-flex items-baseline justify-end gap-[0.04em]',
+  mult: 'pt-1.5 pb-1 inline-flex items-baseline justify-start gap-[0.04em]',
+  bank: 'pt-1.5 pb-1 inline-flex items-baseline justify-center gap-[0.04em]',
 };
 
 function formatScoreValue(value: number): number {
@@ -68,7 +63,7 @@ function formatScoreValue(value: number): number {
 
 function getWaveText(variant: ScoreBoxVariant, value: number): string {
   const formatted = formatScoreValue(value).toString();
-  return variant === "bank" ? `$${formatted}` : formatted;
+  return variant === 'bank' ? `$${formatted}` : formatted;
 }
 
 function getCharChangeMask(previous: string, next: string): boolean[] {
@@ -76,8 +71,8 @@ function getCharChangeMask(previous: string, next: string): boolean[] {
   const mask: boolean[] = [];
 
   for (let index = 0; index < length; index += 1) {
-    const prevChar = previous[previous.length - length + index] ?? "";
-    const nextChar = next[next.length - length + index] ?? "";
+    const prevChar = previous[previous.length - length + index] ?? '';
+    const nextChar = next[next.length - length + index] ?? '';
     mask.push(prevChar !== nextChar);
   }
 
@@ -100,10 +95,7 @@ export function ScoreBox({
   const changeMaskRef = useRef<boolean[]>([...waveText].map(() => false));
 
   if (previousValueRef.current !== displayValue) {
-    changeMaskRef.current = getCharChangeMask(
-      getWaveText(variant, previousValueRef.current),
-      waveText,
-    );
+    changeMaskRef.current = getCharChangeMask(getWaveText(variant, previousValueRef.current), waveText);
     bumpGenerationRef.current += 1;
     previousValueRef.current = displayValue;
   }
@@ -111,28 +103,23 @@ export function ScoreBox({
   const bumpGeneration = bumpGenerationRef.current;
   const changeMask = changeMaskRef.current;
 
-  const faceClassName = [
-    fill ? fillClass : shrinkClass,
-    variantFaceClass(variant, compact),
-    className,
-  ]
+  const faceClassName = [fill ? fillClass : shrinkClass, variantFaceClass(variant, compact), className]
     .filter(Boolean)
-    .join(" ");
+    .join(' ');
 
   const rootClassName = [
-    "relative min-w-0 overflow-visible",
-    compact ? "min-h-5" : "min-h-5 lg:min-h-6 xl:min-h-8",
-    fill ? "flex flex-1" : "inline-flex",
+    'relative min-w-0 overflow-visible',
+    compact ? 'min-h-5' : 'min-h-5 lg:min-h-6 xl:min-h-8',
+    fill ? 'flex flex-1' : 'inline-flex',
   ]
     .filter(Boolean)
-    .join(" ");
+    .join(' ');
 
-  const ariaLabel =
-    variant === "bank" ? `Bank balance ${displayValue}` : `${variant} score ${displayValue}`;
+  const ariaLabel = variant === 'bank' ? `Bank balance ${displayValue}` : `${variant} score ${displayValue}`;
 
   return (
     <div className={rootClassName} aria-label={ariaLabel}>
-      {variant !== "bank" ? <ScoreFlame variant={variant} intensity={flameIntensity} /> : null}
+      {variant !== 'bank' ? <ScoreFlame variant={variant} intensity={flameIntensity} /> : null}
       <div className={faceClassName}>
         <WaveBounceChars
           text={waveText}
@@ -141,16 +128,14 @@ export function ScoreBox({
           renderChar={({ displayChar, index }) => {
             const changed = changeMask[index] ?? true;
             const digitClassName = [
-              "inline-block origin-bottom will-change-transform",
-              bumpGeneration > 0 ? "animate-score-bump" : "",
+              'inline-block origin-bottom will-change-transform',
+              bumpGeneration > 0 ? 'animate-score-bump' : '',
             ]
               .filter(Boolean)
-              .join(" ");
+              .join(' ');
 
             const bumpStyle: CSSProperties | undefined =
-              bumpGeneration > 0
-                ? ({ "--bump-scale": changed ? 1.24 : 1.08 } as CSSProperties)
-                : undefined;
+              bumpGeneration > 0 ? ({ '--bump-scale': changed ? 1.24 : 1.08 } as CSSProperties) : undefined;
 
             return (
               <span className={digitClassName} style={bumpStyle}>

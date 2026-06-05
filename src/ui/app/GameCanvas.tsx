@@ -1,9 +1,9 @@
-import { Application } from "@pixi/react";
-import { memo, Suspense, useState } from "react";
+import { Application } from '@pixi/react';
+import { memo, Suspense, useState } from 'react';
 
-import { GameScene } from "@/ui/scenes/GameScene";
-import { PIXI_RENDERER_PREFERENCE } from "@/ui/pixi/appDefaults";
-import { UI_BACKGROUND_COLOR } from "../uiConstants";
+import { GameScene } from '@/ui/scenes/GameScene';
+import { PIXI_RENDERER_PREFERENCE } from '@/ui/pixi/appDefaults';
+import { UI_BACKGROUND_COLOR } from '../uiConstants';
 
 export const GameCanvas = memo(function GameCanvas() {
   const [resizeTo, setResizeTo] = useState<HTMLElement | null>(null);
@@ -24,10 +24,10 @@ export const GameCanvas = memo(function GameCanvas() {
             eventMode="static"
             eventFeatures={{ move: true, globalMove: true, click: true }}
             onInit={(app) => {
-              app.stage.eventMode = "static";
+              app.stage.eventMode = 'static';
               app.stage.sortableChildren = true;
             }}
-            resolution={typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1}
+            resolution={typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1}
           >
             <GameScene />
           </Application>

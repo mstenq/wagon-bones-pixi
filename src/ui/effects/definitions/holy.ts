@@ -1,6 +1,6 @@
-import { BlurFilter, Sprite, type Graphics } from "pixi.js";
+import { BlurFilter, Sprite, type Graphics } from 'pixi.js';
 
-import { getEffectTexture } from "@/assets/effects/textures";
+import { getEffectTexture } from '@/assets/effects/textures';
 import {
   addGlowLayer,
   addSpriteLayer,
@@ -13,20 +13,17 @@ import {
   noopDestroy,
   pulse01,
   randomInteriorPoint,
-} from "@/ui/effects/effectHelpers";
-import { hostParticleScale, isDieMount, tightDieBounds } from "@/ui/effects/dieTuning";
-import {
-  createHolyArtMatrix,
-  stepHolyArtMatrix,
-} from "@/ui/effects/shared/artColor";
-import { drawEffectBackdrop } from "@/ui/effects/shared/cardEffect";
-import { borderBoundsFromSize, perimeterPointEllipse, type BorderBounds } from "@/ui/effects/shared/borderFrame";
-import { createDieEdgeLoop } from "@/ui/effects/shared/dieOutline";
-import { createParticlePool, spawnParticle, stepParticles } from "@/ui/effects/shared/particles";
-import { burstTimer } from "@/ui/effects/shared/pseudoRandom";
-import { applyBlurredGlowForMount, setGlowFilterAreaForMount } from "@/ui/effects/shared/glow";
-import { projectPointToSurface } from "@/ui/effects/shared/surfaceProjection";
-import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
+} from '@/ui/effects/effectHelpers';
+import { hostParticleScale, isDieMount, tightDieBounds } from '@/ui/effects/dieTuning';
+import { createHolyArtMatrix, stepHolyArtMatrix } from '@/ui/effects/shared/artColor';
+import { drawEffectBackdrop } from '@/ui/effects/shared/cardEffect';
+import { borderBoundsFromSize, perimeterPointEllipse, type BorderBounds } from '@/ui/effects/shared/borderFrame';
+import { createDieEdgeLoop } from '@/ui/effects/shared/dieOutline';
+import { createParticlePool, spawnParticle, stepParticles } from '@/ui/effects/shared/particles';
+import { burstTimer } from '@/ui/effects/shared/pseudoRandom';
+import { applyBlurredGlowForMount, setGlowFilterAreaForMount } from '@/ui/effects/shared/glow';
+import { projectPointToSurface } from '@/ui/effects/shared/surfaceProjection';
+import type { EffectDefinition, EffectFrameContext } from '@/ui/effects/types';
 
 type Point = { x: number; y: number };
 
@@ -163,41 +160,41 @@ function drawEdgeLightLane(
     const idx = i % ringPoints.length;
     const p = ringPoints[idx]!;
     const n = ringNormals[idx]!;
-    const wave = 0.5 + 0.5 * Math.sin(
-      time * (HOLY_TUNE.edgeLight.speedBase + lane * HOLY_TUNE.edgeLight.speedStep) * TAU
-      + idx * (HOLY_TUNE.edgeLight.waveFreqBase + lane * HOLY_TUNE.edgeLight.waveFreqStep) / ringPoints.length
-      + lane * 1.7,
-    );
+    const wave =
+      0.5 +
+      0.5 *
+        Math.sin(
+          time * (HOLY_TUNE.edgeLight.speedBase + lane * HOLY_TUNE.edgeLight.speedStep) * TAU +
+            (idx * (HOLY_TUNE.edgeLight.waveFreqBase + lane * HOLY_TUNE.edgeLight.waveFreqStep)) / ringPoints.length +
+            lane * 1.7,
+        );
     const flicker = hash(Math.floor(time * (8 + lane * 2)) + idx * 19.31 + lane * 71.7);
-    const lit = wave * 0.7 + flicker * 0.3 > HOLY_TUNE.edgeLight.thresholdBase + lane * HOLY_TUNE.edgeLight.thresholdStep;
+    const lit =
+      wave * 0.7 + flicker * 0.3 > HOLY_TUNE.edgeLight.thresholdBase + lane * HOLY_TUNE.edgeLight.thresholdStep;
     if (!lit) {
       prev = null;
       continue;
     }
 
     const shimmer = Math.sin(time * 2.7 + idx * 0.42 + lane * 1.9) * (1.2 + lane * 0.5);
-    const projected = projectPointToSurface({
-      x: p.x + n.x * (lane * 1.8 + shimmer),
-      y: p.y + n.y * (lane * 1.8 + shimmer),
-    }, frame);
+    const projected = projectPointToSurface(
+      {
+        x: p.x + n.x * (lane * 1.8 + shimmer),
+        y: p.y + n.y * (lane * 1.8 + shimmer),
+      },
+      frame,
+    );
     if (prev) {
       const hue = huePhase + idx / ringPoints.length + lane * 0.07;
       gfx.moveTo(prev.x, prev.y);
       gfx.lineTo(projected.x, projected.y);
-      gfx.stroke({ width, color: rainbowColor(hue), alpha, cap: "round", join: "round" });
+      gfx.stroke({ width, color: rainbowColor(hue), alpha, cap: 'round', join: 'round' });
     }
     prev = projected;
   }
 }
 
-function haloEllipsePoint(
-  cx: number,
-  cy: number,
-  rx: number,
-  ry: number,
-  angle: number,
-  rotation: number,
-): Point {
+function haloEllipsePoint(cx: number, cy: number, rx: number, ry: number, angle: number, rotation: number): Point {
   const localX = Math.cos(angle) * rx;
   const localY = Math.sin(angle) * ry;
   const cr = Math.cos(rotation);
@@ -232,7 +229,7 @@ function drawHaloArc(
     const hue = huePhase + ((a0 + a1) * 0.5) / TAU;
     gfx.moveTo(p0.x, p0.y);
     gfx.lineTo(p1.x, p1.y);
-    gfx.stroke({ width, color: rainbowColor(hue), alpha, cap: "round", join: "round" });
+    gfx.stroke({ width, color: rainbowColor(hue), alpha, cap: 'round', join: 'round' });
   }
 }
 
@@ -262,8 +259,8 @@ function haloPoint(cx: number, cy: number, rx: number, ry: number, angle: number
 }
 
 export const holyEffect: EffectDefinition = {
-  id: "holy",
-  label: "Holy",
+  id: 'holy',
+  label: 'Holy',
   create(layers, mount, art) {
     const bounds = boundsFromCtx(mount);
     const artBounds = artBoundsFromMount(mount);
@@ -280,11 +277,11 @@ export const holyEffect: EffectDefinition = {
       : createCardLoop(ringBounds, sampleCount, HOLY_TUNE.ringInsetScale.card);
     const ringNormals = createOutwardNormals(ringPoints);
     const haloCx = 0;
-    const haloCy = isDie
-      ? -radius - HOLY_TUNE.halo.yOffset.die
-      : -artBounds.halfH - HOLY_TUNE.halo.yOffset.card;
-    const haloRx = (isDie ? radius : artBounds.halfW) * (isDie ? HOLY_TUNE.halo.rxScale.die : HOLY_TUNE.halo.rxScale.card);
-    const haloRy = (isDie ? radius : artBounds.halfH) * (isDie ? HOLY_TUNE.halo.ryScale.die : HOLY_TUNE.halo.ryScale.card);
+    const haloCy = isDie ? -radius - HOLY_TUNE.halo.yOffset.die : -artBounds.halfH - HOLY_TUNE.halo.yOffset.card;
+    const haloRx =
+      (isDie ? radius : artBounds.halfW) * (isDie ? HOLY_TUNE.halo.rxScale.die : HOLY_TUNE.halo.rxScale.card);
+    const haloRy =
+      (isDie ? radius : artBounds.halfH) * (isDie ? HOLY_TUNE.halo.ryScale.die : HOLY_TUNE.halo.ryScale.card);
 
     const backdrop = addGlowLayer(layers.back, 0);
     applyBlurredGlowForMount(backdrop, mount, 16);
@@ -293,7 +290,9 @@ export const holyEffect: EffectDefinition = {
     applyBlurredGlowForMount(sheen, mount, 10);
 
     const haloGlow = addGlowLayer(layers.front, 0);
-    haloGlow.filters = [new BlurFilter({ strength: isDie ? HOLY_TUNE.halo.glowBlur.die : HOLY_TUNE.halo.glowBlur.card, quality: 4 })];
+    haloGlow.filters = [
+      new BlurFilter({ strength: isDie ? HOLY_TUNE.halo.glowBlur.die : HOLY_TUNE.halo.glowBlur.card, quality: 4 }),
+    ];
     setGlowFilterAreaForMount(haloGlow, mount, isDie ? 28 : 36);
     const haloCore = addGlowLayer(layers.front, 1);
     const haloLight = addGlowLayer(layers.front, 2);
@@ -304,15 +303,15 @@ export const holyEffect: EffectDefinition = {
     setGlowFilterAreaForMount(edgeGlow, mount, 12);
     const edgeCore = addGlowLayer(layers.front, 4);
 
-    const sparkleTex = getEffectTexture("sparkle");
+    const sparkleTex = getEffectTexture('sparkle');
     const sparkles: Sprite[] = [];
     const sparkleCount = isDie ? 10 : 14;
     for (let i = 0; i < sparkleCount; i++) {
-      const s = addSpriteLayer(layers.front, sparkleTex, 10 + i, "add");
+      const s = addSpriteLayer(layers.front, sparkleTex, 10 + i, 'add');
       if (s) sparkles.push(s);
     }
 
-    const flare = addSpriteLayer(layers.front, sparkleTex, 30, "screen");
+    const flare = addSpriteLayer(layers.front, sparkleTex, 30, 'screen');
     const particles = createParticlePool(isDie ? 14 : 18);
 
     const artMatrix = createHolyArtMatrix();
@@ -379,8 +378,10 @@ export const holyEffect: EffectDefinition = {
       const haloIdleT = t * haloIdle.speed + frame.phase;
       const haloDriftX = Math.sin(haloIdleT * 0.84) * (isDie ? haloIdle.driftX.die : haloIdle.driftX.card);
       const haloDriftY = Math.cos(haloIdleT) * (isDie ? haloIdle.driftY.die : haloIdle.driftY.card);
-      const haloWobble = 1 + Math.sin(haloIdleT * 1.17 + 0.6) * (isDie ? haloIdle.wobbleScale.die : haloIdle.wobbleScale.card);
-      const haloCounterWobble = 1 - Math.sin(haloIdleT * 1.17 + 0.6) * (isDie ? haloIdle.wobbleScale.die : haloIdle.wobbleScale.card) * 0.55;
+      const haloWobble =
+        1 + Math.sin(haloIdleT * 1.17 + 0.6) * (isDie ? haloIdle.wobbleScale.die : haloIdle.wobbleScale.card);
+      const haloCounterWobble =
+        1 - Math.sin(haloIdleT * 1.17 + 0.6) * (isDie ? haloIdle.wobbleScale.die : haloIdle.wobbleScale.card) * 0.55;
       const haloRotation = Math.sin(haloIdleT * 0.72) * (isDie ? haloIdle.rotation.die : haloIdle.rotation.card);
       const haloX = haloCx + haloDriftX;
       const haloY = haloCy + haloDriftY;
@@ -390,7 +391,17 @@ export const holyEffect: EffectDefinition = {
       if (showHalo) {
         const haloAlpha = (0.42 + pulse * 0.12) * hoverBoost * activeBoost;
         const haloHue = rainbowPhase + orbitAngle / TAU;
-        drawHalo(haloGlow, haloX, haloY, haloAnimatedRx, haloAnimatedRy, isDie ? 8 : 10, haloHue, 0.12 * hoverBoost, haloRotation);
+        drawHalo(
+          haloGlow,
+          haloX,
+          haloY,
+          haloAnimatedRx,
+          haloAnimatedRy,
+          isDie ? 8 : 10,
+          haloHue,
+          0.12 * hoverBoost,
+          haloRotation,
+        );
         drawHalo(
           haloGlow,
           haloX,
@@ -434,16 +445,14 @@ export const holyEffect: EffectDefinition = {
         const lightColor = rainbowColor(haloHue + 0.5);
         haloLight.moveTo(trail.x, trail.y);
         haloLight.lineTo(light.x, light.y);
-        haloLight.stroke({ width: isDie ? 4 : 6, color: lightColor, alpha: 0.36 * hoverBoost, cap: "round" });
+        haloLight.stroke({ width: isDie ? 4 : 6, color: lightColor, alpha: 0.36 * hoverBoost, cap: 'round' });
         haloLight.circle(light.x, light.y, isDie ? 3.2 : 4.6);
         haloLight.fill({ color: lightColor, alpha: 0.72 * hoverBoost * activeBoost });
       }
 
       stepParticles(particles, frame.dt);
       if (Math.random() < frame.dt * (isDie ? 7 : 7) * pScale) {
-        const p = isDie
-          ? perimeterPointEllipse(tight, Math.random())
-          : randomInteriorPoint(artBounds, 0.1);
+        const p = isDie ? perimeterPointEllipse(tight, Math.random()) : randomInteriorPoint(artBounds, 0.1);
         spawnParticle(particles, {
           x: p.x,
           y: p.y,
@@ -490,7 +499,7 @@ export const holyEffect: EffectDefinition = {
     };
 
     return makeRuntime(
-      "holy",
+      'holy',
       step,
       noopDestroy(
         () => applyArtFilters(art, null),

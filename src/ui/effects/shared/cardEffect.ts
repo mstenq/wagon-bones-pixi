@@ -1,8 +1,8 @@
-import type { Graphics } from "pixi.js";
+import type { Graphics } from 'pixi.js';
 
-import type { BorderBounds } from "@/ui/effects/shared/borderFrame";
-import { hostIsDie } from "@/ui/effects/shared/borderFrame";
-import type { EffectHostKind } from "@/ui/effects/types";
+import type { BorderBounds } from '@/ui/effects/shared/borderFrame';
+import { hostIsDie } from '@/ui/effects/shared/borderFrame';
+import type { EffectHostKind } from '@/ui/effects/types';
 
 /** Soft filled backdrop hugging card/die shape — no stroke outlines. */
 export function drawEffectBackdrop(
@@ -23,13 +23,7 @@ export function drawEffectBackdrop(
     return;
   }
   const { halfW, halfH, cornerRadius } = bounds;
-  g.roundRect(
-    -halfW + inset,
-    -halfH + inset,
-    halfW * 2 - inset * 2,
-    halfH * 2 - inset * 2,
-    cornerRadius,
-  );
+  g.roundRect(-halfW + inset, -halfH + inset, halfW * 2 - inset * 2, halfH * 2 - inset * 2, cornerRadius);
   g.fill({ color, alpha });
   g.roundRect(
     -halfW + inset * 2,

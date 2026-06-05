@@ -1,4 +1,4 @@
-import type { PerspectiveMesh } from "pixi.js";
+import type { PerspectiveMesh } from 'pixi.js';
 
 export type PerspectiveTiltConfig = {
   /** Divisor for pointer offset → degrees (lower = stronger tilt). */

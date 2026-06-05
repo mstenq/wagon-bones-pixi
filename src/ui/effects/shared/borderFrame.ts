@@ -1,6 +1,6 @@
-import type { Graphics } from "pixi.js";
+import type { Graphics } from 'pixi.js';
 
-import type { EffectHostKind, EffectMountContext } from "@/ui/effects/types";
+import type { EffectHostKind, EffectMountContext } from '@/ui/effects/types';
 
 export type BorderBounds = {
   halfW: number;
@@ -22,11 +22,11 @@ export function effectVisualBounds(mount: EffectMountContext): BorderBounds {
 }
 
 export function hostUsesRectFrame(hostKind: EffectHostKind): boolean {
-  return hostKind === "card";
+  return hostKind === 'card';
 }
 
 export function hostIsDie(hostKind: EffectHostKind): boolean {
-  return hostKind === "die";
+  return hostKind === 'die';
 }
 
 export function drawRoundedRectFrame(
@@ -56,15 +56,12 @@ export function drawCardFrameStroke(
   drawRoundedRectFrame(g, bounds, strokeWidth, color, alpha);
 }
 
-export function perimeterPoint(
-  bounds: BorderBounds,
-  t: number,
-): { x: number; y: number } {
+export function perimeterPoint(bounds: BorderBounds, t: number): { x: number; y: number } {
   const { halfW, halfH } = bounds;
   const w = halfW * 2;
   const h = halfH * 2;
   const perimeter = 2 * (w + h);
-  let d = ((t % 1) + 1) % 1 * perimeter;
+  let d = (((t % 1) + 1) % 1) * perimeter;
   const x0 = -halfW;
   const y0 = -halfH;
 
@@ -84,22 +81,13 @@ export function perimeterPoint(
 }
 
 /** Point on ellipse perimeter (t in 0..1). Works well for dice hosts. */
-export function perimeterPointEllipse(
-  bounds: BorderBounds,
-  t: number,
-): { x: number; y: number } {
+export function perimeterPointEllipse(bounds: BorderBounds, t: number): { x: number; y: number } {
   const a = bounds.halfW * 0.92;
   const b = bounds.halfH * 0.92;
-  const angle = ((t % 1) + 1) % 1 * Math.PI * 2;
+  const angle = (((t % 1) + 1) % 1) * Math.PI * 2;
   return { x: Math.cos(angle) * a, y: Math.sin(angle) * b };
 }
 
-export function spawnPointForHost(
-  bounds: BorderBounds,
-  hostKind: EffectHostKind,
-  t: number,
-): { x: number; y: number } {
-  return hostIsDie(hostKind)
-    ? perimeterPointEllipse(bounds, t)
-    : perimeterPoint(bounds, t);
+export function spawnPointForHost(bounds: BorderBounds, hostKind: EffectHostKind, t: number): { x: number; y: number } {
+  return hostIsDie(hostKind) ? perimeterPointEllipse(bounds, t) : perimeterPoint(bounds, t);
 }

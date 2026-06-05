@@ -1,4 +1,4 @@
-import type { Graphics } from "pixi.js";
+import type { Graphics } from 'pixi.js';
 
 import {
   BUTTON_BORDER_COLOR,
@@ -8,25 +8,15 @@ import {
   BUTTON_SHADOW_OFFSET_X,
   BUTTON_SHADOW_OFFSET_Y,
   type ButtonVariantTheme,
-} from "@/ui/components/Button/buttonTheme";
+} from '@/ui/components/Button/buttonTheme';
 
-export function drawButtonShadow(
-  graphics: Graphics,
-  width: number,
-  height: number,
-): void {
+export function drawButtonShadow(graphics: Graphics, width: number, height: number): void {
   const halfW = width / 2;
   const halfH = height / 2;
   const radius = BUTTON_CORNER_RADIUS;
 
   graphics.clear();
-  graphics.roundRect(
-    -halfW + BUTTON_SHADOW_OFFSET_X,
-    -halfH + BUTTON_SHADOW_OFFSET_Y,
-    width,
-    height,
-    radius,
-  );
+  graphics.roundRect(-halfW + BUTTON_SHADOW_OFFSET_X, -halfH + BUTTON_SHADOW_OFFSET_Y, width, height, radius);
   graphics.fill({ color: BUTTON_SHADOW_COLOR, alpha: 1 });
 }
 

@@ -1,4 +1,4 @@
-import { useApplication } from "@pixi/react";
+import { useApplication } from '@pixi/react';
 import {
   DEG_TO_RAD,
   Rectangle,
@@ -10,17 +10,9 @@ import {
   type Sprite,
   type Text,
   type Texture,
-} from "pixi.js";
-import { useTick } from "@pixi/react";
-import {
-  forwardRef,
-  use,
-  useCallback,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+} from 'pixi.js';
+import { useTick } from '@pixi/react';
+import { forwardRef, use, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
 
 import {
   ACTION_TAB_HEIGHT,
@@ -33,7 +25,7 @@ import {
   SELL_TAB_WIDTH,
   TAB_WIDTH,
   type CardDisplayMode,
-} from "@/ui/components/Card/config";
+} from '@/ui/components/Card/config';
 import {
   ACTION_TAB_TEXT_Y,
   actionTabAnchorY,
@@ -51,7 +43,7 @@ import {
   SELL_TAB_TEXT_X,
   sellTabTextStyle,
   tabTextStyle,
-} from "@/ui/components/Card/cardTab";
+} from '@/ui/components/Card/cardTab';
 import {
   createScalarSpring,
   createSquishState,
@@ -64,25 +56,21 @@ import {
   stepSquish,
   type ScalarSpringState,
   type SquishState,
-} from "@/ui/interaction/spring";
+} from '@/ui/interaction/spring';
 import {
   applyTiltToMesh,
   createUnitCorners,
   pointerToTiltAngles,
   resetMeshCorners,
   type PerspectiveTiltConfig,
-} from "@/ui/pixi/perspectiveTilt";
-import { effectsTexturesReady } from "@/assets/effects/textures";
-import type { ActionEffectComplete } from "@/ui/actionEffects/types";
-import type { ItemAnimationConfig } from "@/ui/animation/itemAnimations";
-import {
-  applyItemAnimationSquish,
-  useItemAnimations,
-  type ItemAnimationRefs,
-} from "@/ui/animation/useItemAnimations";
-import { EffectMount } from "@/ui/effects/EffectMount";
-import { createDefaultEffectFrame } from "@/ui/effects/context";
-import type { EffectArtRef, EffectFrameContext, EffectId } from "@/ui/effects/types";
+} from '@/ui/pixi/perspectiveTilt';
+import { effectsTexturesReady } from '@/assets/effects/textures';
+import type { ActionEffectComplete } from '@/ui/actionEffects/types';
+import type { ItemAnimationConfig } from '@/ui/animation/itemAnimations';
+import { applyItemAnimationSquish, useItemAnimations, type ItemAnimationRefs } from '@/ui/animation/useItemAnimations';
+import { EffectMount } from '@/ui/effects/EffectMount';
+import { createDefaultEffectFrame } from '@/ui/effects/context';
+import type { EffectArtRef, EffectFrameContext, EffectId } from '@/ui/effects/types';
 
 export type CardAnimationConfig = ItemAnimationConfig;
 
@@ -155,7 +143,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     embedded = false,
     selected,
     onSelectedChange,
-    effect = "none",
+    effect = 'none',
   },
   ref,
 ) {
@@ -174,9 +162,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   const flatSpriteRef = useRef<Sprite | null>(null);
   const pendingArtFiltersRef = useRef<Filter[] | null>(null);
   const pointerNormRef = useRef({ x: 0.5, y: 0.5 });
-  const effectFrameRef = useRef<EffectFrameContext>(
-    createDefaultEffectFrame("card", width, height, phase),
-  );
+  const effectFrameRef = useRef<EffectFrameContext>(createDefaultEffectFrame('card', width, height, phase));
 
   const applyArtFilters = useCallback((filters: Filter[] | null) => {
     pendingArtFiltersRef.current = filters;
@@ -194,7 +180,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   }, []);
 
   const effectArtRef = useRef<EffectArtRef>({
-    applyFilters: () => { },
+    applyFilters: () => {},
   });
   effectArtRef.current.applyFilters = applyArtFilters;
   const actionTabRef = useRef<Container | null>(null);
@@ -250,12 +236,9 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
 
   if (embedded && selected !== undefined && selected !== prevSelectedProp) {
     setPrevSelectedProp(selected);
-    if (displayMode === "owned") {
+    if (displayMode === 'owned') {
       setEnlarged(selected);
-      setScalarTarget(
-        ownedScaleSpringRef.current,
-        selected ? CARD_OWNED_ENLARGED_SCALE : 1,
-      );
+      setScalarTarget(ownedScaleSpringRef.current, selected ? CARD_OWNED_ENLARGED_SCALE : 1);
       setScalarTarget(sellTabSpringRef.current, selected ? 1 : 0);
     }
   }
@@ -268,18 +251,14 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
 
   const isSelected =
     interactive &&
-    (((displayMode === "shop" || displayMode === "pack") && raised) ||
-      (displayMode === "owned" && enlarged));
+    (((displayMode === 'shop' || displayMode === 'pack') && raised) || (displayMode === 'owned' && enlarged));
   isSelectedRef.current = isSelected;
 
   const effectiveHovered = hovered || hoveredInternal;
   hoveredRef.current = effectiveHovered;
   draggingRef.current = dragging;
 
-  const cardBodyHitArea = useMemo(
-    () => new Rectangle(-width / 2, -height / 2, width, height),
-    [height, width],
-  );
+  const cardBodyHitArea = useMemo(() => new Rectangle(-width / 2, -height / 2, width, height), [height, width]);
 
   const notifySelectedChange = useCallback(
     (selected: boolean) => {
@@ -291,10 +270,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   );
 
   const applyOwnedEnlargedTargets = useCallback((nextEnlarged: boolean) => {
-    setScalarTarget(
-      ownedScaleSpringRef.current,
-      nextEnlarged ? CARD_OWNED_ENLARGED_SCALE : 1,
-    );
+    setScalarTarget(ownedScaleSpringRef.current, nextEnlarged ? CARD_OWNED_ENLARGED_SCALE : 1);
     setScalarTarget(sellTabSpringRef.current, nextEnlarged ? 1 : 0);
   }, []);
 
@@ -309,24 +285,27 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     clickSquishUntilRef.current = performance.now() + CLICK_SQUISH_MS;
   }, []);
 
-  const hitsSellTabAtGlobal = useCallback((globalX: number, globalY: number) => {
-    if (displayMode !== "owned" || !enlargedRef.current) {
-      return false;
-    }
-    if (sellTabSpringRef.current.value < 0.15) {
-      return false;
-    }
-    const inner = sellTabInnerRef.current;
-    if (!inner) {
-      return false;
-    }
-    if (!embedded && inner.eventMode === "none") {
-      return false;
-    }
-    const local = inner.toLocal({ x: globalX, y: globalY });
-    const hit = inner.hitArea;
-    return hit instanceof Rectangle && hit.contains(local.x, local.y);
-  }, [displayMode, embedded]);
+  const hitsSellTabAtGlobal = useCallback(
+    (globalX: number, globalY: number) => {
+      if (displayMode !== 'owned' || !enlargedRef.current) {
+        return false;
+      }
+      if (sellTabSpringRef.current.value < 0.15) {
+        return false;
+      }
+      const inner = sellTabInnerRef.current;
+      if (!inner) {
+        return false;
+      }
+      if (!embedded && inner.eventMode === 'none') {
+        return false;
+      }
+      const local = inner.toLocal({ x: globalX, y: globalY });
+      const hit = inner.hitArea;
+      return hit instanceof Rectangle && hit.contains(local.x, local.y);
+    },
+    [displayMode, embedded],
+  );
 
   const triggerSell = useCallback(() => {
     onSellRef.current?.();
@@ -352,7 +331,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
       if (!interactive) {
         return;
       }
-      if (displayMode === "owned") {
+      if (displayMode === 'owned') {
         if (!enlargedRef.current) {
           return;
         }
@@ -363,7 +342,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
         }
         return;
       }
-      if (displayMode === "shop" || displayMode === "pack") {
+      if (displayMode === 'shop' || displayMode === 'pack') {
         if (!raisedRef.current) {
           return;
         }
@@ -391,13 +370,12 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     deselect(true);
   }, [deselect, hideCardChrome]);
 
-  const { runAnimate, isPlayingAnimation, shouldBlockPointer, stepAnimations } =
-    useItemAnimations({
-      hostExtent: height,
-      textPlacement: "below",
-      beforeDestroy,
-      refs: itemAnimRefs,
-    });
+  const { runAnimate, isPlayingAnimation, shouldBlockPointer, stepAnimations } = useItemAnimations({
+    hostExtent: height,
+    textPlacement: 'below',
+    beforeDestroy,
+    refs: itemAnimRefs,
+  });
 
   useImperativeHandle(
     ref,
@@ -418,7 +396,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
         targetAngleYRef.current = angleY;
       },
       toggleOwned() {
-        if (!interactive || displayMode !== "owned" || draggingRef.current) {
+        if (!interactive || displayMode !== 'owned' || draggingRef.current) {
           return;
         }
         const next = !enlargedRef.current;
@@ -472,12 +450,9 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     [corners, texture, width, height, meshCornerSpace],
   );
 
-  const bindRoot = useCallback(
-    (node: Container | null) => {
-      rootRef.current = node;
-    },
-    [],
-  );
+  const bindRoot = useCallback((node: Container | null) => {
+    rootRef.current = node;
+  }, []);
 
   const onCardPointerDown = useCallback(
     (event: FederatedPointerEvent) => {
@@ -486,7 +461,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
       }
       event.stopPropagation();
 
-      if (displayMode === "shop" || displayMode === "pack") {
+      if (displayMode === 'shop' || displayMode === 'pack') {
         const nextRaised = !raisedRef.current;
         setRaised(nextRaised);
         setScalarTarget(liftSpringRef.current, nextRaised ? CARD_LIFT_PX : 0);
@@ -495,7 +470,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
         return;
       }
 
-      if (displayMode === "owned") {
+      if (displayMode === 'owned') {
         const next = !enlargedRef.current;
         setEnlarged(next);
         applyOwnedEnlargedTargets(next);
@@ -503,13 +478,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
         triggerClickSquish();
       }
     },
-    [
-      applyOwnedEnlargedTargets,
-      displayMode,
-      interactive,
-      notifySelectedChange,
-      triggerClickSquish,
-    ],
+    [applyOwnedEnlargedTargets, displayMode, interactive, notifySelectedChange, triggerClickSquish],
   );
 
   const onCardPointerOver = useCallback(() => {
@@ -532,12 +501,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
 
   const onCardPointerMove = useCallback(
     (event: FederatedPointerEvent) => {
-      if (
-        shouldBlockPointer() ||
-        !interactive ||
-        draggingRef.current ||
-        !hoveredRef.current
-      ) {
+      if (shouldBlockPointer() || !interactive || draggingRef.current || !hoveredRef.current) {
         return;
       }
       const target = event.currentTarget as Container;
@@ -546,7 +510,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
         x: Math.max(0, Math.min(1, (local.x + width / 2) / width)),
         y: Math.max(0, Math.min(1, (local.y + height / 2) / height)),
       };
-      if (isSelectedRef.current || displayMode === "shop") {
+      if (isSelectedRef.current || displayMode === 'shop') {
         return;
       }
       const { angleX, angleY } = pointerToTiltAngles(local.x, local.y, tiltConfig);
@@ -580,18 +544,17 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     [triggerSell],
   );
 
-  const useFlatArt = displayMode === "shop";
+  const useFlatArt = displayMode === 'shop';
   const tiltEnabled = !useFlatArt;
   const idleEnabled =
     !dragging &&
     !isSelected &&
     tiltEnabled &&
-    (displayMode === undefined || displayMode === "owned" || displayMode === "pack");
+    (displayMode === undefined || displayMode === 'owned' || displayMode === 'pack');
 
-  const showActionTab =
-    interactive && raised && (displayMode === "shop" || displayMode === "pack");
-  const actionTabLabel = displayMode === "shop" ? "BUY" : "SELECT";
-  const actionTabHandler = displayMode === "shop" ? onBuyPointerDown : onSelectPointerDown;
+  const showActionTab = interactive && raised && (displayMode === 'shop' || displayMode === 'pack');
+  const actionTabLabel = displayMode === 'shop' ? 'BUY' : 'SELECT';
+  const actionTabHandler = displayMode === 'shop' ? onBuyPointerDown : onSelectPointerDown;
 
   useTick(() => {
     const dt = app.ticker.deltaMS / 1000;
@@ -606,7 +569,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     frame.time = performance.now() / 1000;
     frame.width = width;
     frame.height = height;
-    frame.hostKind = "card";
+    frame.hostKind = 'card';
     frame.hovered = effectiveHovered;
     frame.dragging = draggingRef.current;
     frame.activated = isSelectedRef.current;
@@ -631,14 +594,10 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
       targetAngleYRef.current += (0 - targetAngleYRef.current) * IDLE_RETURN_LERP;
     } else if (!isHovered && idleEnabled) {
       const idleT = performance.now() / 1000;
-      const idleTargetX =
-        Math.sin(idleT * IDLE_MESH_TILT_SPEED + phase) * IDLE_MESH_TILT_DEGREES;
-      const idleTargetY =
-        Math.cos(idleT * IDLE_MESH_TILT_SPEED * 0.86 + phase * 1.21) * IDLE_MESH_TILT_DEGREES;
-      targetAngleXRef.current +=
-        (idleTargetX - targetAngleXRef.current) * IDLE_MESH_TILT_LERP;
-      targetAngleYRef.current +=
-        (idleTargetY - targetAngleYRef.current) * IDLE_MESH_TILT_LERP;
+      const idleTargetX = Math.sin(idleT * IDLE_MESH_TILT_SPEED + phase) * IDLE_MESH_TILT_DEGREES;
+      const idleTargetY = Math.cos(idleT * IDLE_MESH_TILT_SPEED * 0.86 + phase * 1.21) * IDLE_MESH_TILT_DEGREES;
+      targetAngleXRef.current += (idleTargetX - targetAngleXRef.current) * IDLE_MESH_TILT_LERP;
+      targetAngleYRef.current += (idleTargetY - targetAngleYRef.current) * IDLE_MESH_TILT_LERP;
     } else if (!isHovered) {
       targetAngleXRef.current += (0 - targetAngleXRef.current) * IDLE_RETURN_LERP;
       targetAngleYRef.current += (0 - targetAngleYRef.current) * IDLE_RETURN_LERP;
@@ -666,7 +625,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
       const t = performance.now() / 1000;
       const targetIdle = Math.sin(t * IDLE_SPEED + phase) * IDLE_DEGREES * DEG_TO_RAD;
       idleRotationRef.current += (targetIdle - idleRotationRef.current) * 0.14;
-    } else if (isDragging || isSelectedNow || displayMode === "shop") {
+    } else if (isDragging || isSelectedNow || displayMode === 'shop') {
       idleRotationRef.current = 0;
     } else {
       idleRotationRef.current += (0 - idleRotationRef.current) * 0.16;
@@ -679,16 +638,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
     if (isSelectedNow || !tiltEnabled) {
       resetMeshCorners(mesh, corners, width, height, meshCornerSpace);
     } else {
-      applyTiltToMesh(
-        mesh,
-        corners,
-        angleXRef.current,
-        angleYRef.current,
-        width,
-        height,
-        tiltConfig,
-        meshCornerSpace,
-      );
+      applyTiltToMesh(mesh, corners, angleXRef.current, angleYRef.current, width, height, tiltConfig, meshCornerSpace);
     }
 
     const surfaceCorners = frame.surfaceCorners;
@@ -724,14 +674,10 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
       const clickSquishActive = performance.now() < clickSquishUntilRef.current;
       const isDragging = draggingRef.current;
       const keepHoverScale = isSelectedNow || isHovered;
-      const hoverTarget = keepHoverScale
-        ? { scaleX: CARD_HOVER_SCALE, scaleY: CARD_HOVER_SCALE }
-        : SQUISH_IDLE;
+      const hoverTarget = keepHoverScale ? { scaleX: CARD_HOVER_SCALE, scaleY: CARD_HOVER_SCALE } : SQUISH_IDLE;
       const externalSquish = embedded ? externalSquishRef.current : { scaleX: 1, scaleY: 1 };
       const externalSquishActive =
-        embedded &&
-        (Math.abs(externalSquish.scaleX - 1) > 0.008 ||
-          Math.abs(externalSquish.scaleY - 1) > 0.008);
+        embedded && (Math.abs(externalSquish.scaleX - 1) > 0.008 || Math.abs(externalSquish.scaleY - 1) > 0.008);
       const useExternalSquish = embedded && (isDragging || externalSquishActive);
 
       if (isDragging && !prevDragSquishRef.current) {
@@ -750,13 +696,9 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
       stepScalarSpring(ownedScaleSpringRef.current, dt);
       stepScalarSpring(sellTabSpringRef.current, dt);
 
-      const ownedScale = displayMode === "owned" ? ownedScaleSpringRef.current.value : 1;
-      const scaleX = useExternalSquish
-        ? externalSquish.scaleX * ownedScale
-        : squishSpring.scaleX * ownedScale;
-      const scaleY = useExternalSquish
-        ? externalSquish.scaleY * ownedScale
-        : squishSpring.scaleY * ownedScale;
+      const ownedScale = displayMode === 'owned' ? ownedScaleSpringRef.current.value : 1;
+      const scaleX = useExternalSquish ? externalSquish.scaleX * ownedScale : squishSpring.scaleX * ownedScale;
+      const scaleY = useExternalSquish ? externalSquish.scaleY * ownedScale : squishSpring.scaleY * ownedScale;
 
       applyItemAnimationSquish(squishNode, { scaleX, scaleY }, growPopMul, shakeX);
 
@@ -784,15 +726,12 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
         const reveal = sellTabSpringRef.current.value;
         sellTab.x = sellTabAnchorX(width, ownedScale);
         const inner = sellTabInnerRef.current;
-        const sellVisible = displayMode === "owned" && reveal > 0;
+        const sellVisible = displayMode === 'owned' && reveal > 0;
         const sellFade = sellVisible ? reveal : 0;
         if (inner) {
           inner.x = sellTabInnerX(reveal);
           if (!embedded) {
-            inner.eventMode =
-              enlargedRef.current && displayMode === "owned" && reveal > 0.15
-                ? "static"
-                : "none";
+            inner.eventMode = enlargedRef.current && displayMode === 'owned' && reveal > 0.15 ? 'static' : 'none';
           }
         }
         sellTab.alpha = 1;
@@ -813,25 +752,23 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
   });
 
   return (
-    <pixiContainer
-      ref={bindRoot}
-      sortableChildren
-      eventMode={interactive ? "passive" : "none"}
-    >
+    <pixiContainer ref={bindRoot} sortableChildren eventMode={interactive ? 'passive' : 'none'}>
       <pixiContainer ref={liftRef} sortableChildren eventMode="passive">
-        {interactive && (displayMode === "shop" || displayMode === "pack") ? (
+        {interactive && (displayMode === 'shop' || displayMode === 'pack') ? (
           <pixiContainer ref={actionTabRef} zIndex={0} eventMode="passive">
             <pixiContainer
               ref={actionTabInnerRef}
               y={-ACTION_TAB_HEIGHT}
-              eventMode={showActionTab ? "static" : "none"}
+              eventMode={showActionTab ? 'static' : 'none'}
               cursor="pointer"
-              hitArea={new Rectangle(
-                -TAB_WIDTH / 2,
-                ACTION_TAB_HEIGHT / 2 - ACTION_TAB_VISIBLE_HEIGHT,
-                TAB_WIDTH,
-                ACTION_TAB_VISIBLE_HEIGHT,
-              )}
+              hitArea={
+                new Rectangle(
+                  -TAB_WIDTH / 2,
+                  ACTION_TAB_HEIGHT / 2 - ACTION_TAB_VISIBLE_HEIGHT,
+                  TAB_WIDTH,
+                  ACTION_TAB_VISIBLE_HEIGHT,
+                )
+              }
               onPointerDown={actionTabHandler}
             >
               <pixiGraphics ref={actionTabShadowRef} draw={drawBottomActionTabShadow} eventMode="none" />
@@ -848,20 +785,14 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
           </pixiContainer>
         ) : null}
 
-        {displayMode === "shop" ? (
+        {displayMode === 'shop' ? (
           <pixiContainer ref={priceTabRef} eventMode="passive">
             <pixiGraphics ref={priceTabGfxRef} draw={drawPriceTab} eventMode="none" />
-            <pixiText
-              text={formatPrice(price)}
-              anchor={0.5}
-              y={-2}
-              style={priceTabTextStyle}
-              eventMode="none"
-            />
+            <pixiText text={formatPrice(price)} anchor={0.5} y={-2} style={priceTabTextStyle} eventMode="none" />
           </pixiContainer>
         ) : null}
 
-        {displayMode === "owned" ? (
+        {displayMode === 'owned' ? (
           <pixiContainer ref={sellTabRef} zIndex={0} eventMode="passive">
             <pixiContainer
               ref={sellTabInnerRef}
@@ -907,7 +838,7 @@ export const Card = forwardRef<CardHandle, CardProps>(function Card(
             hostKind="card"
             width={width}
             height={height}
-            hideHalo={displayMode === "shop"}
+            hideHalo={displayMode === 'shop'}
             frameRef={effectFrameRef}
             artRef={effectArtRef}
           >

@@ -1,9 +1,9 @@
-import { useApplication, useTick } from "@pixi/react";
-import { useCallback, useMemo, useState } from "react";
+import { useApplication, useTick } from '@pixi/react';
+import { useCallback, useMemo, useState } from 'react';
 
-import { CardContainer } from "@/ui/components/CardContainer/CardContainer";
-import { DiceRow } from "@/ui/components/DiceRow/DiceRow";
-import { computeGameLayout, computeViewportMetrics } from "@/ui/layout/gameLayout";
+import { CardContainer } from '@/ui/components/CardContainer/CardContainer';
+import { DiceRow } from '@/ui/components/DiceRow/DiceRow';
+import { computeGameLayout, computeViewportMetrics } from '@/ui/layout/gameLayout';
 
 export function GameScene() {
   const { app } = useApplication();
@@ -20,10 +20,7 @@ export function GameScene() {
 
   useTick(syncScreenSize);
 
-  const viewport = useMemo(
-    () => computeViewportMetrics(screenSize.w, screenSize.h),
-    [screenSize.h, screenSize.w],
-  );
+  const viewport = useMemo(() => computeViewportMetrics(screenSize.w, screenSize.h), [screenSize.h, screenSize.w]);
 
   const layout = useMemo(
     () => computeGameLayout(viewport.layoutW, viewport.layoutH),
@@ -54,12 +51,7 @@ export function GameScene() {
         sortableChildren
         eventMode="passive"
       >
-        <pixiContainer
-          x={-viewport.layoutW / 2}
-          y={-viewport.layoutH / 2}
-          sortableChildren
-          eventMode="passive"
-        >
+        <pixiContainer x={-viewport.layoutW / 2} y={-viewport.layoutH / 2} sortableChildren eventMode="passive">
           {gameContent}
         </pixiContainer>
       </pixiContainer>

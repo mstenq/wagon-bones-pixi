@@ -1,4 +1,4 @@
-import { ColorMatrixFilter } from "pixi.js";
+import { ColorMatrixFilter } from 'pixi.js';
 
 /** Warm divine tint on artwork — Pixi ColorMatrixFilter. */
 export function createHolyArtMatrix(): ColorMatrixFilter {

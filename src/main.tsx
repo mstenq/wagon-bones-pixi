@@ -5,12 +5,12 @@
  * It is included in `src/index.html`.
  */
 
-import { createRoot } from "react-dom/client";
+import { createRoot } from 'react-dom/client';
 
-import "@/ui/pixi/extend";
-import "@/ui/css/index.css";
+import '@/ui/pixi/extend';
+import '@/ui/css/index.css';
 
-const elem = document.getElementById("root")!;
+const elem = document.getElementById('root')!;
 const root = import.meta.hot?.data.root ?? createRoot(elem);
 
 if (import.meta.hot) {
@@ -19,12 +19,12 @@ if (import.meta.hot) {
 
 async function mount() {
   if (import.meta.env.DEV) {
-    const { DevRouter } = await import("./ui/app/DevRouter");
+    const { DevRouter } = await import('./ui/app/DevRouter');
     root.render(<DevRouter />);
     return;
   }
 
-  const { App } = await import("./ui/app/App");
+  const { App } = await import('./ui/app/App');
   root.render(<App />);
 }
 

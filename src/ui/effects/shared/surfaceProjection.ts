@@ -1,4 +1,4 @@
-import type { EffectFrameContext } from "@/ui/effects/types";
+import type { EffectFrameContext } from '@/ui/effects/types';
 
 export type SurfacePoint = { x: number; y: number };
 

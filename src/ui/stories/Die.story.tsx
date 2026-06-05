@@ -1,25 +1,25 @@
-import { Application } from "@pixi/react";
-import { use, useCallback, useRef, useState } from "react";
+import { Application } from '@pixi/react';
+import { use, useCallback, useRef, useState } from 'react';
 
-import { effectsTexturesReady } from "@/assets/effects/textures";
-import { texturesReady } from "@/assets/dice/textures";
-import { DICE_TYPES, type DiceType } from "@/data/dice";
-import { Die, type DieHandle } from "@/ui/components/Dice/Die";
+import { effectsTexturesReady } from '@/assets/effects/textures';
+import { texturesReady } from '@/assets/dice/textures';
+import { DICE_TYPES, type DiceType } from '@/data/dice';
+import { Die, type DieHandle } from '@/ui/components/Dice/Die';
 import {
   DICE_ENHANCEMENT_OPTIONS,
   DICE_LABELS,
   DIE_MODE_LABELS,
   DIE_MODES,
   type DieMode,
-} from "@/ui/components/Dice/config";
-import { itemShakeAnim, itemTextAnim } from "@/ui/animation/itemAnimations";
-import { EFFECT_OPTIONS } from "@/ui/effects/effectOptions";
-import { useQueryParam } from "@/ui/hooks/useQueryParam";
-import type { EffectId } from "@/ui/effects/types";
-import { PIXI_RENDERER_PREFERENCE } from "@/ui/pixi/appDefaults";
-import type { StoryDefinition } from "@/ui/types/storyTypes";
-import { panelButtonClass, panelLabelClass, panelSelectClass } from "@/ui/styles/panelControls";
-import { UI_BACKGROUND_COLOR } from "../uiConstants";
+} from '@/ui/components/Dice/config';
+import { itemShakeAnim, itemTextAnim } from '@/ui/animation/itemAnimations';
+import { EFFECT_OPTIONS } from '@/ui/effects/effectOptions';
+import { useQueryParam } from '@/ui/hooks/useQueryParam';
+import type { EffectId } from '@/ui/effects/types';
+import { PIXI_RENDERER_PREFERENCE } from '@/ui/pixi/appDefaults';
+import type { StoryDefinition } from '@/ui/types/storyTypes';
+import { panelButtonClass, panelLabelClass, panelSelectClass } from '@/ui/styles/panelControls';
+import { UI_BACKGROUND_COLOR } from '../uiConstants';
 
 const RESTORE_DELAY_MS = 700;
 
@@ -44,24 +44,23 @@ function DieStory() {
   const [dieVisible, setDieVisible] = useState(true);
   const [busy, setBusy] = useState(false);
 
-  const [enhancement, setEnhancement] = useQueryParam<DiceType>("enhancement", {
-    default: "standard",
+  const [enhancement, setEnhancement] = useQueryParam<DiceType>('enhancement', {
+    default: 'standard',
     parse: parseDiceType,
   });
 
-  const [value, setValue] = useQueryParam<number>("value", {
+  const [value, setValue] = useQueryParam<number>('value', {
     default: 3,
     parse: parseFaceValue,
   });
 
-  const [effect, setEffect] = useQueryParam<EffectId>("effect", {
-    default: "none",
-    parse: (raw) =>
-      EFFECT_OPTIONS.some((option) => option.id === raw) ? (raw as EffectId) : undefined,
+  const [effect, setEffect] = useQueryParam<EffectId>('effect', {
+    default: 'none',
+    parse: (raw) => (EFFECT_OPTIONS.some((option) => option.id === raw) ? (raw as EffectId) : undefined),
   });
 
-  const [mode, setMode] = useQueryParam<DieMode>("mode", {
-    default: "base",
+  const [mode, setMode] = useQueryParam<DieMode>('mode', {
+    default: 'base',
     parse: (raw) => (DIE_MODES.includes(raw as DieMode) ? (raw as DieMode) : undefined),
   });
 
@@ -72,18 +71,23 @@ function DieStory() {
     setBusy(true);
   }, []);
 
-  const runAnim = useCallback((config: Parameters<DieHandle["animate"]>[0]) => {
-    const die = dieRef.current;
-    if (!die) {
-      return;
-    }
-    finishAnim(die.animate(config, () => {
-      setBusy(dieRef.current?.isPlayingAnimation() ?? false);
-    }));
-  }, [finishAnim]);
+  const runAnim = useCallback(
+    (config: Parameters<DieHandle['animate']>[0]) => {
+      const die = dieRef.current;
+      if (!die) {
+        return;
+      }
+      finishAnim(
+        die.animate(config, () => {
+          setBusy(dieRef.current?.isPlayingAnimation() ?? false);
+        }),
+      );
+    },
+    [finishAnim],
+  );
 
   const handleAppear = useCallback(() => {
-    runAnim({ type: "appear" });
+    runAnim({ type: 'appear' });
   }, [runAnim]);
 
   const handleDestroy = useCallback(() => {
@@ -92,15 +96,17 @@ function DieStory() {
       return;
     }
 
-    finishAnim(die.animate({ type: "destroy" }, () => {
-      console.log("destroy completed");
-      setDieVisible(false);
-      window.setTimeout(() => {
-        setDieKey((key) => key + 1);
-        setDieVisible(true);
-        setBusy(false);
-      }, RESTORE_DELAY_MS);
-    }));
+    finishAnim(
+      die.animate({ type: 'destroy' }, () => {
+        console.log('destroy completed');
+        setDieVisible(false);
+        window.setTimeout(() => {
+          setDieKey((key) => key + 1);
+          setDieVisible(true);
+          setBusy(false);
+        }, RESTORE_DELAY_MS);
+      }),
+    );
   }, [dieVisible, finishAnim]);
 
   const animDisabled = !dieVisible || busy;
@@ -168,20 +174,10 @@ function DieStory() {
 
       <div className="flex flex-wrap justify-center gap-2">
         <span className={panelLabelClass}>Animations</span>
-        <button
-          type="button"
-          className={panelButtonClass}
-          disabled={animDisabled}
-          onClick={handleAppear}
-        >
+        <button type="button" className={panelButtonClass} disabled={animDisabled} onClick={handleAppear}>
           Appear
         </button>
-        <button
-          type="button"
-          className={panelButtonClass}
-          disabled={animDisabled}
-          onClick={handleDestroy}
-        >
+        <button type="button" className={panelButtonClass} disabled={animDisabled} onClick={handleDestroy}>
           Destroy
         </button>
         <button
@@ -246,14 +242,7 @@ function DieStory() {
       >
         {dieVisible ? (
           <pixiContainer x={240} y={190} sortableChildren>
-            <Die
-              key={dieKey}
-              ref={dieRef}
-              diceType={enhancement}
-              value={value}
-              effect={effect}
-              mode={mode}
-            />
+            <Die key={dieKey} ref={dieRef} diceType={enhancement} value={value} effect={effect} mode={mode} />
           </pixiContainer>
         ) : null}
       </Application>
@@ -262,7 +251,7 @@ function DieStory() {
 }
 
 const dieStory: StoryDefinition = {
-  name: "Die",
+  name: 'Die',
   component: <DieStory />,
 };
 

@@ -1,8 +1,8 @@
-import { useEffect, useRef, type CSSProperties } from "react";
+import { useEffect, useRef, type CSSProperties } from 'react';
 
-import type { ScoreBoxVariant } from "@/ui/components/ScoreBox/scoreBoxTypes";
-import { scoreBoxVariantTheme } from "@/ui/components/ScoreBox/scoreBoxTheme";
-import { clampFlameIntensity } from "@/ui/components/ScoreBox/scoreFlame";
+import type { ScoreBoxVariant } from '@/ui/components/ScoreBox/scoreBoxTypes';
+import { scoreBoxVariantTheme } from '@/ui/components/ScoreBox/scoreBoxTheme';
+import { clampFlameIntensity } from '@/ui/components/ScoreBox/scoreFlame';
 
 export type ScoreFlameProps = {
   variant: ScoreBoxVariant;
@@ -115,11 +115,7 @@ function toUnit(rgb: readonly [number, number, number]): readonly [number, numbe
   return [rgb[0] / 255, rgb[1] / 255, rgb[2] / 255];
 }
 
-function compileShader(
-  gl: WebGLRenderingContext,
-  type: number,
-  source: string,
-): WebGLShader | null {
+function compileShader(gl: WebGLRenderingContext, type: number, source: string): WebGLShader | null {
   const shader = gl.createShader(type);
   if (!shader) {
     return null;
@@ -138,10 +134,10 @@ function compileShader(
 export function ScoreFlame({ variant, intensity }: ScoreFlameProps) {
   const flame = clampFlameIntensity(intensity);
   const amount = flame * 10;
-  const id = variant === "points" ? 0 : 1;
+  const id = variant === 'points' ? 0 : 1;
   const theme = scoreBoxVariantTheme[variant];
   const primary = toUnit(theme.surfaceRgb);
-  const accent = toUnit(variant === "points" ? [186, 231, 255] : [255, 191, 122]);
+  const accent = toUnit(variant === 'points' ? [186, 231, 255] : [255, 191, 122]);
   const isActive = flame > 0;
   const hostRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -158,7 +154,7 @@ export function ScoreFlame({ variant, intensity }: ScoreFlameProps) {
       return;
     }
 
-    const gl = canvas.getContext("webgl", {
+    const gl = canvas.getContext('webgl', {
       alpha: true,
       antialias: false,
       depth: false,
@@ -197,12 +193,12 @@ export function ScoreFlame({ variant, intensity }: ScoreFlameProps) {
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
 
-    const positionLocation = gl.getAttribLocation(program, "aPosition");
-    const timeLocation = gl.getUniformLocation(program, "uTime");
-    const amountLocation = gl.getUniformLocation(program, "uAmount");
-    const seedLocation = gl.getUniformLocation(program, "uSeed");
-    const primaryLocation = gl.getUniformLocation(program, "uPrimaryColor");
-    const accentLocation = gl.getUniformLocation(program, "uAccentColor");
+    const positionLocation = gl.getAttribLocation(program, 'aPosition');
+    const timeLocation = gl.getUniformLocation(program, 'uTime');
+    const amountLocation = gl.getUniformLocation(program, 'uAmount');
+    const seedLocation = gl.getUniformLocation(program, 'uSeed');
+    const primaryLocation = gl.getUniformLocation(program, 'uPrimaryColor');
+    const accentLocation = gl.getUniformLocation(program, 'uAccentColor');
 
     if (
       positionLocation < 0 ||
@@ -284,7 +280,7 @@ export function ScoreFlame({ variant, intensity }: ScoreFlameProps) {
   }
 
   const flameStyle = {
-    "--flame-i": flame,
+    '--flame-i': flame,
   } as CSSProperties;
 
   return (

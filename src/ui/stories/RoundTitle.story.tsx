@@ -1,6 +1,6 @@
-import { RoundTitle } from "@/ui/components/RoundInfo/RoundTitle";
-import type { StoryDefinition } from "@/ui/types/storyTypes";
-import { UiPrimaryProvider } from "@/ui/theme/UiPrimaryProvider";
+import { RoundTitle } from '@/ui/components/RoundInfo/RoundTitle';
+import type { StoryDefinition } from '@/ui/types/storyTypes';
+import { UiPrimaryProvider } from '@/ui/theme/UiPrimaryProvider';
 
 function RoundTitleStory() {
   return (
@@ -13,7 +13,7 @@ function RoundTitleStory() {
 }
 
 const roundTitleStory: StoryDefinition = {
-  name: "RoundTitle",
+  name: 'RoundTitle',
   component: <RoundTitleStory />,
 };
 

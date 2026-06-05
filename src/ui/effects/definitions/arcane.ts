@@ -1,11 +1,11 @@
-import { BlurFilter } from "pixi.js";
+import { BlurFilter } from 'pixi.js';
 
-import { addGlowLayer, makeRuntime, noopDestroy, pulse01 } from "@/ui/effects/effectHelpers";
-import { borderBoundsFromSize } from "@/ui/effects/shared/borderFrame";
-import { createDieEdgeLoop } from "@/ui/effects/shared/dieOutline";
-import { setGlowFilterAreaForMount } from "@/ui/effects/shared/glow";
-import { projectPointToSurface } from "@/ui/effects/shared/surfaceProjection";
-import type { EffectDefinition, EffectFrameContext } from "@/ui/effects/types";
+import { addGlowLayer, makeRuntime, noopDestroy, pulse01 } from '@/ui/effects/effectHelpers';
+import { borderBoundsFromSize } from '@/ui/effects/shared/borderFrame';
+import { createDieEdgeLoop } from '@/ui/effects/shared/dieOutline';
+import { setGlowFilterAreaForMount } from '@/ui/effects/shared/glow';
+import { projectPointToSurface } from '@/ui/effects/shared/surfaceProjection';
+import type { EffectDefinition, EffectFrameContext } from '@/ui/effects/types';
 
 type Point = { x: number; y: number };
 type Strike = {
@@ -189,16 +189,17 @@ function createStrikePath(start: Point, end: Point, seed: number): Point[] {
 }
 
 export const arcaneEffect: EffectDefinition = {
-  id: "arcane",
-  label: "Arcane",
+  id: 'arcane',
+  label: 'Arcane',
   create(layers, mount) {
     const bounds = borderBoundsFromSize(mount.width, mount.height);
     const baseHalfW = bounds.halfW * ARCANE_TUNE.ringInsetScale;
     const baseHalfH = bounds.halfH * ARCANE_TUNE.ringInsetScale;
-    const sampleCount = mount.hostKind === "die" ? ARCANE_TUNE.sampleCount.die : ARCANE_TUNE.sampleCount.card;
-    const ringPoints = mount.hostKind === "die"
-      ? createDieEdgeLoop(baseHalfW, baseHalfH, sampleCount)
-      : createCardLoop(baseHalfW, baseHalfH, sampleCount);
+    const sampleCount = mount.hostKind === 'die' ? ARCANE_TUNE.sampleCount.die : ARCANE_TUNE.sampleCount.card;
+    const ringPoints =
+      mount.hostKind === 'die'
+        ? createDieEdgeLoop(baseHalfW, baseHalfH, sampleCount)
+        : createCardLoop(baseHalfW, baseHalfH, sampleCount);
     const ringNormals = createNormals(ringPoints);
 
     const aura = addGlowLayer(layers.front, 0);
@@ -226,14 +227,16 @@ export const arcaneEffect: EffectDefinition = {
 
     const step = (frame: EffectFrameContext) => {
       const t = frame.time + frame.phase * 0.13 + timeOffset;
-      const pulse = ARCANE_TUNE.pulse.base
-        + pulse01(t, ARCANE_TUNE.pulse.layer1PeriodBase + seed * ARCANE_TUNE.pulse.layer1PeriodSeedScale)
-        * ARCANE_TUNE.pulse.layer1Weight
-        + pulse01(
+      const pulse =
+        ARCANE_TUNE.pulse.base +
+        pulse01(t, ARCANE_TUNE.pulse.layer1PeriodBase + seed * ARCANE_TUNE.pulse.layer1PeriodSeedScale) *
+          ARCANE_TUNE.pulse.layer1Weight +
+        pulse01(
           t,
           ARCANE_TUNE.pulse.layer2PeriodBase + seed * ARCANE_TUNE.pulse.layer2PeriodSeedScale,
           ARCANE_TUNE.pulse.layer2Phase,
-        ) * ARCANE_TUNE.pulse.layer2Weight;
+        ) *
+          ARCANE_TUNE.pulse.layer2Weight;
       const hoverBoost = frame.hovered ? ARCANE_TUNE.hoverBoost : 1.0;
       const activeBoost = frame.activated ? ARCANE_TUNE.activeBoost : 1.0;
       const amp = ARCANE_TUNE.baseAmplitude * pulse * hoverBoost * activeBoost;
@@ -250,22 +253,22 @@ export const arcaneEffect: EffectDefinition = {
       };
       const canStrike = frame.hovered && !frame.dragging;
       if (
-        canStrike
-        && strikes.length < ARCANE_TUNE.hoverStrike.maxConcurrent
-        && Math.random() < frame.dt * ARCANE_TUNE.hoverStrike.spawnPerSecond
+        canStrike &&
+        strikes.length < ARCANE_TUNE.hoverStrike.maxConcurrent &&
+        Math.random() < frame.dt * ARCANE_TUNE.hoverStrike.spawnPerSecond
       ) {
         const seedJitter = hash(t * 3.11 + strikes.length * 17.9 + seed * 10);
         const directionalIdx = directionalRingPointIndex(ringPoints, pointer);
-        const anchorIndex = directionalIdx >= 0
-          ? directionalIdx
-          : nearestRingPointIndex(ringPoints, pointer);
+        const anchorIndex = directionalIdx >= 0 ? directionalIdx : nearestRingPointIndex(ringPoints, pointer);
         const anchor = ringPoints[anchorIndex]!;
         const normal = ringNormals[anchorIndex]!;
         const start: Point = {
           x: anchor.x + normal.x * (3 + seedJitter * 4),
           y: anchor.y + normal.y * (3 + seedJitter * 4),
         };
-        const life = ARCANE_TUNE.hoverStrike.lifeMin + seedJitter * (ARCANE_TUNE.hoverStrike.lifeMax - ARCANE_TUNE.hoverStrike.lifeMin);
+        const life =
+          ARCANE_TUNE.hoverStrike.lifeMin +
+          seedJitter * (ARCANE_TUNE.hoverStrike.lifeMax - ARCANE_TUNE.hoverStrike.lifeMin);
         strikes.push({
           life,
           maxLife: life,
@@ -275,15 +278,15 @@ export const arcaneEffect: EffectDefinition = {
       }
 
       for (let lane = 0; lane < ARCANE_TUNE.laneCount; lane++) {
-        const phaseVelocity = (lanePhaseVelocity[lane] ?? 0)
-          + (Math.random() - 0.5) * frame.dt * ARCANE_TUNE.stochastic.phaseKick;
+        const phaseVelocity =
+          (lanePhaseVelocity[lane] ?? 0) + (Math.random() - 0.5) * frame.dt * ARCANE_TUNE.stochastic.phaseKick;
         const dampedPhaseVelocity = phaseVelocity * Math.max(0, 1 - frame.dt * ARCANE_TUNE.stochastic.phaseDamping);
         lanePhaseVelocity[lane] = dampedPhaseVelocity;
         lanePhaseNudge[lane] = (lanePhaseNudge[lane] ?? 0) + dampedPhaseVelocity * frame.dt;
         const phaseNudge = lanePhaseNudge[lane] ?? 0;
 
-        const gateVelocity = (laneGateVelocity[lane] ?? 0)
-          + (Math.random() - 0.5) * frame.dt * ARCANE_TUNE.stochastic.gateKick;
+        const gateVelocity =
+          (laneGateVelocity[lane] ?? 0) + (Math.random() - 0.5) * frame.dt * ARCANE_TUNE.stochastic.gateKick;
         const dampedGateVelocity = gateVelocity * Math.max(0, 1 - frame.dt * ARCANE_TUNE.stochastic.gateDamping);
         laneGateVelocity[lane] = dampedGateVelocity;
         laneGateNudge[lane] = (laneGateNudge[lane] ?? 0) + dampedGateVelocity * frame.dt;
@@ -302,37 +305,41 @@ export const arcaneEffect: EffectDefinition = {
           const p = ringPoints[idx]!;
           const n = ringNormals[idx]!;
           const jitterSeed = hash(idx * 19.13 + lane * 71.7 + seed * 100);
-          const drift = Math.sin(
-            t * microDriftSpeed
-            + idx * ARCANE_TUNE.shape.driftIndexScale
-            + lanePhase * ARCANE_TUNE.shape.driftPhaseScale
-            + jitterSeed * ARCANE_TUNE.shape.driftSeedScale
-            + phaseNudge * ARCANE_TUNE.shape.driftPhaseNudgeScale,
-          ) * ARCANE_TUNE.shape.driftAmplitude;
-          const wobble = Math.sin(
-            t * laneSpeed + idx * laneFreq + lanePhase + jitterSeed * TAU + drift + phaseNudge,
-          );
+          const drift =
+            Math.sin(
+              t * microDriftSpeed +
+                idx * ARCANE_TUNE.shape.driftIndexScale +
+                lanePhase * ARCANE_TUNE.shape.driftPhaseScale +
+                jitterSeed * ARCANE_TUNE.shape.driftSeedScale +
+                phaseNudge * ARCANE_TUNE.shape.driftPhaseNudgeScale,
+            ) * ARCANE_TUNE.shape.driftAmplitude;
+          const wobble = Math.sin(t * laneSpeed + idx * laneFreq + lanePhase + jitterSeed * TAU + drift + phaseNudge);
           const tangentWiggle = Math.cos(
-            t * (laneSpeed * ARCANE_TUNE.shape.tangentWiggleScale)
-            + idx * ARCANE_TUNE.shape.tangentIndexScale
-            + jitterSeed * ARCANE_TUNE.shape.tangentSeedScale
-            + drift * ARCANE_TUNE.shape.tangentDriftScale,
+            t * (laneSpeed * ARCANE_TUNE.shape.tangentWiggleScale) +
+              idx * ARCANE_TUNE.shape.tangentIndexScale +
+              jitterSeed * ARCANE_TUNE.shape.tangentSeedScale +
+              drift * ARCANE_TUNE.shape.tangentDriftScale,
           );
-          const offsetN = wobble * (ARCANE_TUNE.shape.normalOffsetBase + jitterSeed * ARCANE_TUNE.shape.normalOffsetJitterScale) * amp;
+          const offsetN =
+            wobble *
+            (ARCANE_TUNE.shape.normalOffsetBase + jitterSeed * ARCANE_TUNE.shape.normalOffsetJitterScale) *
+            amp;
           const offsetT = tangentWiggle * ARCANE_TUNE.shape.tangentOffset;
           const x = p.x + n.x * offsetN + -n.y * offsetT;
           const y = p.y + n.y * offsetN + n.x * offsetT;
           const projected = projectPointToSurface({ x, y }, frame);
 
           const gateNoise = hash(idx * 13.1 + lane * 97.1 + Math.floor((t + gateNudge) * gateCadence));
-          const gateWave = 0.5
-            + 0.5 * Math.sin(
-              t * (ARCANE_TUNE.gate.waveFrequencyBase + lane * ARCANE_TUNE.gate.waveFrequencyStep)
-              + idx * ARCANE_TUNE.gate.waveIndexScale
-              + lanePhase
-              + drift
-              + phaseNudge * ARCANE_TUNE.gate.wavePhaseNudgeScale,
-            );
+          const gateWave =
+            0.5 +
+            0.5 *
+              Math.sin(
+                t * (ARCANE_TUNE.gate.waveFrequencyBase + lane * ARCANE_TUNE.gate.waveFrequencyStep) +
+                  idx * ARCANE_TUNE.gate.waveIndexScale +
+                  lanePhase +
+                  drift +
+                  phaseNudge * ARCANE_TUNE.gate.wavePhaseNudgeScale,
+              );
           const gate = gateWave * ARCANE_TUNE.gate.waveWeight + gateNoise * ARCANE_TUNE.gate.noiseWeight;
           const lit = gate > laneThreshold;
 
@@ -354,9 +361,21 @@ export const arcaneEffect: EffectDefinition = {
         }
       }
 
-      aura.stroke({ width: ARCANE_TUNE.stroke.aura.width, color: ARCANE_OUTER, alpha: ARCANE_TUNE.stroke.aura.alpha * hoverBoost });
-      strands.stroke({ width: ARCANE_TUNE.stroke.strands.width, color: ARCANE_OUTER, alpha: ARCANE_TUNE.stroke.strands.alpha * pulse });
-      core.stroke({ width: ARCANE_TUNE.stroke.core.width, color: ARCANE_CORE, alpha: ARCANE_TUNE.stroke.core.alpha * pulse });
+      aura.stroke({
+        width: ARCANE_TUNE.stroke.aura.width,
+        color: ARCANE_OUTER,
+        alpha: ARCANE_TUNE.stroke.aura.alpha * hoverBoost,
+      });
+      strands.stroke({
+        width: ARCANE_TUNE.stroke.strands.width,
+        color: ARCANE_OUTER,
+        alpha: ARCANE_TUNE.stroke.strands.alpha * pulse,
+      });
+      core.stroke({
+        width: ARCANE_TUNE.stroke.core.width,
+        color: ARCANE_CORE,
+        alpha: ARCANE_TUNE.stroke.core.alpha * pulse,
+      });
 
       for (let i = strikes.length - 1; i >= 0; i--) {
         const strike = strikes[i]!;
@@ -395,12 +414,16 @@ export const arcaneEffect: EffectDefinition = {
       });
     };
 
-    return makeRuntime("arcane", step, noopDestroy(() => {
-      aura.destroy();
-      strands.destroy();
-      core.destroy();
-      strikeAura.destroy();
-      strikeCore.destroy();
-    }));
+    return makeRuntime(
+      'arcane',
+      step,
+      noopDestroy(() => {
+        aura.destroy();
+        strands.destroy();
+        core.destroy();
+        strikeAura.destroy();
+        strikeCore.destroy();
+      }),
+    );
   },
 };

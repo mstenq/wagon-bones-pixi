@@ -1,4 +1,4 @@
-import { TextStyle, type Graphics, type Text } from "pixi.js";
+import { TextStyle, type Graphics, type Text } from 'pixi.js';
 
 import {
   ACTION_TAB_ATTACH_OVERLAP,
@@ -18,30 +18,30 @@ import {
   TAB_SHADOW_OFFSET_X,
   TAB_SHADOW_OFFSET_Y,
   TAB_WIDTH,
-} from "@/ui/components/Card/config";
+} from '@/ui/components/Card/config';
 
 export const tabTextStyle = new TextStyle({
-  fontFamily: "Inter, system-ui, sans-serif",
+  fontFamily: 'Inter, system-ui, sans-serif',
   fontSize: 13,
-  fontWeight: "700",
-  fill: "#ffffff",
-  align: "center",
+  fontWeight: '700',
+  fill: '#ffffff',
+  align: 'center',
 });
 
 export const priceTabTextStyle = new TextStyle({
-  fontFamily: "Inter, system-ui, sans-serif",
+  fontFamily: 'Inter, system-ui, sans-serif',
   fontSize: 12,
-  fontWeight: "700",
+  fontWeight: '700',
   fill: PRICE_TAB_TEXT_COLOR,
-  align: "center",
+  align: 'center',
 });
 
 export const sellTabTextStyle = new TextStyle({
-  fontFamily: "Inter, system-ui, sans-serif",
+  fontFamily: 'Inter, system-ui, sans-serif',
   fontSize: 11,
-  fontWeight: "700",
-  fill: "#ffffff",
-  align: "center",
+  fontWeight: '700',
+  fill: '#ffffff',
+  align: 'center',
   lineHeight: 13,
 });
 
@@ -82,12 +82,7 @@ function drawBottomTabShape(
   }
 }
 
-function drawSellTabShape(
-  graphics: Graphics,
-  offsetX: number,
-  offsetY: number,
-  style: TabDrawStyle = {},
-): void {
+function drawSellTabShape(graphics: Graphics, offsetX: number, offsetY: number, style: TabDrawStyle = {}): void {
   const width = SELL_TAB_WIDTH;
   const height = SELL_TAB_HEIGHT;
   const halfH = height / 2;
@@ -178,11 +173,7 @@ export const ACTION_TAB_TEXT_Y = ACTION_TAB_HEIGHT / 2 - ACTION_TAB_VISIBLE_HEIG
 
 /** Tab container y; pass squishScaleY so the tab tracks a squishing card bottom. */
 export function actionTabAnchorY(cardHeight: number, squishScaleY = 1): number {
-  return (
-    (cardHeight / 2) * squishScaleY -
-    ACTION_TAB_ATTACH_OVERLAP +
-    ACTION_TAB_HEIGHT / 2
-  );
+  return (cardHeight / 2) * squishScaleY - ACTION_TAB_ATTACH_OVERLAP + ACTION_TAB_HEIGHT / 2;
 }
 
 /** Price tab container y; tracks the squishing card top edge. */
@@ -200,8 +191,7 @@ export function sellTabInnerX(reveal: number): number {
   return -SELL_TAB_WIDTH + reveal * SELL_TAB_WIDTH;
 }
 
-export const SELL_TAB_TEXT_X =
-  SELL_TAB_LEFT_PADDING + (SELL_TAB_WIDTH - SELL_TAB_LEFT_PADDING) / 2;
+export const SELL_TAB_TEXT_X = SELL_TAB_LEFT_PADDING + (SELL_TAB_WIDTH - SELL_TAB_LEFT_PADDING) / 2;
 
 /** Re-export for hit-area / layout math in Card. */
 export {
@@ -213,4 +203,3 @@ export {
   TAB_HEIGHT,
   TAB_WIDTH,
 };
-
