@@ -1,7 +1,6 @@
 import { useApplication, useTick } from '@pixi/react';
 import { useCallback, useMemo, useState } from 'react';
 
-import { CardContainer } from '@/ui/components/CardContainer/CardContainer';
 import { DiceRow } from '@/ui/components/DiceRow/DiceRow';
 import { computeGameLayout, computeViewportMetrics } from '@/ui/layout/gameLayout';
 
@@ -27,12 +26,7 @@ export function GameScene() {
     [viewport.layoutH, viewport.layoutW],
   );
 
-  const gameContent = (
-    <>
-      <CardContainer layout={layout.cards} />
-      <DiceRow layout={layout.dice} />
-    </>
-  );
+  const gameContent = <DiceRow layout={layout.dice} />;
 
   if (viewport.scale >= 1) {
     return (

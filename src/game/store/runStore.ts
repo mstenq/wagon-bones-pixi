@@ -1,76 +1,138 @@
+// ─── Run store (No Phaser imports) ───
+// Cross-scene run state; replaces PlayerState ownership in later migration steps.
+
 import { createStore } from 'zustand/vanilla';
-import { useStore } from 'zustand';
+import { subscribeWithSelector } from 'zustand/middleware';
+import { GAMEPLAY } from '../Constants';
+import { createEmptyModifiers, createEmptyTrailRoundEffects } from '../trailEventDefaults';
+import {
+  clearPlayback as clearPlaybackQueue,
+  enqueuePlayback as enqueuePlaybackCommand,
+  takePlayback as takePlaybackQueue,
+} from '../playback';
+import { createDefaultHandStats, EMPTY_BOSS_ROUND_STATE, type RunState } from './types';
 
-import { DICE_COUNT, type DiceType } from '@/data/dice';
-import { rollD12, rollMany } from '@/game/dice/roll';
-import { createInitialRunState, type RunState } from '@/game/store/types';
+export function createInitialRunState(): RunState {
+  return {
+    balance: GAMEPLAY.STARTING_MONEY,
+    dice: [],
+    loadedDieTarget: null,
+    loadedDieSyncLucky: false,
+    spentDiceIds: [],
+    equipment: [],
+    maxEquipmentSlots: GAMEPLAY.MAX_EQUIPMENT_SLOTS,
+    consumables: [],
+    maxConsumableSlots: GAMEPLAY.MAX_CONSUMABLE_SLOTS,
+    lastUsedConsumableId: null,
+    shopSlots: GAMEPLAY.SHOP_SLOTS,
+    shopRerollCount: 0,
+    leg: 1,
+    round: 1,
+    roundBackgroundIndex: null,
+    interestCap: GAMEPLAY.INTEREST_CAP,
+    handStats: createDefaultHandStats(),
+    professionId: null,
+    difficulty: 1,
+    handSize: GAMEPLAY.ROLL_SIZE,
+    purchasedPermits: [],
+    currentLegPermitId: null,
+    permitPurchasedThisLeg: false,
+    permitDayBonus: 0,
+    permitRerollBonus: 0,
+    permitDayPenalty: 0,
+    permitRerollPenalty: 0,
+    permitScoreReduction: 0,
+    trailEventModifiers: createEmptyModifiers(),
+    trailRoundEffects: createEmptyTrailRoundEffects(),
+    pendingTrailEventId: null,
+    seenTrailEventIds: [],
+    skipNextShop: false,
+    trailGuidesUsed: 0,
+    supplyCardsUsed: 0,
+    startingDiceCount: GAMEPLAY.STARTING_DICE,
+    bossEffectDisabled: false,
+    bossRoundState: { ...EMPTY_BOSS_ROUND_STATE },
+    pendingNewDiceIds: [],
+    pendingHandDiceIds: [],
+    pendingAnimatedDestructions: [],
+    pendingJunkDealerCount: 0,
+    pendingTags: [],
+    storedAuraTags: [],
+    roundsSkipped: 0,
+    daysScored: 0,
+    unusedRerollsTotal: 0,
+    twinWagonCount: 0,
+    wideSaddleBonus: 0,
+    tagFreeReroll: false,
+    bonusShopPermitId: null,
+    skippedRoundsThisLeg: [],
+    skippedRoundTags: {},
+    skippedRoundTagMeta: {},
+    roundSkipPreviewTags: {},
+    roundSkipPreviewMeta: {},
+    bossRerollsUsedThisLeg: 0,
+    dynamiteSelfDestructed: false,
+    endlessMode: false,
+    storyVictoryPending: false,
+    bossAssignmentIds: [],
+    nextDieId: 0,
+    statusTraitTokens: [],
+    shopFreeRerollPlan: [],
+    playbackQueue: [],
+  };
+}
 
-type RunActions = {
-  setDiceType: (type: DiceType) => void;
-  setDiceOrder: (order: number[]) => void;
-  requestRoll: () => void;
-  completeRoll: (results: number[]) => void;
-  setCardOrder: (order: number[]) => void;
-  selectCard: (cardId: number | null) => void;
-  sellCard: (cardId: number) => void;
+type RunStoreState = RunState;
+
+const resetListeners = new Set<() => void>();
+
+export function onRunStoreReset(listener: () => void): () => void {
+  resetListeners.add(listener);
+  return () => resetListeners.delete(listener);
+}
+
+function mergeRunState(partial: Partial<RunState>): (state: RunStoreState) => RunStoreState {
+  return (state) => ({ ...state, ...partial });
+}
+
+export const runStore = createStore<RunStoreState>()(subscribeWithSelector(() => createInitialRunState()));
+
+export const runActions = {
+  reset(): void {
+    runStore.setState(createInitialRunState(), true);
+    for (const listener of resetListeners) listener();
+  },
+
+  hydrate(state: RunState): void {
+    runStore.setState(state, true);
+    for (const listener of resetListeners) listener();
+  },
+
+  patch(partial: Partial<RunState>): void {
+    runStore.setState(mergeRunState(partial));
+  },
+
+  setBalance(balance: number): void {
+    runStore.setState({ balance });
+  },
+
+  enqueuePlayback(command: Parameters<typeof enqueuePlaybackCommand>[0]): void {
+    enqueuePlaybackCommand(command);
+  },
+
+  takePlayback(predicate: Parameters<typeof takePlaybackQueue>[0]): ReturnType<typeof takePlaybackQueue> {
+    return takePlaybackQueue(predicate);
+  },
+
+  clearPlayback(): void {
+    clearPlaybackQueue();
+  },
 };
 
-export type RunStore = RunState & RunActions;
-
-export const runStore = createStore<RunStore>((set, get) => ({
-  ...createInitialRunState(),
-
-  setDiceType(type) {
-    set({ diceType: type });
-  },
-
-  setDiceOrder(order) {
-    set({ diceOrder: order });
-  },
-
-  requestRoll() {
-    const { isRolling } = get();
-    if (isRolling) {
-      return;
-    }
-    set({
-      isRolling: true,
-      rollTargets: rollMany(DICE_COUNT),
-    });
-  },
-
-  completeRoll(results) {
-    set({
-      dieValues: results,
-      isRolling: false,
-      rollTargets: null,
-    });
-  },
-
-  setCardOrder(order) {
-    set({ cardOrder: order });
-  },
-
-  selectCard(cardId) {
-    set({ selectedCardId: cardId });
-  },
-
-  sellCard(cardId) {
-    // Placeholder until full economy/equipment systems land.
-    console.log('sell card', cardId);
-    set({ selectedCardId: null });
-  },
-}));
-
-export function getRunState(): RunStore {
+export function getRunState(): RunState {
   return runStore.getState();
 }
 
-export function useRunStore<T>(selector: (state: RunStore) => T): T {
-  return useStore(runStore, selector);
-}
-
-/** Spinning placeholder value during roll animation. */
-export function rollSpinFrame(): number {
-  return rollD12();
+export function subscribeRunState(listener: (state: RunState, prevState: RunState) => void): () => void {
+  return runStore.subscribe(listener);
 }

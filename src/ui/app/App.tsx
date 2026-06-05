@@ -1,34 +1,11 @@
+import { bootstrapPixiGame } from '@/game/pixiBootstrap';
 import { GameCanvas } from '@/ui/app/GameCanvas';
 import { RollDiceButton } from '@/ui/components/Dice/RollDiceButton';
-import { DICE_ENHANCEMENT_OPTIONS, DICE_LABELS, type DiceType } from '@/ui/components/Dice/config';
 import { GameInfo } from '@/ui/components/GameInfo/GameInfo';
-import { gameFacade } from '@/game/facade';
-import { useRunStore } from '@/game/store/runStore';
-import { panelLabelClass, panelSelectClass } from '@/ui/styles/panelControls';
 import { useMediaQuery } from '@/ui/hooks/useMediaQuery';
 import { UiPrimaryProvider } from '@/ui/theme/UiPrimaryProvider';
 
-function DiceEnhancementSelect() {
-  const diceType = useRunStore((state) => state.diceType);
-  const setDiceType = useRunStore((state) => state.setDiceType);
-
-  return (
-    <label className={`${panelLabelClass} absolute top-4 left-4 z-10`}>
-      Enhancement
-      <select
-        className={panelSelectClass}
-        value={diceType}
-        onChange={(event) => setDiceType(event.target.value as DiceType)}
-      >
-        {DICE_ENHANCEMENT_OPTIONS.map((type) => (
-          <option key={type} value={type}>
-            {DICE_LABELS[type]}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
+bootstrapPixiGame();
 
 export function App() {
   /** Viewport wider than tall — sidebar + portrait GameInfo content layout. */
@@ -66,7 +43,6 @@ export function App() {
       </aside>
       <main className="relative min-h-0 min-w-0 flex-1">
         <GameCanvas />
-        <DiceEnhancementSelect />
         <RollDiceButton />
       </main>
     </UiPrimaryProvider>

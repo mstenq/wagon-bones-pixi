@@ -1,6 +1,6 @@
 import { Assets, Texture } from 'pixi.js';
 
-import { ITEM_TYPES, itemTypeForCard, type ItemType } from '@/data/items';
+import { ITEM_TYPES, itemTypeForCard, type ItemType } from '@/assets/items/demoCatalog';
 import { ITEM_IMAGES } from '@/assets/items/images';
 
 const itemAlias = (type: ItemType) => `item-${type}`;

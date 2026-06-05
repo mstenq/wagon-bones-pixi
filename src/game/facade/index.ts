@@ -1,25 +1,16 @@
-import type { DiceType } from '@/data/dice';
-import { getRunState } from '@/game/store/runStore';
+// ─── Game facade — blessed UI orchestration entry (No Phaser imports) ───
 
-export const gameFacade = {
-  dice: {
-    getType: () => getRunState().diceType,
-    setType: (type: DiceType) => getRunState().setDiceType(type),
-    getValues: () => getRunState().dieValues,
-    getOrder: () => getRunState().diceOrder,
-    setOrder: (order: number[]) => getRunState().setDiceOrder(order),
-    isRolling: () => getRunState().isRolling,
-    getRollTargets: () => getRunState().rollTargets,
-    roll: () => getRunState().requestRoll(),
-    completeRoll: (results: number[]) => getRunState().completeRoll(results),
-  },
-  cards: {
-    getOrder: () => getRunState().cardOrder,
-    setOrder: (order: number[]) => getRunState().setCardOrder(order),
-    getSelectedId: () => getRunState().selectedCardId,
-    selectCard: (cardId: number | null) => getRunState().selectCard(cardId),
-    sellCard: (cardId: number) => getRunState().sellCard(cardId),
-  },
-} as const;
-
-export { gameFacade as default };
+export { gameFacade } from './gameFacade';
+export { gameRound, initRoundSession, startRoundSession } from './round';
+export { gameRun } from './run';
+export { gameConsumable } from './consumable';
+export { gameBoss } from './boss';
+export { gameDiceSelection } from './diceSelection';
+export { gameEquipment } from './equipment';
+export { gameDice } from './dice';
+export { gameShop } from './shop';
+export { gamePack } from './pack';
+export { gameTrail } from './trail';
+export { gameMeta } from './meta';
+export * from './types';
+export { enqueuePlayback, takePlayback, clearPlayback } from './playback';

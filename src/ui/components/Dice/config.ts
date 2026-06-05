@@ -1,4 +1,14 @@
+import type { DiceEnhancement } from '@/game/types';
+import type { DiceType } from '@/data/dice';
+
 export { DICE_COUNT, DICE_ENHANCEMENT_OPTIONS, DICE_LABELS, DICE_TYPES, type DiceType } from '@/data/dice';
+
+export function diceTypeFromEnhancement(enhancement: DiceEnhancement): DiceType {
+  if (enhancement === null) {
+    return 'standard';
+  }
+  return enhancement;
+}
 
 export type DieMode = 'base' | 'selected' | 'debuffed' | 'playedNonScoring' | 'locked';
 

@@ -1,0 +1,19 @@
+// ─── Money-granting effects ───
+
+import { effectRegistry } from '../registry';
+import { HandType } from '../../types';
+import { resolveEffectParam } from '../helpers';
+
+effectRegistry.registerAdditive('WANTED_HAND_MONEY', (ctx, equip, index) => {
+  const handTypes = Object.values(HandType);
+  const targetIdx = equip.state.targetHand ?? 0;
+  const targetHand = handTypes[targetIdx % handTypes.length];
+  const handType = ctx.handResult.type;
+  if (handType === targetHand) {
+    const p = equip.def.effectParams as Record<string, unknown>;
+    const value = resolveEffectParam<number>(p, 'value', ctx.professionId ?? undefined);
+    ctx.mutations.moneyEarned += value;
+    ctx.animEvents.push({ target: { kind: 'equip', equipIndex: index }, popupType: 'money', value });
+    console.log(`  [equip] ${equip.def.name}: +$${value} (hand matched ${targetHand})`);
+  }
+});

@@ -1,4 +1,4 @@
-import type { ItemType } from '@/data/items';
+import type { ItemType } from '@/assets/items/demoCatalog';
 
 import aceInTheHoleImg from '@/assets/items/01.png';
 import antiqueRevolverImg from '@/assets/items/02.png';

@@ -1,4 +1,4 @@
-/** Dice catalog — export only, no imports. */
+/** Dice catalog — Pixi compatibility exports (no imports). */
 
 export const DICE_COUNT = 8;
 
